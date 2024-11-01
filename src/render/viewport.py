@@ -53,8 +53,12 @@ def camera_direction_to_delta(camdir: CameraDirection):
 class Viewport(object):
     def __init__(self, window_dims, terrain):
         self.window_dims = window_dims
-        self.terrain = terrain
+        self.terrain_width, self.terrain_height = terrain.width(), terrain.height()
         self.camera_pos = terrain.center()
+    
+    @property
+    def tile_width(self):
+        return TILE_WIDTH
     
     def move_camera(self, camdir: CameraDirection):
         if not camdir:
@@ -66,12 +70,12 @@ class Viewport(object):
 
         if cy2 < 0:
             cy2 = 0
-        elif cy2 >= self.terrain.height():
-            cy2 = self.terrain.height() - 1
+        elif cy2 >= self.terrain_height:
+            cy2 = self.terrain_height - 1
         
         if cx2 == -1:
-            cx2 = self.terrain.width() - 1
-        if cx2 >= self.terrain.width():
+            cx2 = self.terrain_width - 1
+        if cx2 >= self.terrain_width:
             cx2 = 0
         
         self.camera_pos = (cx2, cy2)
@@ -84,7 +88,7 @@ class Viewport(object):
             math.ceil(cx - (win_width / TILE_WIDTH)) - SAFETY
         )
         right = min(
-            self.terrain.width(),
+            self.terrain_width,
             math.ceil(cx + (win_width / TILE_WIDTH)) + SAFETY
         )
         return range(left, right)
@@ -97,7 +101,7 @@ class Viewport(object):
             math.ceil(cy - (win_height / TILE_HEIGHT)) - SAFETY
         )
         bottom = min(
-            self.terrain.height(),
+            self.terrain_height,
             math.ceil(cy + (win_height / TILE_HEIGHT)) + SAFETY
         )
         return range(top, bottom)

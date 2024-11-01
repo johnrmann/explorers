@@ -3,7 +3,7 @@ import noise
 
 from ..world.terrain import Terrain
 
-TERRAIN_X = 512
+TERRAIN_X = 80
 TERRAIN_Y = TERRAIN_X // 2
 TERRAIN_Z = 16
 
