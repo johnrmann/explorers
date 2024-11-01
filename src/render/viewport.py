@@ -1,4 +1,5 @@
 import math
+import pygame
 
 from enum import Enum
 
@@ -18,6 +19,17 @@ class CameraDirection(Enum):
     SOUTHWEST = 6
     WEST = 7
     NORTHWEST = 8
+
+def pygame_key_to_camdir(key):
+    if key == pygame.K_UP:
+        return CameraDirection.NORTHWEST
+    elif key == pygame.K_DOWN:
+        return CameraDirection.SOUTHEAST
+    elif key == pygame.K_RIGHT:
+        return CameraDirection.NORTHEAST
+    elif key == pygame.K_LEFT:
+        return CameraDirection.SOUTHWEST
+    return None
 
 def camera_direction_to_delta(camdir: CameraDirection):
     if camdir == CameraDirection.NORTH:
@@ -45,6 +57,9 @@ class Viewport(object):
         self.camera_pos = terrain.center()
     
     def move_camera(self, camdir: CameraDirection):
+        if not camdir:
+            return
+
         dx,dy = camera_direction_to_delta(camdir)
         cx,cy = self.camera_pos
         cx2,cy2 = (cx + dx, cy + dy)

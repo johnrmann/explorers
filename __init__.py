@@ -2,7 +2,7 @@ import pygame
 
 from src.gen.terrain_generator import TerrainGenerator
 from src.render.render_terrain import RenderTerrain
-from src.render.viewport import Viewport
+from src.render.viewport import Viewport, pygame_key_to_camdir
 
 pygame.init()
 
@@ -26,6 +26,10 @@ def main():
 	rt = RenderTerrain(window, vp)
 
 	while running:
+		for event in pygame.event.get():
+			if event.type == pygame.KEYDOWN:
+				d_camdir = pygame_key_to_camdir(event.key)
+				vp.move_camera(d_camdir)
 		rt.render()
 		pygame.display.flip()
 		clock.tick(60)
