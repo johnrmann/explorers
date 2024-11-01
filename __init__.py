@@ -2,7 +2,7 @@ import pygame
 
 from src.gen.terrain_generator import TerrainGenerator
 from src.render.render_terrain import RenderTerrain
-from src.render.viewport import Viewport, pygame_key_to_camdir
+from src.render.viewport import Viewport, pygame_key_to_camdir, pygame_key_to_delta_zoom
 
 pygame.init()
 
@@ -23,13 +23,15 @@ def main():
 	clock = pygame.time.Clock()
 	running = True
 	vp = Viewport((WINDOW_WIDTH, WINDOW_HEIGHT), terrain)
-	rt = RenderTerrain(window, vp)
+	rt = RenderTerrain(window, terrain, vp)
 
 	while running:
 		for event in pygame.event.get():
 			if event.type == pygame.KEYDOWN:
 				d_camdir = pygame_key_to_camdir(event.key)
+				d_zoom = pygame_key_to_delta_zoom(event.key)
 				vp.move_camera(d_camdir)
+				vp.change_zoom(d_zoom)
 		rt.render()
 		pygame.display.flip()
 		clock.tick(60)

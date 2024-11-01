@@ -7,43 +7,41 @@ from src.render.viewport import Viewport, TILE_WIDTH, TILE_HEIGHT, TILE_Z
 GROUND_COLOR = (200, 0, 0)
 WALL_COLOR = (100, 0, 0)
 
-def tile_coords_to_global_screen_coords(x, y, tile_width = TILE_WIDTH):
+def tile_coords_to_global_screen_coords(x, y, vp: Viewport):
     """
     Returns the center coordinates of this tile on an infinite screen.
     """
-    tile_height = tile_width // 2
-    screen_x = (x - y) * (tile_width // 2)
-    screen_y = (x + y) * (tile_height // 2)
+    screen_x = (x - y) * (vp.tile_width // 2)
+    screen_y = (x + y) * (vp.tile_height // 2)
     return (screen_x, screen_y)
 
-def tile_coords_to_screen_coords(tile, camera_screen, tile_width = TILE_WIDTH):
+def tile_coords_to_screen_coords(tile, vp: Viewport):
     """
     tile_x, tile_y = 0, 0 and camera_x, camera_y = 0, 0 -> 
     """
     win_width, win_height = pygame.display.get_window_size()
     x,y = tile
-    cx,cy = camera_screen
-    x2,y2 = tile_coords_to_global_screen_coords(x, y, tile_width)
+    cx,cy = vp.camera_pos
+    cx_screen, cy_screen = tile_coords_to_global_screen_coords(cx,cy,vp)
+    x2,y2 = tile_coords_to_global_screen_coords(x, y, vp)
     return (
-        x2 + (win_width // 2) - cx,
-        y2 + (win_height // 2) - cy,
+        x2 + (win_width // 2) - cx_screen,
+        y2 + (win_height // 2) - cy_screen,
     )
 
-def tile_polygon(x, y, tile_width = TILE_WIDTH):
-    tile_height = tile_width // 2
+def tile_polygon(x, y, vp: Viewport):
     return [
-        (x, y - tile_height // 2),
-        (x + tile_width // 2, y),
-        (x, y + tile_height // 2),
-        (x - tile_width // 2, y)
+        (x, y - vp.tile_height // 2),
+        (x + vp.tile_width // 2, y),
+        (x, y + vp.tile_height // 2),
+        (x - vp.tile_width // 2, y)
     ]
 
 def polygons(vp, terrain, tile):
     x,y = tile
     h = terrain.map[y][x]
-    camera_screen = tile_coords_to_global_screen_coords(vp.camera_pos[0], vp.camera_pos[1], vp.tile_width)
-    tx_screen, ty_screen = tile_coords_to_screen_coords(tile, camera_screen)
-    bottom = tile_polygon(tx_screen, ty_screen, vp.tile_width)
+    tx_screen, ty_screen = tile_coords_to_screen_coords(tile, vp)
+    bottom = tile_polygon(tx_screen, ty_screen, vp)
     top = [(p[0], p[1] - h * TILE_Z) for p in bottom]
     return (
         top,

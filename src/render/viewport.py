@@ -5,10 +5,18 @@ from enum import Enum
 
 TILE_WIDTH = 48
 TILE_HEIGHT = TILE_WIDTH // 2
-
 TILE_Z = 48 // 8
 
+ZOOMS = [TILE_WIDTH / 2, TILE_WIDTH, TILE_WIDTH * 2]
+
 SAFETY = 3
+
+def pygame_key_to_delta_zoom(key):
+    if key == pygame.K_KP_PLUS or key == pygame.K_PLUS:
+        return 1
+    elif key == pygame.K_KP_MINUS or key == pygame.K_MINUS:
+        return -1
+    return 0
 
 class CameraDirection(Enum):
     NORTH = 1
@@ -51,6 +59,8 @@ def camera_direction_to_delta(camdir: CameraDirection):
     raise "Unknown camera direction"
 
 class Viewport(object):
+    _zoom_idx = 1
+
     def __init__(self, window_dims, terrain):
         self.window_dims = window_dims
         self.terrain_width, self.terrain_height = terrain.width(), terrain.height()
@@ -58,7 +68,14 @@ class Viewport(object):
     
     @property
     def tile_width(self):
-        return TILE_WIDTH
+        return ZOOMS[self._zoom_idx]
+    
+    @property
+    def tile_height(self):
+        return self.tile_width / 2
+    
+    def change_zoom(self, delta):
+        self._zoom_idx = min(max(0, self._zoom_idx + delta), len(ZOOMS) - 1)
     
     def move_camera(self, camdir: CameraDirection):
         if not camdir:
@@ -85,11 +102,11 @@ class Viewport(object):
         cx, _ = self.camera_pos
         left = max(
             0,
-            math.ceil(cx - (win_width / TILE_WIDTH)) - SAFETY
+            math.ceil(cx - (win_width / self.tile_width)) - SAFETY
         )
         right = min(
             self.terrain_width,
-            math.ceil(cx + (win_width / TILE_WIDTH)) + SAFETY
+            math.ceil(cx + (win_width / self.tile_width)) + SAFETY
         )
         return range(left, right)
     
@@ -98,11 +115,11 @@ class Viewport(object):
         _, cy = self.camera_pos
         top = max(
             0,
-            math.ceil(cy - (win_height / TILE_HEIGHT)) - SAFETY
+            math.ceil(cy - (win_height / self.tile_height)) - SAFETY
         )
         bottom = min(
             self.terrain_height,
-            math.ceil(cy + (win_height / TILE_HEIGHT)) + SAFETY
+            math.ceil(cy + (win_height / self.tile_height)) + SAFETY
         )
         return range(top, bottom)
     
