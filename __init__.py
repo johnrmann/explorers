@@ -21,10 +21,13 @@ def main():
 
 	clock = pygame.time.Clock()
 	running = True
+	cx = 0
+	cy = 0
 
 	while running:
 		window.fill((255,255,255))
-		render_terrain(window, terrain)
+		camera_center = terrain.center()
+		render_terrain(window, terrain, (cx,cy))
 		pygame.display.flip()
 		clock.tick(60)
 	

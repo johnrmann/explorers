@@ -5,7 +5,9 @@ from ..world.terrain import Terrain
 
 TERRAIN_X = 512
 TERRAIN_Y = TERRAIN_X // 2
-TERRAIN_Z = TERRAIN_Y // 2
+TERRAIN_Z = 16
+
+LANDING_SIDE_LENGTH = 32
 
 SCALE = 20
 
@@ -25,6 +27,18 @@ class TerrainGenerator(object):
                     base=0
                 )
                 self.terrain[y][x] = int((noise_value + 1) / 2 * TERRAIN_Z)
+        self.make_landing_area()
+    
+    def make_landing_area(self):
+        width = len(self.terrain[0])
+        height = len(self.terrain)
+        y = height // 2
+        x = width // 2
+        s = LANDING_SIDE_LENGTH // 2
+        z = self.terrain[y][x]
+        for dx in range(x-s,x+s):
+            for dy in range(y-s,y+s):
+                self.terrain[dy][dx] = z
     
     def make(self):
         return Terrain(self.terrain)
