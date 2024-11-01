@@ -1,4 +1,13 @@
+import math
+
 from enum import Enum
+
+TILE_WIDTH = 48
+TILE_HEIGHT = TILE_WIDTH // 2
+
+TILE_Z = 48 // 8
+
+SAFETY = 3
 
 class CameraDirection(Enum):
     NORTH = 1
@@ -51,4 +60,30 @@ class Viewport(object):
             cx2 = 0
         
         self.camera_pos = (cx2, cy2)
+    
+    def get_x_range(self):
+        win_width, _ = self.window_dims
+        cx, _ = self.camera_pos
+        left = max(
+            0,
+            math.ceil(cx - (win_width / TILE_WIDTH)) - SAFETY
+        )
+        right = min(
+            self.terrain.width(),
+            math.ceil(cx + (win_width / TILE_WIDTH)) + SAFETY
+        )
+        return range(left, right)
+    
+    def get_y_range(self):
+        _, win_height = self.window_dims
+        _, cy = self.camera_pos
+        top = max(
+            0,
+            math.ceil(cy - (win_height / TILE_HEIGHT)) - SAFETY
+        )
+        bottom = min(
+            self.terrain.height(),
+            math.ceil(cy + (win_height / TILE_HEIGHT)) + SAFETY
+        )
+        return range(top, bottom)
     

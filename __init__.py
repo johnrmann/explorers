@@ -1,7 +1,8 @@
 import pygame
 
 from src.gen.terrain_generator import TerrainGenerator
-from src.render.render_terrain import render_terrain
+from src.render.render_terrain import RenderTerrain
+from src.render.viewport import Viewport
 
 pygame.init()
 
@@ -21,13 +22,11 @@ def main():
 
 	clock = pygame.time.Clock()
 	running = True
-	cx = 0
-	cy = 0
+	vp = Viewport((WINDOW_WIDTH, WINDOW_HEIGHT), terrain)
+	rt = RenderTerrain(window, vp)
 
 	while running:
-		window.fill((255,255,255))
-		camera_center = terrain.center()
-		render_terrain(window, terrain, (cx,cy))
+		rt.render()
 		pygame.display.flip()
 		clock.tick(60)
 	
