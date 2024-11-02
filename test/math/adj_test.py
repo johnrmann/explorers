@@ -33,7 +33,7 @@ class AdjTest(unittest.TestCase):
 		p = (1,1)
 		self.assertEqual(
 			adj_cells(d, p, loop_x=False),
-			[(0, 1), (1, 0), (1, 2), (2, 1)]
+			[(1, 0), (2, 1), (1, 2), (0, 1)]
 		)
 	
 	def test__adj_cells__loop_x(self):
@@ -41,7 +41,7 @@ class AdjTest(unittest.TestCase):
 		p = (0,1)
 		self.assertEqual(
 			adj_cells(d, p, loop_x=True),
-			[(2, 1), (0, 0), (0, 2), (1, 1)]
+			[(0, 0), (1, 1), (0, 2), (2, 1)]
 		)
 	
 	def test__adj_cells__bound_y(self):
@@ -49,12 +49,12 @@ class AdjTest(unittest.TestCase):
 		p = (1,0)
 		self.assertEqual(
 			adj_cells(d, p, loop_x=False, loop_y=False),
-			[(0, 0), (1, 1), (2, 0)]
+			[(2, 0), (1, 1), (0, 0)]
 		)
 		p = (1,2)
 		self.assertEqual(
 			adj_cells(d, p, loop_x=False, loop_y=False),
-			[(0, 2), (1, 1), (2, 2)]
+			[(1, 1), (2, 2), (0, 2)]
 		)
 	
 	def test__bool_adj_from_labels__normie(self):
