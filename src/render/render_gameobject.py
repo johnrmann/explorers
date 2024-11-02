@@ -2,6 +2,7 @@ import pygame
 
 from src.gameobject.gameobject import GameObject
 from src.render.utils import *
+from src.render.space import tile_to_screen_coords
 
 TOP_COLOR = (0, 0, 200)
 LEFT_COLOR = (0, 0, 100)
@@ -14,7 +15,7 @@ def render_gameobject(
     height = 0,
     image_map = {}
 ):
-    x,y = tile_coords_to_screen_coords(go.pos, vp)
+    x,y = tile_to_screen_coords(go.pos, vp)
     bottom = height_offset_tile(tile_polygon(x, y, vp), height / 8, vp)
     if go.image_path() in image_map:
         img = image_map[go.image_path()]

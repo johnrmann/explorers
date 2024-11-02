@@ -37,6 +37,8 @@ def pygame_key_to_camdir(key):
 class Viewport(object):
 	_zoom_idx = 1
 
+	camera_orientation = Direction.NORTHWEST
+
 	def __init__(self, window_dims, terrain):
 		self.window_dims = window_dims
 		self.terrain_width, self.terrain_height = terrain.width, terrain.height

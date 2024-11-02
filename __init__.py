@@ -43,6 +43,7 @@ def main():
 				vp.move_camera(d_camdir)
 				vp.change_zoom(d_zoom)
 		render.render()
+		render.render_terrain.highlight_tile_at_screen_pos(pygame.mouse.get_pos())
 		pygame.display.flip()
 		clock.tick()
 		world.utc = pygame.time.get_ticks() / 1000
