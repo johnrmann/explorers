@@ -5,7 +5,6 @@ from enum import Enum
 
 TILE_WIDTH = 48
 TILE_HEIGHT = TILE_WIDTH // 2
-TILE_Z = 48 // 8
 
 ZOOMS = [TILE_WIDTH / 2, TILE_WIDTH, TILE_WIDTH * 2]
 
@@ -76,7 +75,13 @@ class Viewport(object):
 
     @property
     def tile_z(self):
-        return self.tile_width / 8
+        w2 = (self.tile_width/2)**2
+        h2 = (self.tile_height/2)**2
+        return math.sqrt(w2 + h2)
+
+    @property
+    def terrain_z(self):
+        return self.tile_z / 8
     
     def change_zoom(self, delta):
         self._zoom_idx = min(max(0, self._zoom_idx + delta), len(ZOOMS) - 1)

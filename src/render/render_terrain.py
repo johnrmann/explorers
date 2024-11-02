@@ -14,7 +14,7 @@ def polygons(vp, terrain, tile):
 	h = terrain.map[y][x]
 	tx_screen, ty_screen = tile_coords_to_screen_coords(tile, vp)
 	bottom = tile_polygon(tx_screen, ty_screen, vp)
-	top = height_offset_tile(bottom, h, vp)
+	top = height_offset_tile(bottom, h / 8, vp)
 	return box_between_tiles(top, bottom)
 
 class RenderTerrain(object):
