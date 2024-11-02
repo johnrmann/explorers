@@ -1,5 +1,7 @@
 from collections import deque
 
+from src.math.direction import *
+
 STEP = [-1, 0, 1]
 
 def adj_cells(d, p, loop_x = True, loop_y = False, diag = False):
@@ -14,21 +16,19 @@ def adj_cells(d, p, loop_x = True, loop_y = False, diag = False):
 	w, h = d
 	x, y = p
 	qs = []
-	for dx in STEP:
-		for dy in STEP:
-			if dx + dy == 0:
-				continue
-			if abs(dx) + abs(dy) == 2 and not diag:
-				continue
-			x2 = x + dx
-			y2 = y + dy
-			if not loop_x and (x2 >= w or x2 < 0):
-				continue
-			if not loop_y and (y2 >= h or y2 < 0):
-				continue
-			x2 = x2 % w
-			y2 = y2 % h
-			qs.append((x2, y2))
+	for dcn in Direction:
+		if not diag and is_direction_diagonal(dcn):
+			continue
+		dx, dy = direction_to_delta(dcn)
+		x2 = x + dx
+		y2 = y + dy
+		if not loop_x and (x2 >= w or x2 < 0):
+			continue
+		if not loop_y and (y2 >= h or y2 < 0):
+			continue
+		x2 = x2 % w
+		y2 = y2 % h
+		qs.append((x2, y2))
 	return qs
 
 def bool_adj_from_labels(matrix, n_labels, loop_x = True, loop_y = False, diag = False):

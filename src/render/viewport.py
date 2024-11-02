@@ -1,7 +1,7 @@
 import math
 import pygame
 
-from enum import Enum
+from src.math.direction import Direction, direction_to_delta
 
 TILE_WIDTH = 48
 TILE_HEIGHT = TILE_WIDTH // 2
@@ -20,23 +20,6 @@ def pygame_key_to_delta_zoom(key):
 		return -1
 	return 0
 
-class Direction(Enum):
-	"""
-	Represents a direction that we can move. The cardinal directions are
-	grouped together for convenience since there are cases where we use
-	them and do not use diagonals.
-	"""
-	# Cardinals
-	NORTH = 0
-	EAST = 1
-	SOUTH = 2
-	WEST = 3
-	# Diagonals
-	NORTHEAST = 4
-	SOUTHEAST = 5
-	SOUTHWEST = 6
-	NORTHWEST = 7
-
 def pygame_key_to_camdir(key):
 	"""
 	Converts a key press to which direction the camera should move.
@@ -50,25 +33,6 @@ def pygame_key_to_camdir(key):
 	elif key == pygame.K_LEFT:
 		return Direction.SOUTHWEST
 	return None
-
-def camera_direction_to_delta(camdir: Direction):
-	if camdir == Direction.NORTH:
-		return (0, -1)
-	elif camdir == Direction.NORTHEAST:
-		return (1, -1)
-	elif camdir == Direction.EAST:
-		return (1, 0)
-	elif camdir == Direction.SOUTHEAST:
-		return (1, 1)
-	elif camdir == Direction.SOUTH:
-		return (0, 1)
-	elif camdir == Direction.SOUTHWEST:
-		return (-1, 1)
-	elif camdir == Direction.WEST:
-		return (-1, 0)
-	elif camdir == Direction.NORTHWEST:
-		return (-1, -1)
-	raise BaseException("Unknown camera direction")
 
 class Viewport(object):
 	_zoom_idx = 1
@@ -103,7 +67,7 @@ class Viewport(object):
 		if not camdir:
 			return
 
-		dx,dy = camera_direction_to_delta(camdir)
+		dx,dy = direction_to_delta(camdir)
 		cx,cy = self.camera_pos
 		cx2,cy2 = (cx + dx, cy + dy)
 
