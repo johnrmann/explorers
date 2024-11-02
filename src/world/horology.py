@@ -99,5 +99,5 @@ class Horology(object):
 CENTURIA = Horology(
 	minutes_in_day=100,
 	days_in_year=12,
-	tilt_deg=45,
+	tilt_deg=0,
 )

@@ -9,4 +9,4 @@ class Actor(GameObject):
         self.pos = pos
     
     def image_path(self):
-        return "assets/img/astronaut-cropped.png"
+        return "assets/img/astronaut-cropped2.png"
