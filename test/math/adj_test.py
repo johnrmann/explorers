@@ -89,7 +89,6 @@ class AdjTest(unittest.TestCase):
 		)
 	
 	def test__select_adj_degree__neighbors(self):
-		print(select_adj_degree(SIMPLE_B_ADJ, 0, 1))
 		self.assertEqual(
 			select_adj_degree(SIMPLE_B_ADJ, 0, 1),
 			set([0, 1])

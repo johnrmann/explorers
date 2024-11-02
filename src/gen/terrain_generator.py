@@ -5,6 +5,7 @@ import random
 from ..world.terrain import Terrain
 from src.math.voronoi import make_voronoi
 from src.math.adj import select_adj_degree, bool_adj_from_labels
+from src.math.smooth import smooth_matrix
 
 TERRAIN_X = 128
 TERRAIN_Y = TERRAIN_X // 2
@@ -41,6 +42,8 @@ class TerrainGenerator(object):
 			for sea_label in to_set_sea:
 				self._set_height(voronoi, sea_label, 2)
 			remaining -= to_set_sea | to_set_land
+		
+		self.terrain = smooth_matrix(self.terrain)
 	
 	def _set_height(self, voronoi, label, h):
 		for y in range(len(self.terrain)):
