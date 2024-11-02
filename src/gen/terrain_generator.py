@@ -35,7 +35,7 @@ class TerrainGenerator(object):
         y = height // 2
         x = width // 2
         s = LANDING_SIDE_LENGTH // 2
-        z = self.terrain[y][x]
+        z = 2
         for dx in range(x-s,x+s):
             for dy in range(y-s,y+s):
                 self.terrain[dy][dx] = z

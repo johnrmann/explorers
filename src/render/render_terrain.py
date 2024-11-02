@@ -2,52 +2,20 @@ import pygame
 import math
 
 from ..world.terrain import Terrain
-from src.render.viewport import Viewport, TILE_WIDTH, TILE_HEIGHT, TILE_Z
+from src.render.viewport import Viewport
+from src.render.utils import *
 
 GROUND_COLOR = (200, 0, 0)
-WALL_COLOR = (100, 0, 0)
-
-def tile_coords_to_global_screen_coords(x, y, vp: Viewport):
-    """
-    Returns the center coordinates of this tile on an infinite screen.
-    """
-    screen_x = (x - y) * (vp.tile_width // 2)
-    screen_y = (x + y) * (vp.tile_height // 2)
-    return (screen_x, screen_y)
-
-def tile_coords_to_screen_coords(tile, vp: Viewport):
-    """
-    tile_x, tile_y = 0, 0 and camera_x, camera_y = 0, 0 -> 
-    """
-    win_width, win_height = pygame.display.get_window_size()
-    x,y = tile
-    cx,cy = vp.camera_pos
-    cx_screen, cy_screen = tile_coords_to_global_screen_coords(cx,cy,vp)
-    x2,y2 = tile_coords_to_global_screen_coords(x, y, vp)
-    return (
-        x2 + (win_width // 2) - cx_screen,
-        y2 + (win_height // 2) - cy_screen,
-    )
-
-def tile_polygon(x, y, vp: Viewport):
-    return [
-        (x, y - vp.tile_height // 2),
-        (x + vp.tile_width // 2, y),
-        (x, y + vp.tile_height // 2),
-        (x - vp.tile_width // 2, y)
-    ]
+WALL_COLOR_1 = (100, 0, 0)
+WALL_COLOR_2 = (50, 0, 0)
 
 def polygons(vp, terrain, tile):
     x,y = tile
     h = terrain.map[y][x]
     tx_screen, ty_screen = tile_coords_to_screen_coords(tile, vp)
     bottom = tile_polygon(tx_screen, ty_screen, vp)
-    top = [(p[0], p[1] - h * TILE_Z) for p in bottom]
-    return (
-        top,
-        [top[3], top[2], bottom[2], bottom[3]],
-        [top[2], top[1], bottom[1], bottom[2]]
-    )
+    top = height_offset_tile(bottom, h, vp)
+    return box_between_tiles(top, bottom)
 
 class RenderTerrain(object):
     def __init__(self, window, terrain: Terrain, vp: Viewport):
@@ -60,13 +28,6 @@ class RenderTerrain(object):
         if top:
             pygame.draw.polygon(self.window, GROUND_COLOR, top)
         if left_wall:
-            pygame.draw.polygon(self.window, WALL_COLOR, left_wall)
+            pygame.draw.polygon(self.window, WALL_COLOR_1, left_wall)
         if right_wall:
-            pygame.draw.polygon(self.window, WALL_COLOR, right_wall)
-    
-    def render(self):
-        self.window.fill((0,0,200))
-        for x in self.vp.get_x_range():
-            for y in self.vp.get_y_range():
-                p = (x,y)
-                self.render_tile(p)
+            pygame.draw.polygon(self.window, WALL_COLOR_2, right_wall)

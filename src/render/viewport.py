@@ -73,6 +73,10 @@ class Viewport(object):
     @property
     def tile_height(self):
         return self.tile_width / 2
+
+    @property
+    def tile_z(self):
+        return self.tile_width / 8
     
     def change_zoom(self, delta):
         self._zoom_idx = min(max(0, self._zoom_idx + delta), len(ZOOMS) - 1)
