@@ -95,3 +95,9 @@ class Horology(object):
 		_, f_year = self.utc_to_planet_time_fracs(utc)
 		local = self.local_time_at_longitude(utc, long)
 		return self._brightness(local, f_year, lat)
+
+CENTURIA = Horology(
+	minutes_in_day=100,
+	days_in_year=12,
+	tilt_deg=45,
+)
