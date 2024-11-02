@@ -16,7 +16,7 @@ def render_gameobject(
 ):
     x,y = tile_coords_to_screen_coords(go.pos, vp)
     bottom = height_offset_tile(tile_polygon(x, y, vp), height / 8, vp)
-    if image_map[go.image_path()]:
+    if go.image_path() in image_map:
         img = image_map[go.image_path()]
         draw_rect = stand_rect_on_tile(img.get_rect(), bottom)
         window.blit(img, draw_rect)
