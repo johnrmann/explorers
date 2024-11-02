@@ -7,8 +7,8 @@ from src.render.viewport import Viewport, pygame_key_to_camdir, pygame_key_to_de
 
 pygame.init()
 
-WINDOW_WIDTH = 1024
-WINDOW_HEIGHT = 512
+WINDOW_WIDTH = 1920
+WINDOW_HEIGHT = 1080
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption("Explorers")
@@ -24,7 +24,7 @@ def make_world():
 	"""
 	terrain = make_terrain()
 	world = World(terrain)
-	world.new_player_character(terrain.center())
+	world.new_player_character(terrain.center)
 	return world
 
 def main():
@@ -45,6 +45,7 @@ def main():
 		render.render()
 		pygame.display.flip()
 		clock.tick(60)
+		world.utc += 1
 	
 	pygame.quit()
 

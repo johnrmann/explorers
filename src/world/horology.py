@@ -1,5 +1,9 @@
+import math
+
 EARTH_DAY_LENGTH = 24 * 60
 EARTH_YEAR_LENGTH = 360
+
+EARTH_TILT = 23.0
 
 class Horology(object):
 	"""
@@ -15,14 +19,29 @@ class Horology(object):
 
 	minutes_in_day: int
 	days_in_year: int
+	tilt_deg: float
 
 	def __init__(
 		self,
 		minutes_in_day = EARTH_DAY_LENGTH,
 		days_in_year = EARTH_YEAR_LENGTH,
+		tilt_deg = None,
+		tilt_rad = None,
 	):
+		if tilt_deg != None and tilt_rad != None:
+			raise "Planetary tilt must be defined in either rad or deg, not both"
+		elif tilt_rad != None:
+			self.tilt_deg = math.degrees(tilt_rad)
+		elif tilt_deg != None:
+			self.tilt_deg = tilt_deg
+		else:
+			self.tilt_deg = EARTH_TILT
 		self.minutes_in_day = minutes_in_day
 		self.days_in_year = days_in_year
+	
+	@property
+	def tilt_rad(self):
+		return math.radians(self.tilt_deg)
 
 	@property
 	def minutes_in_year(self):
@@ -59,3 +78,20 @@ class Horology(object):
 		if adj_day < 0:
 			return 1 + adj_day
 		return adj_day
+
+	def _brightness(self, local_time: float, f_year: float, lat: float):
+		solar_noon_offset = 0.5 * math.sin(f_year * 2 * math.pi)
+		solar_noon_offset *= math.sin(self.tilt_rad)
+		solar_noon_offset *= lat
+
+		adj_time = (local_time - solar_noon_offset) % 1.0
+		day_night_factor = math.cos(adj_time * 2 * math.pi)
+		seasonal_factor = math.cos(f_year * 2 * math.pi) * math.sin(self.tilt_rad) * lat
+
+		return max(0, min(1, 0.5 + (0.5 * (day_night_factor + seasonal_factor))))
+
+	def brightness(self, utc: int, latLong):
+		lat, long = latLong
+		_, f_year = self.utc_to_planet_time_fracs(utc)
+		local = self.local_time_at_longitude(utc, long)
+		return self._brightness(local, f_year, lat)

@@ -63,8 +63,8 @@ class Viewport(object):
 
     def __init__(self, window_dims, terrain):
         self.window_dims = window_dims
-        self.terrain_width, self.terrain_height = terrain.width(), terrain.height()
-        self.camera_pos = terrain.center()
+        self.terrain_width, self.terrain_height = terrain.width, terrain.height
+        self.camera_pos = terrain.center
     
     @property
     def tile_width(self):
