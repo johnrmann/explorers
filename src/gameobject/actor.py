@@ -7,3 +7,6 @@ class Actor(GameObject):
     def __init__(self, pos=(0,0)):
         super()
         self.pos = pos
+    
+    def image_path(self):
+        return "assets/img/astronaut-cropped.png"

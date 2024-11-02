@@ -44,8 +44,8 @@ def main():
 				vp.change_zoom(d_zoom)
 		render.render()
 		pygame.display.flip()
-		clock.tick(60)
-		world.utc += 1
+		clock.tick()
+		world.utc = pygame.time.get_ticks() // 1000
 	
 	pygame.quit()
 

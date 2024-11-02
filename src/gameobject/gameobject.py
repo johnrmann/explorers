@@ -12,3 +12,9 @@ class GameObject(object):
         self.pos = pos
         self.size = size
     
+    def image_path(self):
+        """
+        Override this to specify an image to render.
+        """
+        return None
+    
