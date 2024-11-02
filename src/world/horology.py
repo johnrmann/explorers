@@ -5,6 +5,8 @@ EARTH_YEAR_LENGTH = 360
 
 EARTH_TILT = 23.0
 
+CONTRA_ARG_MSG = "Planetary tilt must be defined in rad xor deg"
+
 class Horology(object):
 	"""
 	Properites of time on the planet we're colonizing.
@@ -28,11 +30,11 @@ class Horology(object):
 		tilt_deg = None,
 		tilt_rad = None,
 	):
-		if tilt_deg != None and tilt_rad != None:
-			raise "Planetary tilt must be defined in either rad or deg, not both"
-		elif tilt_rad != None:
+		if tilt_deg is not None and tilt_rad is not None:
+			raise AttributeError(CONTRA_ARG_MSG)
+		elif tilt_rad is not None:
 			self.tilt_deg = math.degrees(tilt_rad)
-		elif tilt_deg != None:
+		elif tilt_deg is not None:
 			self.tilt_deg = tilt_deg
 		else:
 			self.tilt_deg = EARTH_TILT
@@ -41,10 +43,17 @@ class Horology(object):
 	
 	@property
 	def tilt_rad(self):
+		"""
+		Axial tilt in radians.
+		"""
 		return math.radians(self.tilt_deg)
 
 	@property
 	def minutes_in_year(self):
+		"""
+		Number of minutes in a year. Since minutes per day and days per year
+		are defined separately, guaranteed to be a nice number.
+		"""
 		return self.minutes_in_day * self.days_in_year
 
 	def utc_to_planet_time_fracs(self, utc: float):
@@ -90,8 +99,11 @@ class Horology(object):
 
 		return max(0, min(1, 0.5 + (0.5 * (day_night_factor + seasonal_factor))))
 
-	def brightness(self, utc: float, latLong):
-		lat, long = latLong
+	def brightness(self, utc: float, lat_long):
+		"""
+		Calculates how bright it is at the given UTC and planet coordinates.
+		"""
+		lat, long = lat_long
 		_, f_year = self.utc_to_planet_time_fracs(utc)
 		local = self.local_time_at_longitude(utc, long)
 		return self._brightness(local, f_year, lat)

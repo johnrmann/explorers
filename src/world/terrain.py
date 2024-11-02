@@ -16,7 +16,7 @@ class Terrain(object):
 		h = len(self.map)
 		return (w // 2, h // 2)
 	
-	def latLong(self, p):
+	def lat_long(self, p):
 		x,y = p
 		cent_x, cent_y = self.center
 		dy = cent_y - y

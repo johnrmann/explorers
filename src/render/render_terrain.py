@@ -29,8 +29,8 @@ class RenderTerrain(object):
 		return self.world.terrain
 
 	def render_tile(self, p):
-		latLong = self.terrain.latLong(p)
-		bness = self.world.horology.brightness(self.world.utc, latLong)
+		lat_long = self.terrain.lat_long(p)
+		bness = self.world.horology.brightness(self.world.utc, lat_long)
 		bness2 = map_range(bness, (0, 1), (0.2, 1))
 		top, left_wall, right_wall = polygons(self.vp, self.terrain, p)
 		if top:
