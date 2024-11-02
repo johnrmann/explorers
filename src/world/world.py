@@ -6,7 +6,7 @@ from src.gameobject.actor import Actor
 
 class World(object):
     def __init__(self, terrain: Terrain, horology = CENTURIA):
-        self.utc = 0
+        self.utc = 0.0
         self.terrain = terrain
         self.horology = horology
         self.game_objects = []

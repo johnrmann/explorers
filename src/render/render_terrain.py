@@ -4,6 +4,7 @@ import math
 from ..world.world import World
 from src.render.viewport import Viewport
 from src.render.utils import *
+from src.math.map_range import map_range
 
 GROUND_COLOR = (200, 0, 0)
 WALL_COLOR_1 = (100, 0, 0)
@@ -30,13 +31,14 @@ class RenderTerrain(object):
 	def render_tile(self, p):
 		latLong = self.terrain.latLong(p)
 		bness = self.world.horology.brightness(self.world.utc, latLong)
+		bness2 = map_range(bness, (0, 1), (0.2, 1))
 		top, left_wall, right_wall = polygons(self.vp, self.terrain, p)
 		if top:
-			color = scale_color(GROUND_COLOR, bness)
+			color = scale_color(GROUND_COLOR, bness2)
 			pygame.draw.polygon(self.window, color, top)
 		if left_wall:
-			color = scale_color(WALL_COLOR_1, bness)
+			color = scale_color(WALL_COLOR_1, bness2)
 			pygame.draw.polygon(self.window, color, left_wall)
 		if right_wall:
-			color = scale_color(WALL_COLOR_2, bness)
+			color = scale_color(WALL_COLOR_2, bness2)
 			pygame.draw.polygon(self.window, color, right_wall)

@@ -47,7 +47,7 @@ class Horology(object):
 	def minutes_in_year(self):
 		return self.minutes_in_day * self.days_in_year
 
-	def utc_to_planet_time_fracs(self, utc: int):
+	def utc_to_planet_time_fracs(self, utc: float):
 		"""
 		Returns a tuple of fractions (0-0.999, 0-0.999) representing
 		how far along we are in the (day, year). Very useful for sun
@@ -56,7 +56,7 @@ class Horology(object):
 		minute, day, _ = self.utc_to_planet_calendar(utc)
 		return (minute / self.minutes_in_day, day / self.days_in_year)
 
-	def utc_to_planet_calendar(self, utc: int):
+	def utc_to_planet_calendar(self, utc: float):
 		"""
 		Converts UTC time to a date in the planet's calendar,
 		as a (minute, day, year) tuple.
@@ -66,7 +66,7 @@ class Horology(object):
 		year = utc // self.minutes_in_year
 		return (minute, day, year)
 	
-	def local_time_at_longitude(self, utc: int, longitude: float) -> float:
+	def local_time_at_longitude(self, utc: float, longitude: float) -> float:
 		"""
 		Returns a fraction between 0 and 0.99999... of the "local time"
 		(temporal distance from high noon) at the given UTC and longitude
@@ -90,7 +90,7 @@ class Horology(object):
 
 		return max(0, min(1, 0.5 + (0.5 * (day_night_factor + seasonal_factor))))
 
-	def brightness(self, utc: int, latLong):
+	def brightness(self, utc: float, latLong):
 		lat, long = latLong
 		_, f_year = self.utc_to_planet_time_fracs(utc)
 		local = self.local_time_at_longitude(utc, long)

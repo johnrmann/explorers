@@ -45,7 +45,7 @@ def main():
 		render.render()
 		pygame.display.flip()
 		clock.tick()
-		world.utc = pygame.time.get_ticks() // 1000
+		world.utc = pygame.time.get_ticks() / 1000
 	
 	pygame.quit()
 
