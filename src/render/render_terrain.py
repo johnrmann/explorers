@@ -44,11 +44,11 @@ class RenderTerrain(object):
 
 		should_render_left_wall = self.terrain.height_delta(
 			p,
-			left_wall_direction(DEFAULT_CAMERA_ORIENTATION),
+			left_wall_direction(self.vp.camera_orientation),
 		)
 		should_render_right_wall = self.terrain.height_delta(
 			p,
-			right_wall_direction(DEFAULT_CAMERA_ORIENTATION),
+			right_wall_direction(self.vp.camera_orientation),
 		)
 		if left_wall and should_render_left_wall:
 			color = scale_color(WALL_COLOR_1, bness2)
@@ -59,11 +59,11 @@ class RenderTerrain(object):
 
 		should_render_left_ridge = self.terrain.height_delta(
 			p,
-			left_ridge_direction(DEFAULT_CAMERA_ORIENTATION),
+			left_ridge_direction(self.vp.camera_orientation),
 		)
 		should_render_right_ridge = self.terrain.height_delta(
 			p,
-			right_ridge_direction(DEFAULT_CAMERA_ORIENTATION)
+			right_ridge_direction(self.vp.camera_orientation)
 		)
 		if should_render_left_ridge:
 			color = scale_color(WALL_COLOR_1, bness2)

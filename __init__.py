@@ -3,7 +3,7 @@ import pygame
 from src.gen.terrain_generator import TerrainGenerator
 from src.world.world import World
 from src.render.render import Render
-from src.render.viewport import Viewport, pygame_key_to_camdir, pygame_key_to_delta_zoom
+from src.render.viewport import Viewport, pygame_key_to_camdir, pygame_key_to_delta_zoom, pygame_key_to_delta_camera_rotate
 
 pygame.init()
 
@@ -40,8 +40,10 @@ def main():
 			if event.type == pygame.KEYDOWN:
 				d_camdir = pygame_key_to_camdir(event.key)
 				d_zoom = pygame_key_to_delta_zoom(event.key)
+				d_rotate = pygame_key_to_delta_camera_rotate(event.key)
 				vp.move_camera(d_camdir)
 				vp.change_zoom(d_zoom)
+				vp.rotate_camera(d_rotate)
 		render.render()
 		render.render_terrain.highlight_tile_at_screen_pos(pygame.mouse.get_pos())
 		pygame.display.flip()

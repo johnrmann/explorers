@@ -27,16 +27,15 @@ class Render(object):
 	
 	def render(self):
 		self.window.fill((0,0,200))
-		for x in self.vp.get_x_range():
-			for y in self.vp.get_y_range():
-				p = (x,y)
-				self.render_terrain.render_tile(p)
-				if self.game_object_at(p):
-					h = self.world.terrain.map[y][x]
-					render_gameobject(
-						window=self.window,
-						vp=self.vp,
-						go=self.game_object_at(p),
-						height=h,
-						image_map=self.images
-					)
+		for p in self.vp.get_draw_points():
+			(x,y) = p
+			self.render_terrain.render_tile(p)
+			if self.game_object_at(p):
+				h = self.world.terrain.map[y][x]
+				render_gameobject(
+					window=self.window,
+					vp=self.vp,
+					go=self.game_object_at(p),
+					height=h,
+					image_map=self.images
+				)

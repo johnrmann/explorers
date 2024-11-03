@@ -1,7 +1,8 @@
 import math
 import pygame
 
-from src.math.direction import Direction, direction_to_delta
+from src.math.direction import Direction, direction_to_delta, direction_rotate_90
+from src.math.cart_prod import spatial_cart_prod
 
 TILE_WIDTH = 48
 TILE_HEIGHT = TILE_WIDTH // 2
@@ -18,6 +19,13 @@ def pygame_key_to_delta_zoom(key):
 		return 1
 	elif key == pygame.K_KP_MINUS or key == pygame.K_MINUS:
 		return -1
+	return 0
+
+def pygame_key_to_delta_camera_rotate(key):
+	if key == pygame.K_LEFTBRACKET:
+		return -1
+	elif key == pygame.K_RIGHTBRACKET:
+		return 1
 	return 0
 
 def pygame_key_to_camdir(key):
@@ -45,6 +53,10 @@ class Viewport(object):
 		self.camera_pos = terrain.center
 	
 	@property
+	def terrain_dims(self):
+		return (self.terrain_width, self.terrain_height)
+
+	@property
 	def tile_width(self):
 		return ZOOMS[self._zoom_idx]
 	
@@ -63,7 +75,17 @@ class Viewport(object):
 		return self.tile_z / 8
 	
 	def change_zoom(self, delta):
+		if delta == 0:
+			return
 		self._zoom_idx = min(max(0, self._zoom_idx + delta), len(ZOOMS) - 1)
+
+	def rotate_camera(self, delta):
+		if delta == 0:
+			return
+		self.camera_orientation = direction_rotate_90(
+			self.camera_orientation,
+			quarter_turns=delta
+		)
 	
 	def move_camera(self, camdir: Direction):
 		if not camdir:
@@ -110,4 +132,17 @@ class Viewport(object):
 			math.ceil(cy + (win_height / self.tile_height)) + SAFETY
 		)
 		return range(top, bottom)
-	
+
+	def get_draw_points(self):
+		xr = self.get_x_range()
+		yr = self.get_y_range()
+		if self.camera_orientation == Direction.NORTHWEST:
+			return spatial_cart_prod(xr, yr)
+		elif self.camera_orientation == Direction.NORTHEAST:
+			return spatial_cart_prod(reversed(xr), yr)
+		elif self.camera_orientation == Direction.SOUTHEAST:
+			return spatial_cart_prod(reversed(xr), reversed(yr))
+		elif self.camera_orientation == Direction.SOUTHWEST:
+			return spatial_cart_prod(xr, reversed(yr))
+		else:
+			raise ValueError("Unknown camera orientation")

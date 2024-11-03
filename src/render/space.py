@@ -10,17 +10,17 @@ def _tile_screen_transform(p, orientation: Direction):
 	if orientation == Direction.NORTHWEST:
 		return (x - y, x + y)
 	elif orientation == Direction.NORTHEAST:
-		return (y - x, x + y)
+		return (x + y, y - x)
 	elif orientation == Direction.SOUTHEAST:
 		return (y - x, -(x + y))
 	elif orientation == Direction.SOUTHWEST:
-		return (x - y, -(x + y))
+		return (-(x + y), -(y - x))
 	raise ArithmeticError("Unsupported orientation.")
 
 def _global_tile_to_screen_coords(p, vp: Viewport):
 	half_w = vp.tile_width // 2
 	half_h = vp.tile_height // 2
-	tx, ty = _tile_screen_transform(p, Direction.NORTHWEST)
+	tx, ty = _tile_screen_transform(p, vp.camera_orientation)
 	screen_x = tx * half_w
 	screen_y = ty * half_h
 	return (screen_x, screen_y)
