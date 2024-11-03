@@ -48,6 +48,10 @@ class Terrain(object):
 		dy = cent_y - y
 		dx = x - cent_x
 		return (dy / self.height, (dx / self.width) * 2)
+
+	def height_at(self, p):
+		x, y = p
+		return self.map[y][x]
 	
 	def height_delta(self, p, direction: Direction):
 		x, y = p

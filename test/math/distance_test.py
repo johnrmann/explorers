@@ -16,6 +16,18 @@ class DistanceTest(unittest.TestCase):
 		q = (1,1)
 		self.assertAlmostEqual(distance(p, q), ROOT_2)
 	
+	def test__manhattan_distance__flat(self):
+		p = (0,0)
+		q1 = (5,0)
+		q2 = (0,5)
+		self.assertEqual(manhattan_distance(p, q1), 5)
+		self.assertEqual(manhattan_distance(p, q2), 5)
+	
+	def test__manhattan_distance__works(self):
+		p = (0,0)
+		q = (5,5)
+		self.assertEqual(manhattan_distance(p, q), 10)
+	
 	def test__planet_distance2__trivial(self):
 		d = (4,4)
 		p = (1,1)
@@ -41,6 +53,20 @@ class DistanceTest(unittest.TestCase):
 		p = (1,1)
 		q = (6,6)
 		self.assertEqual(planet_distance2(p, q, d), 9 + 25)
+	
+	def test__planet_manhattan_distance__trivial(self):
+		d = (4,4)
+		p = (1,1)
+		q = (2,3)
+		self.assertEqual(planet_manhattan_distance(p, q, d), 3)
+	
+	def test__planet_manhattan_distance__loops_x(self):
+		d = (8,8)
+		p = (7,7)
+		q = (0,7)
+		self.assertEqual(planet_manhattan_distance(p, q, d), 1)
+		q = (1,7)
+		self.assertEqual(planet_manhattan_distance(p, q, d), 2)
 	
 	def test__min_planet_distance2(self):
 		d = (8,8)

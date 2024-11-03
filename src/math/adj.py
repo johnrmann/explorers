@@ -4,9 +4,11 @@ from src.math.direction import *
 
 STEP = [-1, 0, 1]
 
-def adj_cells(d, p, loop_x = True, loop_y = False, diag = False):
+def keyed_adj_cells(d, p, loop_x = True, loop_y = False, diag = False):
 	"""
-	Returns an array of cells in a d = (w, h) matrix adjacent to p = (x, y).
+	Returns a dictionary of points such that result[direction] = the cell
+	at that direction relative to p. If it's out of bounds, None will
+	be there instead.
 
 	Optional flags for loop_x/y indicate whether to perform logic modulo
 	dimensions. On a planet, the x-axis is looped, but the y-axis isn't.
@@ -15,7 +17,7 @@ def adj_cells(d, p, loop_x = True, loop_y = False, diag = False):
 	"""
 	w, h = d
 	x, y = p
-	qs = []
+	qs = {}
 	for dcn in Direction:
 		if not diag and is_direction_diagonal(dcn):
 			continue
@@ -28,8 +30,21 @@ def adj_cells(d, p, loop_x = True, loop_y = False, diag = False):
 			continue
 		x2 = x2 % w
 		y2 = y2 % h
-		qs.append((x2, y2))
+		qs[dcn] = (x2, y2)
 	return qs
+
+def adj_cells(d, p, loop_x = True, loop_y = False, diag = False):
+	"""
+	Returns an array of cells in a d = (w, h) matrix adjacent to p = (x, y).
+
+	Optional flags for loop_x/y indicate whether to perform logic modulo
+	dimensions. On a planet, the x-axis is looped, but the y-axis isn't.
+
+	Optional flag to consider diagonal cells in addition to cardinal ones.
+	"""
+	return list(
+		keyed_adj_cells(d, p, loop_x=loop_x, loop_y=loop_y, diag=diag).values()
+	)
 
 def bool_adj_from_labels(matrix, n_labels, loop_x = True, loop_y = False, diag = False):
 	"""

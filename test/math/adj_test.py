@@ -28,6 +28,15 @@ for p in range(3):
 	SIMPLE_B_ADJ[q][p] = True
 
 class AdjTest(unittest.TestCase):
+	def test__keyed_adj_cells__normie(self):
+		d = (3,3)
+		p = (1,1)
+		result = keyed_adj_cells(d, p, loop_x=False)
+		self.assertEqual(result[Direction.NORTH],(1,0))
+		self.assertEqual(result[Direction.EAST],(2,1))
+		self.assertEqual(result[Direction.SOUTH],(1,2))
+		self.assertEqual(result[Direction.WEST],(0,1))
+	
 	def test__adj_cells__normie(self):
 		d = (3,3)
 		p = (1,1)
