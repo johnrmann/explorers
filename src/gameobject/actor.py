@@ -9,6 +9,7 @@ class Actor(GameObject):
 
 	def __init__(self, pos=(0,0)):
 		self.pos = pos
+		self.size = (1,1)
 	
 	def _set_path(self, path):
 		self._path = path

@@ -27,3 +27,6 @@ class World:
 
 	def new_player_character(self, pos):
 		self.game_objects.append(Actor(pos=pos))
+	
+	def add_game_object(self, go: GameObject):
+		self.game_objects.append(go)

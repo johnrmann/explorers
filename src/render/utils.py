@@ -3,14 +3,6 @@ import pygame
 from src.render.viewport import Viewport
 from src.render.space import tile_to_screen_coords
 
-def tile_polygon(x, y, vp: Viewport):
-	return [
-		(x, y - vp.tile_height // 2),
-		(x + vp.tile_width // 2, y),
-		(x, y + vp.tile_height // 2),
-		(x - vp.tile_width // 2, y)
-	]
-
 def height_offset_tile(tile, dh, vp: Viewport):
 	"""
 	Math weirdness - making a tile go up means going to the top of the screen

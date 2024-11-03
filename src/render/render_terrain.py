@@ -7,6 +7,7 @@ from src.render.utils import *
 from src.math.map_range import map_range
 from src.math.direction import *
 from src.render.space import tile_to_screen_coords, screen_to_tile_coords
+from src.tile.tile import tile_polygon
 
 GROUND_COLOR = (200, 0, 0)
 WALL_COLOR_1 = (100, 0, 0)
@@ -14,11 +15,11 @@ WALL_COLOR_2 = (50, 0, 0)
 
 HIGHLIGHT_COLOR = (0, 250, 0)
 
-def polygons(vp, terrain, tile):
+def polygons(vp: Viewport, terrain, tile):
 	x,y = tile
 	h = terrain.map[y][x]
-	tx_screen, ty_screen = tile_to_screen_coords(tile, vp)
-	bottom = tile_polygon(tx_screen, ty_screen, vp)
+	tile_screen = tile_to_screen_coords(tile, vp)
+	bottom = tile_polygon(tile_screen, vp.tile_dimensions)
 	top = height_offset_tile(bottom, h / 8, vp)
 	return box_between_tiles(top, bottom)
 

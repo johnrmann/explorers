@@ -63,6 +63,10 @@ class Viewport(object):
 	@property
 	def tile_height(self):
 		return self.tile_width / 2
+	
+	@property
+	def tile_dimensions(self):
+		return (self.tile_width, self.tile_height)
 
 	@property
 	def tile_z(self):

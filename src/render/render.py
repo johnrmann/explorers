@@ -16,6 +16,7 @@ class Render(object):
 	def _load_images(self):
 		self.images = {}
 		self.images['assets/img/astronaut-cropped.png'] = pygame.image.load('assets/img/astronaut-cropped.png')
+		self.images['assets/img/lander.png'] = pygame.image.load('assets/img/lander.png')
 	
 	def game_object_at(self, p):
 		for go in self.world.game_objects:
@@ -27,15 +28,21 @@ class Render(object):
 	
 	def render(self):
 		self.window.fill((0,0,200))
+
+		go_draw_keys = {}
+		for go in self.world.game_objects:
+			go_draw_keys[go.draw_point(self.vp.camera_orientation)] = go
+		
 		for p in self.vp.get_draw_points():
 			(x,y) = p
 			self.render_terrain.render_tile(p)
-			if self.game_object_at(p):
+			if p in go_draw_keys:
+				go = go_draw_keys[p]
 				h = self.world.terrain.map[y][x]
 				render_gameobject(
 					window=self.window,
 					vp=self.vp,
-					go=self.game_object_at(p),
+					go=go,
 					height=h,
 					image_map=self.images
 				)
