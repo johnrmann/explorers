@@ -1,6 +1,7 @@
 import pygame
 
 from src.render.viewport import Viewport
+from src.render.space import tile_to_screen_coords
 
 def tile_polygon(x, y, vp: Viewport):
 	return [
@@ -32,15 +33,3 @@ def box_between_tiles(top, bottom):
 def scale_color(color, k):
 	r,g,b = color
 	return (k * r, k * g, k * b)
-
-def stand_rect_on_tile(rect, tile):
-	ratio = rect.width / rect.height
-	tile_leftmost = tile[3][0]
-	tile_rightmost = tile[1][0]
-	tile_center_y = (tile[0][1] + tile[2][1]) / 2
-	tile_width = tile_rightmost - tile_leftmost
-	rect_height = tile_width / ratio
-	return pygame.Rect(
-		(tile_leftmost, tile_center_y - rect_height),
-		(tile_width, rect_height)
-	)

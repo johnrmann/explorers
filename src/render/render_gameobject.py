@@ -2,6 +2,7 @@ import pygame
 
 from src.gameobject.gameobject import GameObject
 from src.render.utils import *
+from src.tile.fit_rect import fit_img_rect_on_tile_base
 from src.render.space import tile_to_screen_coords
 
 TOP_COLOR = (0, 0, 200)
@@ -19,8 +20,11 @@ def render_gameobject(
     bottom = height_offset_tile(tile_polygon(x, y, vp), height / 8, vp)
     if go.image_path() in image_map:
         img = image_map[go.image_path()]
-        draw_rect = stand_rect_on_tile(img.get_rect(), bottom)
-        window.blit(img, draw_rect)
+        origin, img_dims = fit_img_rect_on_tile_base(img.get_size(), bottom)
+        window.blit(
+            pygame.transform.scale(img, img_dims),
+            pygame.Rect(origin, img_dims),
+        )
     else:
         top = height_offset_tile(bottom, 1, vp)
         top_poly, left, right = box_between_tiles(top, bottom)

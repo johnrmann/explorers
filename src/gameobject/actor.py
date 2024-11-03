@@ -30,4 +30,4 @@ class Actor(GameObject):
 			self._path_idx += 1
 	
 	def image_path(self):
-		return "assets/img/astronaut-cropped2.png"
+		return "assets/img/astronaut-cropped.png"

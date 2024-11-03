@@ -1,11 +1,10 @@
 from src.world.horology import Horology, CENTURIA
 from src.world.terrain import Terrain
-from src.world.world_stub import WorldStub
 
 from src.gameobject.gameobject import GameObject
 from src.gameobject.actor import Actor
 
-class World(WorldStub):
+class World:
 	def __init__(self, terrain: Terrain, horology = CENTURIA):
 		self.utc = 0.0
 		self.terrain = terrain
