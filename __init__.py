@@ -4,6 +4,7 @@ from src.gen.terrain_generator import TerrainGenerator
 from src.world.world import World
 from src.render.render import Render
 from src.render.viewport import Viewport, pygame_key_to_camdir, pygame_key_to_delta_zoom, pygame_key_to_delta_camera_rotate
+from src.render.space import screen_to_tile_coords
 
 pygame.init()
 
@@ -36,6 +37,7 @@ def main():
 	render = Render(window, world, vp)
 
 	while running:
+		world.player_character.act()
 		for event in pygame.event.get():
 			if event.type == pygame.KEYDOWN:
 				d_camdir = pygame_key_to_camdir(event.key)
@@ -44,6 +46,13 @@ def main():
 				vp.move_camera(d_camdir)
 				vp.change_zoom(d_zoom)
 				vp.rotate_camera(d_rotate)
+			elif event.type == pygame.MOUSEBUTTONDOWN:
+				click_x, click_y = pygame.mouse.get_pos()
+				click_tile = screen_to_tile_coords((click_x, click_y), vp)
+				click_tile = (
+					int(click_tile[0]), int(click_tile[1])
+				)
+				world.player_character.set_destination(world, click_tile)
 		render.render()
 		render.render_terrain.highlight_tile_at_screen_pos(pygame.mouse.get_pos())
 		pygame.display.flip()

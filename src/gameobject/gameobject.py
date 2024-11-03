@@ -1,20 +1,19 @@
 class GameObject(object):
-    """
-    Represents a thing in the game world. Can be a character, a prop, or
-    invisible tiles that can be interacted with.
-    """
+	"""
+	Represents a thing in the game world. Can be a character, a prop, or
+	invisible tiles that can be interacted with.
+	"""
 
-    def __init__(self, pos = (0, 0), size = (1, 1)):
-        """
-        Position is the top left tile that the game object occupies.
-        """
-
-        self.pos = pos
-        self.size = size
-    
-    def image_path(self):
-        """
-        Override this to specify an image to render.
-        """
-        return None
-    
+	def __init__(self, pos = (0, 0), size = (1, 1)):
+		"""
+		Position is the top left tile that the game object occupies.
+		"""
+		self.pos = pos
+		self.size = size
+	
+	def image_path(self):
+		"""
+		Override this to specify an image to render.
+		"""
+		return None
+	
