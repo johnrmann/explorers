@@ -7,6 +7,14 @@ EARTH_TILT = 23.0
 
 CONTRA_ARG_MSG = "Planetary tilt must be defined in rad xor deg"
 
+def utc_string(utc: float, epoch = 0) -> str:
+	"""Converts game time to an earth date."""
+	days = (utc + epoch) // EARTH_DAY_LENGTH
+	date = (days % 30) + 1
+	month = ((days // 30) % 12) + 1
+	year = (days // 30) // 12
+	return f"{year:04d}-{month:02d}-{date:02d}".format(year=year, month=month, date=date)
+
 class Horology(object):
 	"""
 	Properites of time on the planet we're colonizing.

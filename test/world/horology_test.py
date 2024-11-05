@@ -1,6 +1,13 @@
 import unittest
 
-from src.world.horology import Horology
+from src.world.horology import (
+	Horology,
+	utc_string,
+	EARTH_DAY_LENGTH,
+	EARTH_YEAR_LENGTH
+)
+
+EPOCH_YEAR_2500 = 2500 * (EARTH_DAY_LENGTH * EARTH_YEAR_LENGTH)
 
 def earth_horology():
 	return Horology()
@@ -89,6 +96,24 @@ class HorologyTest(unittest.TestCase):
 		self.assertEqual(
 			centuria.local_time_at_longitude(0, -1),
 			0.5,
+		)
+	
+	def test__utc_string(self):
+		self.assertEqual(
+			utc_string(0),
+			"0000-01-01",
+		)
+		self.assertEqual(
+			utc_string(0, EPOCH_YEAR_2500),
+			"2500-01-01",
+		)
+		self.assertEqual(
+			utc_string(((11 * 30) * EARTH_DAY_LENGTH), EPOCH_YEAR_2500),
+			"2500-12-01",
+		)
+		self.assertEqual(
+			utc_string((((11 * 30) + 24) * EARTH_DAY_LENGTH), EPOCH_YEAR_2500),
+			"2500-12-25",
 		)
 
 if __name__ == "__main__":
