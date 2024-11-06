@@ -1,8 +1,8 @@
 import math
 
-from src.math.point import point_plus
+from src.math.vector2 import Vector2
 
-def distance2(p, q):
+def distance2(p, q) -> float:
 	"""
 	Squared distance between two points. Strongly prefer using this over
 	distance, as sqrt is expensive.
@@ -13,42 +13,42 @@ def distance2(p, q):
 	dx = abs(x2 - x1)
 	return (dy * dy) + (dx * dx)
 
-def distance(p, q):
+def distance(p, q) -> float:
 	"""
 	Euclid distance between two points.
 	"""
 	return math.sqrt(distance2(p, q))
 
 def _advanced_manhattan_distance(
-	p,
-	q,
-	d,
+	p: Vector2,
+	q: Vector2,
+	d: Vector2,
 	loop_x = False,
 	loop_y = False,
-):
+) -> float:
 	w, h = d
 	distances = [manhattan_distance(p, q)]
 	if loop_x:
-		q2 = point_plus(q, (w, 0))
-		q3 = point_plus(q, (-w, 0))
+		q2 = Vector2(w, 0) + q
+		q3 = Vector2(-w, 0) + q
 		distances.append(manhattan_distance(p, q2))
 		distances.append(manhattan_distance(p, q3))
 	if loop_y:
-		q2 = point_plus(q, (0, h))
-		q3 = point_plus(q, (0, -h))
+		q2 = Vector2(0, h) + q
+		q3 = Vector2(0, -h) + q
 		distances.append(manhattan_distance(p, q2))
 		distances.append(manhattan_distance(p, q3))
 	return min(distances)
 
-def manhattan_distance(p, q):
+def manhattan_distance(p: Vector2, q: Vector2) -> float:
 	"""
 	Manhattan distance between two points.
 	"""
-	x1,y1 = p
-	x2,y2 = q
-	dx = abs(x1 - x2)
-	dy = abs(y1 - y2)
-	return dx + dy
+	if not isinstance(p, Vector2):
+		px,py = p
+		p = Vector2(px,py)
+	delta = p - q
+	return abs(delta.x) + abs(delta.y)
 
 def planet_distance2(p, q, d):
 	"""
@@ -68,7 +68,7 @@ def planet_distance2(p, q, d):
 	dist3 = distance2(p, q2)
 	return min(dist1, dist2, dist3)
 
-def planet_manhattan_distance(p, q, d):
+def planet_manhattan_distance(p: Vector2, q: Vector2, d: Vector2):
 	"""
 	On a planet, the x-axis is looped.
 	"""

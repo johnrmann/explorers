@@ -1,5 +1,6 @@
 from src.math.direction import Direction
 from src.math.cart_prod import spatial_cart_prod
+from src.math.vector2 import Vector2
 
 class GameObject(object):
 	"""
@@ -13,6 +14,10 @@ class GameObject(object):
 		"""
 		self.pos = pos
 		self.size = size
+	
+	@property
+	def draw_position(self) -> Vector2:
+		return self.pos
 	
 	def x_range(self):
 		"""

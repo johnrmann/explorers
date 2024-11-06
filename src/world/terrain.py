@@ -1,5 +1,6 @@
 from src.math.adj import adj_cells
 from src.math.direction import *
+from src.math.vector2 import Vector2
 
 def make_height_delta():
 	return [0] * 4
@@ -40,7 +41,7 @@ class Terrain(object):
 	def center(self):
 		w = len(self.map[0])
 		h = len(self.map)
-		return (w // 2, h // 2)
+		return Vector2(w // 2, h // 2)
 	
 	def lat_long(self, p):
 		x,y = p

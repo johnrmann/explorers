@@ -2,6 +2,7 @@
 
 import unittest
 
+from src.math.vector2 import Vector2
 from src.math.direction import *
 
 class DirectionTest(unittest.TestCase):
@@ -16,6 +17,12 @@ class DirectionTest(unittest.TestCase):
 		self.assertTrue(is_direction_diagonal(Direction.NORTHWEST))
 		self.assertTrue(is_direction_diagonal(Direction.SOUTHEAST))
 		self.assertTrue(is_direction_diagonal(Direction.SOUTHWEST))
+	
+	def test__delta_to_direction__rejects_weird(self):
+		"""Test that delta to direction rejects zero vectors, or vectors
+		that are not of the form k * (-1,0,1)^2"""
+		self.assertRaises(ValueError, lambda: delta_to_direction(Vector2(0,0)))
+		self.assertRaises(ValueError, lambda: delta_to_direction(Vector2(3,2)))
 
 	def test__direction_rotate_90(self):
 		"""Test that it can handle rotating 90deg."""

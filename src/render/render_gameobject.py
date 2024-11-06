@@ -5,7 +5,6 @@ from src.render.utils import *
 from src.tile.fit_rect import fit_img_rect_on_tile_base
 from src.render.space import tile_to_screen_coords
 from src.tile.tile import tile_polygon
-from src.math.point import point_plus
 
 TOP_COLOR = (0, 0, 200)
 LEFT_COLOR = (0, 0, 100)
@@ -20,7 +19,7 @@ def render_gameobject(
 ):
 	# An "ideal tile" is the position of the tile if there was no terrain.
 	go_size = max(go.size[0], go.size[1])
-	go_center = go.pos
+	go_center = go.draw_position
 	screen_pos = tile_to_screen_coords(go_center, vp)
 	ideal_tile = tile_polygon(screen_pos, vp.tile_dimensions, go_size)
 

@@ -1,6 +1,7 @@
 from collections import deque
 
 from src.math.direction import *
+from src.math.vector2 import Vector2
 
 STEP = [-1, 0, 1]
 
@@ -30,7 +31,7 @@ def keyed_adj_cells(d, p, loop_x = True, loop_y = False, diag = False):
 			continue
 		x2 = x2 % w
 		y2 = y2 % h
-		qs[dcn] = (x2, y2)
+		qs[dcn] = Vector2(x2, y2)
 	return qs
 
 def adj_cells(d, p, loop_x = True, loop_y = False, diag = False):

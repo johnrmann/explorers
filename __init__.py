@@ -5,7 +5,7 @@ from src.world.world import World
 from src.render.render import Render
 from src.render.viewport import Viewport, pygame_key_to_camdir, pygame_key_to_delta_zoom, pygame_key_to_delta_camera_rotate
 from src.render.space import screen_to_tile_coords
-from src.math.point import point_plus
+from src.math.vector2 import Vector2
 from src.gameobject.lander import Lander
 
 pygame.init()
@@ -28,7 +28,7 @@ def make_world():
 	terrain = make_terrain()
 	world = World(terrain)
 	world.new_player_character(terrain.center)
-	lander_pos = point_plus(terrain.center, (0, -10))
+	lander_pos = terrain.center + Vector2(0, -10)
 	lander = Lander(pos=lander_pos)
 	world.add_game_object(lander)
 	return world
@@ -42,7 +42,7 @@ def main():
 	render = Render(window, world, vp)
 
 	while running:
-		world.player_character.act()
+		world.player_character.act(1 / 25)
 		for event in pygame.event.get():
 			if event.type == pygame.KEYDOWN:
 				d_camdir = pygame_key_to_camdir(event.key)

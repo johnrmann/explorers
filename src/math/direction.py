@@ -4,6 +4,8 @@ Enums and functions useful for translation in space.
 
 from enum import Enum
 
+from src.math.vector2 import Vector2
+
 class Direction(Enum):
 	"""
 	Represents a direction that we can move. The cardinal directions are
@@ -97,6 +99,22 @@ def direction_to_delta(direction: Direction):
 	elif direction == Direction.NORTHWEST:
 		return (-1, -1)
 	raise AttributeError("Unknown direction")
+
+def delta_to_direction(v: Vector2) -> Direction:
+	"""
+	Takes in a (dx, dy) vector and returns the compass direction it's
+	pointing in. If no direction exists in the enumeration, an error is thrown.
+	"""
+	vx, vy = v
+	if vx == 0 and vy < 0:
+		return Direction.NORTH
+	elif vx > 0 and vy == 0:
+		return Direction.EAST
+	elif vx == 0 and vy > 0:
+		return Direction.SOUTH
+	elif vx < 0 and vy == 0:
+		return Direction.WEST
+	raise ValueError("Unknown direction")
 
 def is_direction_diagonal(direction: Direction):
 	"""
