@@ -9,3 +9,7 @@ __pycache__/
 
 # Python stuff
 .coverage
+
+# Development stuff
+.vscode
+
