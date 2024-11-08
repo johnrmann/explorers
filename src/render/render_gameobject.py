@@ -3,7 +3,6 @@ import pygame
 from src.gameobject.gameobject import GameObject
 from src.render.utils import *
 from src.tile.fit_rect import fit_img_rect_on_tile_base
-from src.render.space import tile_to_screen_coords
 from src.tile.tile import tile_polygon
 
 TOP_COLOR = (0, 0, 200)
@@ -20,7 +19,7 @@ def render_gameobject(
 	# An "ideal tile" is the position of the tile if there was no terrain.
 	go_size = max(go.size[0], go.size[1])
 	go_center = go.draw_position
-	screen_pos = tile_to_screen_coords(go_center, vp)
+	screen_pos = vp.tile_to_screen_coords(go_center)
 	ideal_tile = tile_polygon(screen_pos, vp.tile_dimensions, go_size)
 
 	# Now, move up by height to find the terrain start point.

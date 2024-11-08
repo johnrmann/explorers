@@ -1,8 +1,20 @@
 import math
-import pygame
 
-from src.math.direction import Direction, direction_to_delta, direction_rotate_90
+from src.ctrl.event_id import (
+	EVENT_CAMERA_MOVE,
+	EVENT_CAMERA_ZOOM,
+	EVENT_CAMERA_ROTATE,
+	EVENT_MOUSE_CLICK_WORLD
+)
+
+from src.math.direction import (
+	Direction,
+	direction_to_delta,
+	direction_rotate_90
+)
 from src.math.cart_prod import spatial_cart_prod
+from src.mgmt.listener import Listener
+from src.render.space import tile_screen_transform
 
 TILE_WIDTH = 48
 TILE_HEIGHT = TILE_WIDTH // 2
@@ -11,46 +23,37 @@ ZOOMS = [TILE_WIDTH / 4, TILE_WIDTH / 2, TILE_WIDTH, TILE_WIDTH * 2]
 
 SAFETY = 3
 
-def pygame_key_to_delta_zoom(key):
-	"""
-	Converts a key press to whether we should zoom in or zoom out.
-	"""
-	if key == pygame.K_KP_PLUS or key == pygame.K_PLUS:
-		return 1
-	elif key == pygame.K_KP_MINUS or key == pygame.K_MINUS:
-		return -1
-	return 0
-
-def pygame_key_to_delta_camera_rotate(key):
-	if key == pygame.K_LEFTBRACKET:
-		return -1
-	elif key == pygame.K_RIGHTBRACKET:
-		return 1
-	return 0
-
-def pygame_key_to_camdir(key):
-	"""
-	Converts a key press to which direction the camera should move.
-	"""
-	if key == pygame.K_UP:
-		return Direction.NORTHWEST
-	elif key == pygame.K_DOWN:
-		return Direction.SOUTHEAST
-	elif key == pygame.K_RIGHT:
-		return Direction.NORTHEAST
-	elif key == pygame.K_LEFT:
-		return Direction.SOUTHWEST
-	return None
-
-class Viewport(object):
+class Viewport(Listener):
 	_zoom_idx = 1
 
 	camera_orientation = Direction.NORTHWEST
 
 	def __init__(self, window_dims, terrain):
+		from src.mgmt.singletons import get_event_manager
+		self.evt_mgr = get_event_manager()
 		self.window_dims = window_dims
 		self.terrain_width, self.terrain_height = terrain.width, terrain.height
 		self.camera_pos = terrain.center
+		self.evt_mgr.sub(EVENT_CAMERA_MOVE, self)
+		self.evt_mgr.sub(EVENT_CAMERA_ZOOM, self)
+		self.evt_mgr.sub(EVENT_CAMERA_ROTATE, self)
+		self.evt_mgr.sub(EVENT_MOUSE_CLICK_WORLD, self)
+	
+	def update(self, event_type, data):
+		if event_type == EVENT_CAMERA_MOVE:
+			self.move_camera(data)
+		elif event_type == EVENT_CAMERA_ZOOM:
+			self.change_zoom(data)
+		elif event_type == EVENT_CAMERA_ROTATE:
+			self.rotate_camera(data)
+		elif event_type == EVENT_MOUSE_CLICK_WORLD:
+			# TODO(jm) - i don't think this should go here, maybe explore a
+			# mouse/screen interface class later?
+			click_tile = self.screen_to_tile_coords(data)
+			click_tile = (
+				int(click_tile[0]), int(click_tile[1])
+			)
+			self.evt_mgr.pub("main.character.go", click_tile)
 	
 	@property
 	def terrain_dims(self):
@@ -150,3 +153,60 @@ class Viewport(object):
 			return spatial_cart_prod(xr, reversed(yr))
 		else:
 			raise ValueError("Unknown camera orientation")
+	
+	def tile_to_screen_coords(self, p_tile):
+		"""
+		Converts tile coordinates to screen coordinates.
+		"""
+		win_width, win_height = self.window_dims
+		cx_screen, cy_screen = self.global_tile_to_screen_coords(self.camera_pos)
+		x2,y2 = self.global_tile_to_screen_coords(p_tile)
+		return (
+			x2 + (win_width // 2) - cx_screen,
+			y2 + (win_height // 2) - cy_screen,
+		)
+	
+	def global_tile_to_screen_coords(self, p):
+		half_w = self.tile_width // 2
+		half_h = self.tile_height // 2
+		tx, ty = tile_screen_transform(p, self.camera_orientation)
+		screen_x = tx * half_w
+		screen_y = ty * half_h
+		return (screen_x, screen_y)
+	
+	def screen_to_tile_coords(self, p_screen):
+		"""
+		Converts screen coordinates back into tile coordinates, considering
+		camera orientation.
+		"""
+		screen_x, screen_y = p_screen
+		win_width, win_height = self.window_dims
+		s_cam_x, s_cam_y = self.global_tile_to_screen_coords(self.camera_pos)
+		
+		# Adjust the screen coordinates relative to the centered camera
+		rel_screen_x = screen_x - (win_width // 2) + s_cam_x
+		rel_screen_y = screen_y - (win_height // 2) + s_cam_y
+
+		half_tw = self.tile_width // 2
+		half_th = self.tile_height // 2
+		
+		# Apply the reverse transformation based on camera orientation
+		if self.camera_orientation == Direction.NORTHWEST:
+			# Default orientation
+			x = (rel_screen_x // half_tw + rel_screen_y // half_th) // 2
+			y = (rel_screen_y // half_th - rel_screen_x // half_tw) // 2
+		elif self.camera_orientation == Direction.NORTHEAST:
+			# 90-degree clockwise rotation
+			x = (rel_screen_y // half_th - rel_screen_x // half_tw) // 2
+			y = (rel_screen_y // half_th + rel_screen_x // half_tw) // 2
+		elif self.camera_orientation == Direction.SOUTHEAST:
+			# 180-degree rotation
+			x = -(rel_screen_x // half_tw + rel_screen_y // half_th) // 2
+			y = -(rel_screen_y // half_th - rel_screen_x // half_tw) // 2
+		elif self.camera_orientation == Direction.SOUTHWEST:
+			# 90-degree counterclockwise rotation
+			x = (rel_screen_x // half_tw - rel_screen_y // half_th) // 2
+			y = -(rel_screen_x // half_tw + rel_screen_y // half_th) // 2
+		else:
+			raise ValueError("Unsupported camera orientation")
+		return (x, y)

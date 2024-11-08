@@ -12,11 +12,13 @@ class GameManager:
 	game_objects: list[GameObject]
 	ticks: int
 	world: World
+	vp = None
 
-	def __init__(self, world: World):
+	def __init__(self, world: World, viewport):
 		self.ticks = 0
 		self.game_objects = []
 		self.world = world
+		self.vp = viewport
 	
 	@property
 	def utc(self) -> float:

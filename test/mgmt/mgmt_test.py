@@ -13,7 +13,7 @@ from test.mgmt.test_objects import (
 
 class MgmtTest(unittest.TestCase):
 	def test__launch(self):
-		game_mgr = GameManager(None)
+		game_mgr = GameManager(None, None)
 
 		# BeginCareful - order matters for assert calls.
 		launchpad = Launchpad()
@@ -41,6 +41,6 @@ class MgmtTest(unittest.TestCase):
 			call('rocket_cruise', 7.0),
 			call('rocket_cruise', 8.0),
 			call('rocket_cruise', 9.0),
+			call('rocket_arrive', None),
 			call('rocket_cruise', 10.0),
-			call('rocket_arrive', None)
 		])

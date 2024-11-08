@@ -3,11 +3,11 @@ import pygame
 from src.gen.terrain_generator import TerrainGenerator
 from src.world.world import World
 from src.render.render import Render
-from src.render.viewport import Viewport, pygame_key_to_camdir, pygame_key_to_delta_zoom, pygame_key_to_delta_camera_rotate
-from src.render.space import screen_to_tile_coords
 from src.math.vector2 import Vector2
 from src.gameobject.lander import Lander
-from src.mgmt import init_game_manager, get_game_manager, get_event_manager
+from src.mgmt.singletons import init_game_manager, get_game_manager, get_event_manager
+from src.ctrl.ctrl import Control
+from src.render.viewport import Viewport
 
 pygame.init()
 
@@ -38,36 +38,23 @@ def make_lander(world: World):
 def make_game():
 	"""Initialize the game manager."""
 	world = make_world()
-	game_mgr = init_game_manager(world)
+	vp = Viewport((WINDOW_WIDTH, WINDOW_HEIGHT), world.terrain)
+	game_mgr = init_game_manager(world, vp)
 	game_mgr.new_player_character(world.terrain.center)
 	make_lander(world)
 	return game_mgr
 
 def main():
 	game = make_game()
+	ctrl = Control()
 	world = game.world
 
 	clock = pygame.time.Clock()
 	running = True
-	vp = Viewport((WINDOW_WIDTH, WINDOW_HEIGHT), world.terrain)
-	render = Render(window, world, vp)
+	render = Render(window, world, game.vp)
 
 	while running:
-		for event in pygame.event.get():
-			if event.type == pygame.KEYDOWN:
-				d_camdir = pygame_key_to_camdir(event.key)
-				d_zoom = pygame_key_to_delta_zoom(event.key)
-				d_rotate = pygame_key_to_delta_camera_rotate(event.key)
-				vp.move_camera(d_camdir)
-				vp.change_zoom(d_zoom)
-				vp.rotate_camera(d_rotate)
-			elif event.type == pygame.MOUSEBUTTONDOWN:
-				click_x, click_y = pygame.mouse.get_pos()
-				click_tile = screen_to_tile_coords((click_x, click_y), vp)
-				click_tile = (
-					int(click_tile[0]), int(click_tile[1])
-				)
-				game.player_character.set_destination(world, click_tile)
+		ctrl.interpret_pygame_input()
 		render.render()
 		render.render_terrain.highlight_tile_at_screen_pos(pygame.mouse.get_pos())
 		pygame.display.flip()

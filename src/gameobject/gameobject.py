@@ -18,7 +18,7 @@ class GameObject:
 			pos = (0, 0)
 		if size is None:
 			size = (1, 1)
-		from src.mgmt import get_event_manager
+		from src.mgmt.singletons import get_event_manager
 		self._pos = pos
 		self.size = size
 		self.evt_mgr = get_event_manager()

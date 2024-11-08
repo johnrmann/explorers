@@ -7,7 +7,7 @@ from src.render.render_gameobject import render_gameobject
 
 class Render(object):
 	def __init__(self, window, world: World, vp: Viewport):
-		from src.mgmt import get_game_manager
+		from src.mgmt.singletons import get_game_manager
 		self.game = get_game_manager()
 		self.window = window
 		self.world = world

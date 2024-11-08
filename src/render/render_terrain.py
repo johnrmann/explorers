@@ -6,7 +6,6 @@ from src.render.viewport import Viewport
 from src.render.utils import *
 from src.math.map_range import map_range
 from src.math.direction import *
-from src.render.space import tile_to_screen_coords, screen_to_tile_coords
 from src.tile.tile import tile_polygon
 
 GROUND_COLOR = (200, 0, 0)
@@ -18,14 +17,14 @@ HIGHLIGHT_COLOR = (0, 250, 0)
 def polygons(vp: Viewport, terrain, tile):
 	x,y = tile
 	h = terrain.map[y][x]
-	tile_screen = tile_to_screen_coords(tile, vp)
+	tile_screen = vp.tile_to_screen_coords(tile)
 	bottom = tile_polygon(tile_screen, vp.tile_dimensions)
 	top = height_offset_tile(bottom, h / 8, vp)
 	return box_between_tiles(top, bottom)
 
 class RenderTerrain(object):
 	def __init__(self, window, world: World, vp: Viewport):
-		from src.mgmt import get_game_manager
+		from src.mgmt.singletons import get_game_manager
 		self.game = get_game_manager()
 		self.world = world
 		self.window = window
@@ -84,7 +83,7 @@ class RenderTerrain(object):
 			pygame.draw.line(self.window, HIGHLIGHT_COLOR, p1, p2)
 	
 	def highlight_tile_at_screen_pos(self, screen_pos):
-		x,y = screen_to_tile_coords(screen_pos, self.vp)
+		x,y = self.vp.screen_to_tile_coords(screen_pos)
 		p = (int(x), int(y))
 		if x < 0 or y < 0:
 			return

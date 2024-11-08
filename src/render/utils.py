@@ -1,7 +1,6 @@
 import pygame
 
 from src.render.viewport import Viewport
-from src.render.space import tile_to_screen_coords
 
 def height_offset_tile(tile, dh, vp: Viewport):
 	"""
