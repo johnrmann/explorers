@@ -2,18 +2,30 @@ from src.math.direction import Direction
 from src.math.cart_prod import spatial_cart_prod
 from src.math.vector2 import Vector2
 
-class GameObject(object):
+class GameObject:
 	"""
 	Represents a thing in the game world. Can be a character, a prop, or
 	invisible tiles that can be interacted with.
 	"""
+	evt_mgr = None
+	_pos = (0, 0)
 
-	def __init__(self, pos = (0, 0), size = (1, 1)):
+	def __init__(self, pos = None, size = None):
 		"""
 		Position is the top left tile that the game object occupies.
 		"""
-		self.pos = pos
+		if pos is None:
+			pos = (0, 0)
+		if size is None:
+			size = (1, 1)
+		from src.mgmt import get_event_manager
+		self._pos = pos
 		self.size = size
+		self.evt_mgr = get_event_manager()
+	
+	@property
+	def pos(self):
+		return self._pos
 	
 	@property
 	def draw_position(self) -> Vector2:
@@ -62,4 +74,11 @@ class GameObject(object):
 		Override this to specify an image to render.
 		"""
 		return None
+	
+	def tick(self, dt: float, utc: float):
+		"""
+		Signal from the game manager that time has passed. dt is the time since
+		the last draw in seconds. UTC is time since mission start in seconds.
+		"""
+		pass
 	

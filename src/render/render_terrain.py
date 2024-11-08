@@ -25,6 +25,8 @@ def polygons(vp: Viewport, terrain, tile):
 
 class RenderTerrain(object):
 	def __init__(self, window, world: World, vp: Viewport):
+		from src.mgmt import get_game_manager
+		self.game = get_game_manager()
 		self.world = world
 		self.window = window
 		self.vp = vp
@@ -35,7 +37,7 @@ class RenderTerrain(object):
 
 	def render_tile(self, p):
 		lat_long = self.terrain.lat_long(p)
-		bness = self.world.horology.brightness(self.world.utc, lat_long)
+		bness = self.world.horology.brightness(self.game.utc, lat_long)
 		bness2 = map_range(bness, (0, 1), (0.2, 1))
 		top, left_wall, right_wall = polygons(self.vp, self.terrain, p)
 

@@ -7,6 +7,7 @@ from src.render.viewport import Viewport, pygame_key_to_camdir, pygame_key_to_de
 from src.render.space import screen_to_tile_coords
 from src.math.vector2 import Vector2
 from src.gameobject.lander import Lander
+from src.mgmt import init_game_manager, get_game_manager, get_event_manager
 
 pygame.init()
 
@@ -17,24 +18,34 @@ window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption("Explorers")
 
 def make_terrain():
+	"""Create the world's terrain."""
 	tg = TerrainGenerator()
 	terrain = tg.make()
 	return terrain
 
 def make_world():
-	"""
-	Generate some terrain, put the player character and lander in it.
-	"""
+	"""Create the game world."""
 	terrain = make_terrain()
 	world = World(terrain)
-	world.new_player_character(terrain.center)
-	lander_pos = terrain.center + Vector2(0, -10)
-	lander = Lander(pos=lander_pos)
-	world.add_game_object(lander)
 	return world
 
-def main():
+def make_lander(world: World):
+	"""Create the lander the player character arrives in."""
+	lander_pos = world.terrain.center + Vector2(0, -10)
+	lander = Lander(pos=lander_pos)
+	get_game_manager().add_game_object(lander)
+
+def make_game():
+	"""Initialize the game manager."""
 	world = make_world()
+	game_mgr = init_game_manager(world)
+	game_mgr.new_player_character(world.terrain.center)
+	make_lander(world)
+	return game_mgr
+
+def main():
+	game = make_game()
+	world = game.world
 
 	clock = pygame.time.Clock()
 	running = True
@@ -42,7 +53,6 @@ def main():
 	render = Render(window, world, vp)
 
 	while running:
-		world.player_character.act(1 / 25)
 		for event in pygame.event.get():
 			if event.type == pygame.KEYDOWN:
 				d_camdir = pygame_key_to_camdir(event.key)
@@ -57,12 +67,12 @@ def main():
 				click_tile = (
 					int(click_tile[0]), int(click_tile[1])
 				)
-				world.player_character.set_destination(world, click_tile)
+				game.player_character.set_destination(world, click_tile)
 		render.render()
 		render.render_terrain.highlight_tile_at_screen_pos(pygame.mouse.get_pos())
 		pygame.display.flip()
 		clock.tick()
-		world.utc = pygame.time.get_ticks() / 1000
+		game.tick(1)
 	
 	pygame.quit()
 

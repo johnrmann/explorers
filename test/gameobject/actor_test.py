@@ -18,7 +18,7 @@ class ActorTest(unittest.TestCase):
 		check_idx = 0
 		while actor.is_moving:
 			self.assertEqual(actor.pos, CARDINAL_PATH[check_idx])
-			actor.act(1)
+			actor.tick(1, check_idx)
 			check_idx += 1
 
 if __name__ == "__main__":
