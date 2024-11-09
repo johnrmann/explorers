@@ -6,7 +6,7 @@ def pygame_key_to_delta_zoom(key):
 	"""
 	Converts a key press to whether we should zoom in or zoom out.
 	"""
-	if key == pygame.K_KP_PLUS or key == pygame.K_PLUS:
+	if key == pygame.K_KP_PLUS or key == pygame.K_EQUALS:
 		return 1
 	elif key == pygame.K_KP_MINUS or key == pygame.K_MINUS:
 		return -1
