@@ -1,0 +1,44 @@
+{
+	"scores": [
+		{
+			"name": "Neil Armstrong",
+			"score": 25000
+		},
+		{
+			"name": "Marco Polo",
+			"score": 22500
+		},
+		{
+			"name": "James Cook",
+			"score": 21000
+		},
+		{
+			"name": "Zheng He",
+			"score": 19000
+		},
+		{
+			"name": "Alexei Leonov",
+			"score": 18000
+		},
+		{
+			"name": "Ernest Shackleton",
+			"score": 17500
+		},
+		{
+			"name": "Vasco de Gama",
+			"score": 16000
+		},
+		{
+			"name": "Walter Raleigh",
+			"score": 12000
+		},
+		{
+			"name": "William Bligh",
+			"score": 10000
+		},
+		{
+			"name": "Lisa Nowak",
+			"score": 297
+		}
+	]
+}
