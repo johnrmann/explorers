@@ -1,6 +1,6 @@
 import unittest
 
-from src.tile.fit_rect import fit_img_rect_on_tile_base
+from src.rendermath.fit_rect import fit_img_rect_on_tile_base
 
 class FitRectTest(unittest.TestCase):
 	def test__basic_square_tile(self):

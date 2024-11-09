@@ -6,7 +6,7 @@ from src.render.viewport import Viewport
 from src.render.utils import *
 from src.math.map_range import map_range
 from src.math.direction import *
-from src.tile.tile import tile_polygon
+from src.rendermath.tile import tile_polygon
 
 GROUND_COLOR = (200, 0, 0)
 WALL_COLOR_1 = (100, 0, 0)

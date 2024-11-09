@@ -2,8 +2,8 @@ import pygame
 
 from src.gameobject.gameobject import GameObject
 from src.render.utils import *
-from src.tile.fit_rect import fit_img_rect_on_tile_base
-from src.tile.tile import tile_polygon
+from src.rendermath.fit_rect import fit_img_rect_on_tile_base
+from src.rendermath.tile import tile_polygon
 
 TOP_COLOR = (0, 0, 200)
 LEFT_COLOR = (0, 0, 100)
