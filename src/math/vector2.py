@@ -82,3 +82,24 @@ class Vector2:
 def vector2_lerp(p: Vector2, q: Vector2, k: float) -> Vector2:
 	dq = q - p
 	return p + (dq * k)
+
+def vector2_bounding_rect(ps):
+	"""
+	Returns the (origin, dimensions) of the smallest rect that fits all given
+	points.
+	"""
+	if len(ps) == 0:
+		raise ValueError('Need non-empty list')
+	min_x = float('inf')
+	max_x = -min_x
+	min_y = float('inf')
+	max_y = -min_y
+	for p in ps:
+		x, y = p
+		min_x = min(x, min_x)
+		min_y = min(y, min_y)
+		max_x = max(x, max_x)
+		max_y = max(y, max_y)
+	origin = (min_x, min_y)
+	dimensions = (max_x - min_x, max_y - min_y)
+	return (origin, dimensions)

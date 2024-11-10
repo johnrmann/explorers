@@ -2,7 +2,7 @@ import unittest
 
 from math import sqrt
 
-from src.math.vector2 import Vector2, vector2_lerp
+from src.math.vector2 import Vector2, vector2_lerp, vector2_bounding_rect
 
 class Vector2Test(unittest.TestCase):
 	def test__print(self):
@@ -99,6 +99,35 @@ class Vector2Test(unittest.TestCase):
 		self.assertEqual(Vector2(-1.5, 2.5).round(), Vector2(-2, 2))
 		self.assertEqual(Vector2(0.0, 0.0).round(), Vector2(0, 0))
 		self.assertEqual(Vector2(-2.3, -3.8).round(), Vector2(-2, -4))
+
+	def test__vector2_bounding_rect__single_point(self):
+		points = [Vector2(1, 1)]
+		expected_origin = (1, 1)
+		expected_dimensions = (0, 0)
+		self.assertEqual(vector2_bounding_rect(points), (expected_origin, expected_dimensions))
+
+	def test__vector2_bounding_rect__multiple_points(self):
+		points = [Vector2(1, 1), Vector2(2, 3), Vector2(-1, -2)]
+		expected_origin = (-1, -2)
+		expected_dimensions = (3, 5)
+		self.assertEqual(vector2_bounding_rect(points), (expected_origin, expected_dimensions))
+
+	def test__vector2_bounding_rect__horizontal_line(self):
+		points = [Vector2(1, 1), Vector2(3, 1), Vector2(2, 1)]
+		expected_origin = (1, 1)
+		expected_dimensions = (2, 0)
+		self.assertEqual(vector2_bounding_rect(points), (expected_origin, expected_dimensions))
+
+	def test__vector2_bounding_rect__vertical_line(self):
+		points = [Vector2(1, 1), Vector2(1, 3), Vector2(1, 2)]
+		expected_origin = (1, 1)
+		expected_dimensions = (0, 2)
+		self.assertEqual(vector2_bounding_rect(points), (expected_origin, expected_dimensions))
+
+	def test__vector2_bounding_rect__empty_list(self):
+		points = []
+		with self.assertRaises(ValueError):
+			vector2_bounding_rect(points)
 
 if __name__ == "__main__":
 	unittest.main()
