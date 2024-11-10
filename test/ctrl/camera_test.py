@@ -11,7 +11,7 @@ from src.ctrl.camera import (
 class CameraTest(unittest.TestCase):
 	def test__pygame_key_to_delta_zoom__zoom_in(self):
 		self.assertEqual(pygame_key_to_delta_zoom(pygame.K_KP_PLUS), 1)
-		self.assertEqual(pygame_key_to_delta_zoom(pygame.K_PLUS), 1)
+		self.assertEqual(pygame_key_to_delta_zoom(pygame.K_EQUALS), 1)
 
 	def test__pygame_key_to_delta_zoom__zoom_out(self):
 		self.assertEqual(pygame_key_to_delta_zoom(pygame.K_KP_MINUS), -1)

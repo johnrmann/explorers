@@ -98,6 +98,26 @@ def select_adj_degree(b_adj, p, degree=1):
 			if connected and neighbor not in visited:
 				visited.add(neighbor)
 				queue.append((neighbor, dist + 1))
-	
 	return result
 
+def are_cells_adj_cardinally(p: Vector2, q: Vector2):
+	"""
+	Returns true if the two cells share an edge.
+	"""
+	if p.x == q.x:
+		return abs(p.y - q.y) == 1
+	elif p.y == q.y:
+		return abs(p.x - q.x) == 1
+	return False
+
+def are_cells_adj_diagonally(p: Vector2, q: Vector2):
+	"""
+	Returns true if the two cells share a corner, but not an edge.
+	"""
+	return abs(p.x - q.x) == 1 and abs(p.y - q.y) == 1
+
+def are_cells_adj(p: Vector2, q: Vector2):
+	"""
+	Returns true if the cells are adjacent.
+	"""
+	return are_cells_adj_cardinally(p, q) or are_cells_adj_diagonally(p, q)

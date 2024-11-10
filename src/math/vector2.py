@@ -75,6 +75,10 @@ class Vector2:
 		mag = self.magnitude()
 		return Vector2(self.x / mag, self.y / mag)
 
+	def round(self):
+		"""Rounds the components of this vector to the nearest integer."""
+		return Vector2(round(self.x), round(self.y))
+
 def vector2_lerp(p: Vector2, q: Vector2, k: float) -> Vector2:
 	dq = q - p
 	return p + (dq * k)

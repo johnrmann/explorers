@@ -22,7 +22,7 @@ def offset_tile_by_draw_order_vector(
 		p: Vector2,
 		camera_orientation: Direction,
 		k: int,
-):
+) -> tuple[Vector2, Vector2]:
 	"""
 	The idea is that if the camera orientation is pointed to the northwest,
 	the order draw vector goes from the northwest to the southeast, so
@@ -31,13 +31,14 @@ def offset_tile_by_draw_order_vector(
 	If the offset is odd, it will return two tiles.
 	"""
 	if k == 0:
-		return p, None
+		return p, p
 	offset_vector = draw_order_vector(camera_orientation)
 	ox, oy = offset_vector
 	even_offset = k // 2
 	is_odd = k % 2
-	q = p + (offset_vector * even_offset)
+	offset = (offset_vector * even_offset)
+	q = p + offset
 	if is_odd:
 		return (q + Vector2(ox, 0), q + Vector2(0, oy))
 	else:
-		return q, None
+		return q, q

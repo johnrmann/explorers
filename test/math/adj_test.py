@@ -115,5 +115,54 @@ class AdjTest(unittest.TestCase):
 			set([0, 1, 2, 3])
 		)
 
+	def test__are_cells_adj_cardinally__true(self):
+		p = Vector2(1, 1)
+		q = Vector2(1, 2)
+		self.assertTrue(are_cells_adj_cardinally(p, q))
+		q = Vector2(2, 1)
+		self.assertTrue(are_cells_adj_cardinally(p, q))
+
+	def test__are_cells_adj_cardinally__false(self):
+		p = Vector2(1, 1)
+		q = Vector2(2, 2)
+		self.assertFalse(are_cells_adj_cardinally(p, q))
+		q = Vector2(0, 0)
+		self.assertFalse(are_cells_adj_cardinally(p, q))
+
+	def test__are_cells_adj_diagonally__true(self):
+		p = Vector2(1, 1)
+		q = Vector2(2, 2)
+		self.assertTrue(are_cells_adj_diagonally(p, q))
+		q = Vector2(0, 0)
+		self.assertTrue(are_cells_adj_diagonally(p, q))
+
+	def test__are_cells_adj_diagonally__false(self):
+		p = Vector2(1, 1)
+		q = Vector2(1, 2)
+		self.assertFalse(are_cells_adj_diagonally(p, q))
+		q = Vector2(2, 1)
+		self.assertFalse(are_cells_adj_diagonally(p, q))
+
+	def test__are_cells_adj__cardinal(self):
+		p = Vector2(1, 1)
+		q = Vector2(1, 2)
+		self.assertTrue(are_cells_adj(p, q))
+		q = Vector2(2, 1)
+		self.assertTrue(are_cells_adj(p, q))
+
+	def test__are_cells_adj__diagonal(self):
+		p = Vector2(1, 1)
+		q = Vector2(2, 2)
+		self.assertTrue(are_cells_adj(p, q))
+		q = Vector2(0, 0)
+		self.assertTrue(are_cells_adj(p, q))
+
+	def test__are_cells_adj__false(self):
+		p = Vector2(1, 1)
+		q = Vector2(2, 3)
+		self.assertFalse(are_cells_adj(p, q))
+		q = Vector2(-4, 2)
+		self.assertFalse(are_cells_adj(p, q))
+
 if __name__ == "__main__":
 	unittest.main()

@@ -50,6 +50,11 @@ class Terrain(object):
 		dx = x - cent_x
 		return (dy / self.height, (dx / self.width) * 2)
 
+	def is_valid_coordinates(self, p):
+		x_valid = 0 <= p.x < self.width
+		y_valid = 0 <= p.y < self.height
+		return x_valid and y_valid
+
 	def height_at(self, p):
 		x, y = p
 		return self.map[y][x]

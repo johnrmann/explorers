@@ -8,7 +8,8 @@ def make_terrain():
 	return Terrain(map)
 
 def make_viewport():
-	return Viewport((800, 600), make_terrain())
+	vp = Viewport((800, 600), make_terrain())
+	return vp
 
 class ViewportTest(unittest.TestCase):
 	def test__move_camera__simple(self):

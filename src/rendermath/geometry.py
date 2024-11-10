@@ -21,3 +21,21 @@ def is_point_in_triangle(p, triangle):
 	has_neg = (d1 < 0) or (d2 < 0) or (d3 < 0)
 	has_pos = (d1 > 0) or (d2 > 0) or (d3 > 0)
 	return not (has_neg and has_pos)
+
+def is_point_in_rect(p, rect):
+	"""
+	Returns true if a point is inside a rectangle.
+	"""
+	x, y = p
+	origin, dimensions = rect
+	ox, oy = origin
+	width, height = dimensions
+	in_x = ox <= x < (ox + width)
+	in_y = oy <= y < (oy + height)
+	return in_x and in_y
+
+def is_point_in_screen(p, dimensions):
+	"""
+	Wrapper for is_point_in_rect, screens don't have origins.
+	"""
+	return is_point_in_rect(p, ((0,0), dimensions))

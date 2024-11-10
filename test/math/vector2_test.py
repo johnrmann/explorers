@@ -94,5 +94,11 @@ class Vector2Test(unittest.TestCase):
 			Vector2(5,10),
 		)
 
+	def test__round(self):
+		self.assertEqual(Vector2(1.2, 3.7).round(), Vector2(1, 4))
+		self.assertEqual(Vector2(-1.5, 2.5).round(), Vector2(-2, 2))
+		self.assertEqual(Vector2(0.0, 0.0).round(), Vector2(0, 0))
+		self.assertEqual(Vector2(-2.3, -3.8).round(), Vector2(-2, -4))
+
 if __name__ == "__main__":
 	unittest.main()
