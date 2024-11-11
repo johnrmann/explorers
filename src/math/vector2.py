@@ -103,3 +103,26 @@ def vector2_bounding_rect(ps):
 	origin = (min_x, min_y)
 	dimensions = (max_x - min_x, max_y - min_y)
 	return (origin, dimensions)
+
+def vector2_move_points_near_zero(ps):
+	"""
+	Moves the given points close to the origin. For example...
+
+		(1,1), (2,2) --> (0,0), (1,1)
+		(0,1), (1,0) --> (0,1), (1,0)
+	"""
+	if len(ps) == 0:
+		raise ValueError('Need non-empty list')
+	min_x = float('inf')
+	min_y = float('inf')
+	for p in ps:
+		x, y = p
+		min_x = min(x, min_x)
+		min_y = min(y, min_y)
+	qs = []
+	for p in ps:
+		x, y = p
+		qx = x - min_x
+		qy = y - min_y
+		qs.append((qx, qy))
+	return qs

@@ -3,6 +3,7 @@ import unittest
 from math import sqrt
 
 from src.math.vector2 import Vector2, vector2_lerp, vector2_bounding_rect
+from src.math.vector2 import vector2_move_points_near_zero
 
 class Vector2Test(unittest.TestCase):
 	def test__print(self):
@@ -128,6 +129,31 @@ class Vector2Test(unittest.TestCase):
 		points = []
 		with self.assertRaises(ValueError):
 			vector2_bounding_rect(points)
+
+	def test__vector2_move_points_near_zero__single_point(self):
+		points = [Vector2(1, 1)]
+		expected_points = [(0, 0)]
+		self.assertEqual(vector2_move_points_near_zero(points), expected_points)
+
+	def test__vector2_move_points_near_zero__multiple_points(self):
+		points = [Vector2(1, 1), Vector2(2, 2)]
+		expected_points = [(0, 0), (1, 1)]
+		self.assertEqual(vector2_move_points_near_zero(points), expected_points)
+
+	def test__vector2_move_points_near_zero__negative_points(self):
+		points = [Vector2(-1, -1), Vector2(-2, -2)]
+		expected_points = [(1, 1), (0, 0)]
+		self.assertEqual(vector2_move_points_near_zero(points), expected_points)
+
+	def test__vector2_move_points_near_zero__mixed_points(self):
+		points = [Vector2(0, 1), Vector2(1, 0)]
+		expected_points = [(0, 1), (1, 0)]
+		self.assertEqual(vector2_move_points_near_zero(points), expected_points)
+
+	def test__vector2_move_points_near_zero__empty_list(self):
+		points = []
+		with self.assertRaises(ValueError):
+			vector2_move_points_near_zero(points)
 
 if __name__ == "__main__":
 	unittest.main()
