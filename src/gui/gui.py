@@ -2,6 +2,7 @@ import pygame
 import pygame_gui
 
 class _GuiManager:
+	elements = set()
 	element_to_callback = {}
 
 	def __init__(self):
@@ -19,8 +20,10 @@ class _GuiManager:
 				return True
 		return False
 
-	def update(self, time_delta):
-		self.manager.update(time_delta)
+	def update(self, dt: float):
+		self.manager.update(dt)
+		for elem in self.elements:
+			elem.update(dt)
 
 	def draw_ui(self):
 		self.manager.draw_ui(self.surface)
@@ -41,6 +44,10 @@ class GuiElement:
 
 	def __init__(self):
 		self.gui_mgr = _global_gui_manager
+		self.gui_mgr.elements.add(self)
+
+	def __del__(self):
+		self.gui_mgr.elements.remove(self)
 
 	@property
 	def screen_dimensions(self):
@@ -56,3 +63,7 @@ class GuiElement:
 	def pygame_container(self):
 		"""Return the pygame element that we are wrapping."""
 		return None
+
+	def update(self, dt: float):
+		"""Updates the GUI element."""
+		pass

@@ -63,7 +63,7 @@ def main():
 	clock = pygame.time.Clock()
 	render = Render(window, world, game.vp)
 
-	MissionClock()
+	mission_clock = MissionClock()
 
 	while running:
 		dt = clock.tick(25) / 1000

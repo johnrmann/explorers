@@ -1,24 +1,36 @@
 from src.gui.gui import GuiElement
 from src.gui.primitives import Label, Panel, Button
 
-DIMENSIONS = (150, 50)
+DIMENSIONS = (150, 30)
 
-def print_hello():
-	print("Hello from clock button")
+DEFAULT_FUNCTION_MAP = [
+	("UTC", lambda _: "2469-08-20"),
+	("MT", lambda _: "001-001")
+]
 
 class MissionClock(GuiElement):
-	clock_mode = "UTC" # or "MT"
+	"""
+	The mission clock is an element that appears in the top-left corner of the
+	screen, and shows the current time. There is also a button that you can
+	click to toggle between calendars (Mission Time and UTC).
+	"""
 
-	def __init__(self):
+	_mode_idx: int = 0
+
+	def __init__(self, entries=None):
 		super().__init__()
+		if entries is None:
+			entries = DEFAULT_FUNCTION_MAP
+		self.function_map = entries
 		self.button = Button(
-			rect=((0, 0), (50, 50)),
-			label=self.clock_mode,
+			rect=((0, 0), (50, 30)),
+			label=self.get_button_text,
+			callback=self.on_click_clock_mode
 		)
-		self.panel = Panel(rect=((50, 0), (100, 50)))
+		self.panel = Panel(rect=((50, 0), (100, 30)))
 		self.label = Label(
-			rect=((0, 0), (100, 50)),
-			text="2469-08-20",
+			rect=((0, 0), (100, 30)),
+			text=self.get_label_text,
 			container=self.panel
 		)
 
@@ -26,3 +38,17 @@ class MissionClock(GuiElement):
 		del self.button
 		del self.label
 		del self.panel
+
+	def on_click_clock_mode(self):
+		"""When we click the clock mode button, toggle between calendars."""
+		self._mode_idx = (self._mode_idx + 1) % len(self.function_map)
+
+	def get_button_text(self, _: float):
+		"""The text on the button is the ID of the calendar."""
+		key, _ = self.function_map[self._mode_idx]
+		return key
+
+	def get_label_text(self, dt):
+		"""The text on the label is the current date."""
+		_, func = self.function_map[self._mode_idx]
+		return func(dt)
