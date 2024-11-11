@@ -51,12 +51,16 @@ def make_game():
 	return game_mgr
 
 def main():
+	running = True
+	def on_quit():
+		nonlocal running
+		running = False
+
 	game = make_game()
-	ctrl = Control(gui_mgr)
+	ctrl = Control(gui_mgr, on_quit=on_quit)
 	world = game.world
 
 	clock = pygame.time.Clock()
-	running = True
 	render = Render(window, world, game.vp)
 
 	MissionClock()
@@ -70,7 +74,7 @@ def main():
 		gui_mgr.draw_ui()
 		pygame.display.flip()
 		game.tick(1)
-	
+
 	pygame.quit()
 
 if __name__ == '__main__':

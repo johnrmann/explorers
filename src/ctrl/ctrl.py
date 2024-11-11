@@ -24,12 +24,13 @@ class Control:
 
 	lock_camera: bool
 
-	def __init__(self, gui_mgr, lock_camera = False):
+	def __init__(self, gui_mgr, lock_camera = False, on_quit = None):
 		from src.mgmt.singletons import get_event_manager, get_game_manager
 		self.game = get_game_manager()
 		self.evt_mgr = get_event_manager()
 		self.gui_mgr = gui_mgr
 		self.lock_camera = lock_camera
+		self.on_quit = on_quit
 	
 	def interpret_pygame_camera_keyboard_event(self, event):
 		d_camdir = pygame_key_to_camdir(event.key)
@@ -47,7 +48,10 @@ class Control:
 		return False
 	
 	def interpret_pygame_event(self, event):
-		if self.gui_mgr.process_events(event):
+		if event.type == pygame.QUIT and self.on_quit:
+			self.on_quit()
+			return True
+		elif self.gui_mgr.process_events(event):
 			return True
 		elif event.type == pygame.KEYDOWN:
 			self.interpret_pygame_camera_keyboard_event(event)
