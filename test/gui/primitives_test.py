@@ -16,16 +16,26 @@ class TestGuiPrimitives(unittest.TestCase):
 		self.manager = pygame_gui.UIManager((800, 600))
 
 	def test__button(self):
-		button = Button((50, 50), (100, 50), "Click Me", container=None)
+		button = Button(
+			rect=((50, 50), (100, 50)),
+			label="Click Me",
+			container=None
+		)
 		self.assertIsInstance(button, Button)
 
 	def test__label(self):
-		label = Label((50, 150), (200, 50), "Hello World", container=None)
+		label = Label(
+			rect=((50, 150), (200, 50)),
+			text="Hello World",
+			container=None
+		)
 		self.assertIsInstance(label, Label)
 		self.assertEqual(label.label.text, "Hello World")
 
 	def test__panel(self):
-		panel = Panel((50, 250), (300, 200))
+		panel = Panel(
+			rect=((50, 250), (300, 200))
+		)
 		self.assertIsInstance(panel, Panel)
 		self.assertIsInstance(panel.pygame_container, pygame_gui.elements.UIPanel)
 
