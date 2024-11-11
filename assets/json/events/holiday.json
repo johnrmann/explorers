@@ -1,0 +1,21 @@
+{
+	"first_christmas": {
+		"good": {
+			"title": "First Christmas on our new home",
+			"dismiss": "And a happy new year!",
+			"image": "assets/img/painting/first-christmas-good.png",
+			"body": "Since we are so far ahead of schedule for developing our new world, we had the resources to grow a real Christmas Tree in the hyrdoponic farm. Double rations are to be served for dinner. The crew are in great spirits for the days ahead!"
+		},
+		"neutral": {
+			"title": "First Christmas on a new world",
+			"dismiss": "The season of perpetual hope.",
+			"image": "assets/img/painting/first-christmas-neutral.png"
+		},
+		"bad": {
+			"title": "First Christmas far from home",
+			"body": "With the death of {ASTRONAUT} still fresh in memory, the first Christmas on {PLANET} is a solemn occasion, and some astronauts are harboring doubts that they’ll be alive to celebrate the next one.",
+			"dismiss": "Until then, we’ll have to muddle through somehow.",
+			"image": "assets/img/painting/first-christmas-bad.png"
+		}
+	}
+}

@@ -1,0 +1,10 @@
+{
+	"landing": {
+		"neutral": {
+			"title": "One Small Step...",
+			"body": "Three parsecs and 98 years after leaving Earth, we've finally arrived at Planet Phoenix. The atmospheric conditions are harsher than what our calculations implied, but that won't stop us. Commander Rayburn steps out of the lander, plants the flag in the soil, and says the first worlds on this new world...",
+			"image": "assets/img/painting/landing.png",
+			"dismiss": "\"Well, here we are!\""
+		}
+	}
+}

@@ -24,10 +24,11 @@ class Control:
 
 	lock_camera: bool
 
-	def __init__(self, lock_camera = False):
+	def __init__(self, gui_mgr, lock_camera = False):
 		from src.mgmt.singletons import get_event_manager, get_game_manager
 		self.game = get_game_manager()
 		self.evt_mgr = get_event_manager()
+		self.gui_mgr = gui_mgr
 		self.lock_camera = lock_camera
 	
 	def interpret_pygame_camera_keyboard_event(self, event):
@@ -36,20 +37,30 @@ class Control:
 		d_rotate = pygame_key_to_delta_camera_rotate(event.key)
 		if d_camdir:
 			self.evt_mgr.pub(EVENT_CAMERA_MOVE, data=d_camdir)
+			return True
 		if d_zoom:
 			self.evt_mgr.pub(EVENT_CAMERA_ZOOM, data=d_zoom)
+			return True
 		if d_rotate:
 			self.evt_mgr.pub(EVENT_CAMERA_ROTATE, data=d_rotate)
+			return True
+		return False
 	
 	def interpret_pygame_event(self, event):
-		if event.type == pygame.KEYDOWN:
+		if self.gui_mgr.process_events(event):
+			return True
+		elif event.type == pygame.KEYDOWN:
 			self.interpret_pygame_camera_keyboard_event(event)
+			return True
 		elif event.type == pygame.MOUSEBUTTONDOWN:
 			click_x, click_y = pygame.mouse.get_pos()
 			self.evt_mgr.pub(
 				EVENT_MOUSE_CLICK_WORLD, (click_x, click_y)
 			)
+			return True
+		return False
 	
 	def interpret_pygame_input(self):
 		for event in pygame.event.get():
-			self.interpret_pygame_event(event)
+			if self.interpret_pygame_event(event):
+				break

@@ -1,0 +1,16 @@
+{
+	"endgame_anniv": {
+		"great": {
+			"title": "One Giant Leap...",
+			"body": "One hundred years after the founding of {FIRST_COLONY}, our home is thriving. The air is rich, the soil is fertile, and lands and oceans are filled with life. But there are still those few who feel the call of the stars. Ships are being prepared to leave this world, not in escape, but to explore further than anyone has gone before!",
+			"image": "assets/img/painting/endgame-anniv-great.jpeg",
+			"dismiss": "In Pace, Pro Humanitate"
+		},
+		"bad": {
+			"title": "A Forgotten Anniversary",
+			"body": "Today is one hundred years since Mission Start. Or was it yesterday? Nobody is sure - there's no point in remembering a day not worth celebrating. Every day is a struggle for survival. Some are planning to refuel the <i>Endeavor</i> and return to Earth... assuming Earth is still there after centuries of interstellar travel. Perhaps our remains will prove useful to other civilizations who discover this world in the far future...",
+			"image": "assets/img/painting/endgame-anniv-bad.png",
+			"dismiss": "Nothing beside remains."
+		}
+	}
+}
