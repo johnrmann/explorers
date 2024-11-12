@@ -1,5 +1,4 @@
 import pygame
-import pygame_gui
 
 from src.gen.terrain_generator import TerrainGenerator
 from src.world.world import World
@@ -11,7 +10,7 @@ from src.gui.gui import init_gui_manager
 from src.render.viewport import Viewport
 from src.ctrl.ctrl import Control
 from src.gui.mission_clock import MissionClock
-from src.gui.superevent import Superevent
+from src.gui.superevent import superevent_from_json
 
 pygame.init()
 
@@ -64,14 +63,18 @@ def main():
 	render = Render(window, world, game.vp)
 
 	mission_clock = MissionClock()
+	# se = superevent_from_json(
+	# 	"assets/json/events/landing.json",
+	# 	"landing-neutral"
+	# )
 
 	while running:
-		dt = clock.tick(25) / 1000
+		dt = clock.tick(60) / 1000
 		ctrl.interpret_pygame_input()
 		render.render()
 		render.render_terrain.highlight_tile_at_screen_pos(pygame.mouse.get_pos())
 		gui_mgr.update(dt)
-		gui_mgr.draw_ui()
+		gui_mgr.draw(window)
 		pygame.display.flip()
 		game.tick(1)
 

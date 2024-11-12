@@ -62,9 +62,9 @@ class TestControl(unittest.TestCase):
 
 	def test_interpret_pygame_event_gui(self):
 		event = Mock()
-		self.mock_gui_mgr.process_events.return_value = True
+		self.mock_gui_mgr.process_event.return_value = True
 		result = self.control.interpret_pygame_event(event)
-		self.mock_gui_mgr.process_events.assert_called_once_with(event)
+		self.mock_gui_mgr.process_event.assert_called_once_with(event)
 		self.assertTrue(result)
 
 	def test_interpret_pygame_input(self):

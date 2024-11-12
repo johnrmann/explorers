@@ -24,24 +24,37 @@ class MissionClock(GuiElement):
 		self.function_map = entries
 		self.button = Button(
 			rect=((0, 0), (50, 30)),
-			label=self.get_button_text,
-			callback=self.on_click_clock_mode
+			text=entries[0][0],
+			callback=self.on_click_clock_mode,
+			parent=self
 		)
-		self.panel = Panel(rect=((50, 0), (100, 30)))
+		self.panel = Panel(rect=((50, 0), (100, 30)), parent=self)
 		self.label = Label(
 			rect=((0, 0), (100, 30)),
-			text=self.get_label_text,
-			container=self.panel
+			text=self.get_label_text(0),
+			parent=self.panel,
 		)
 
 	def __del__(self):
 		del self.button
 		del self.label
 		del self.panel
+	
+	@property
+	def origin(self):
+		return (0,0)
+
+	@property
+	def dimensions(self):
+		return(150, 30)
+
+	def process_event(self, event):
+		return self.button.process_event(event)
 
 	def on_click_clock_mode(self):
 		"""When we click the clock mode button, toggle between calendars."""
 		self._mode_idx = (self._mode_idx + 1) % len(self.function_map)
+		self.button.text = self.get_button_text(0)
 
 	def get_button_text(self, _: float):
 		"""The text on the button is the ID of the calendar."""

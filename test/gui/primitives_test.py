@@ -1,47 +1,63 @@
 import unittest
-
-import pygame
-import pygame_gui
-
-from src.gui.gui import init_gui_manager
-from src.gui.primitives import Button, Label, Panel
 from unittest.mock import Mock
-from unittest.mock import patch
+import pygame
+from src.gui.primitives import Button, Label, Panel, TextBox, Image
+from src.gui.gui import GuiElement
 
-class TestGuiPrimitives(unittest.TestCase):
+class TestButton(unittest.TestCase):
 	def setUp(self):
 		pygame.init()
-		self.screen = pygame.display.set_mode((800, 600))
-		init_gui_manager()
-		self.manager = pygame_gui.UIManager((800, 600))
+		self.surface = pygame.display.set_mode((800, 600))
+		self.gui_mgr = Mock()
+		self.gui_mgr.surface = self.surface
 
-	def test__button(self):
-		button = Button(
-			rect=((50, 50), (100, 50)),
-			label="Click Me",
-			container=None
-		)
-		self.assertIsInstance(button, Button)
+	def test_button_label(self):
+		button = Button(rect=((0, 0), (100, 50)), text="Click Me", parent=None)
+		button.gui_mgr = self.gui_mgr
+		self.assertEqual(button.text, "Click Me")
 
-	def test__label(self):
-		label = Label(
-			rect=((50, 150), (200, 50)),
-			text="Hello World",
-			container=None
-		)
-		self.assertIsInstance(label, Label)
-		self.assertEqual(label.label.text, "Hello World")
+	def test_button_callback(self):
+		callback = Mock()
+		button = Button(rect=((0, 0), (100, 50)), text="Click Me", callback=callback, parent=None)
+		button.gui_mgr = self.gui_mgr
+		event = pygame.event.Event(pygame.MOUSEBUTTONDOWN, pos=(10, 10))
+		button.process_event(event)
+		callback.assert_called_once()
 
-	def test__panel(self):
-		panel = Panel(
-			rect=((50, 250), (300, 200))
-		)
-		self.assertIsInstance(panel, Panel)
-		self.assertIsInstance(panel.pygame_container, pygame_gui.elements.UIPanel)
+class TestLabel(unittest.TestCase):
+	def setUp(self):
+		pygame.init()
+		self.surface = pygame.display.set_mode((800, 600))
+		self.gui_mgr = Mock()
+		self.gui_mgr.surface = self.surface
 
-	def tearDown(self):
-		pygame.quit()
+	def test_label_text(self):
+		label = Label(rect=((0, 0), (100, 50)), text="Hello", parent=None)
+		label.gui_mgr = self.gui_mgr
+		self.assertEqual(label.text, "Hello")
+
+class TestTextBox(unittest.TestCase):
+	def setUp(self):
+		pygame.init()
+		self.surface = pygame.display.set_mode((800, 600))
+		self.gui_mgr = Mock()
+		self.gui_mgr.surface = self.surface
+
+	def test_textbox_text(self):
+		textbox = TextBox(rect=((0, 0), (100, 50)), text="Sample Text", parent=None)
+		textbox.gui_mgr = self.gui_mgr
+		self.assertEqual(textbox.text, "Sample Text")
+
+class TestImage(unittest.TestCase):
+	def setUp(self):
+		pygame.init()
+		self.surface = pygame.display.set_mode((800, 600))
+		self.gui_mgr = Mock()
+		self.gui_mgr.surface = self.surface
+
+	def test_image_load(self):
+		with self.assertRaises(ValueError):
+			Image(rect=((0, 0), (100, 50)), image=None, parent=None)
 
 if __name__ == '__main__':
 	unittest.main()
-	

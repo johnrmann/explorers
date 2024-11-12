@@ -9,6 +9,14 @@ SUPEREVENT_IMG_HEIGHT = int(SUPEREVENT_IMG_WIDTH * (9 / 16))
 
 SUPEREVENT_BODY_HEIGHT = 200
 
+SUPEREVENT_WIDTH = SUPEREVENT_IMG_WIDTH
+SUPEREVENT_HEIGHT = (
+	TITLE_HEIGHT +
+	SUPEREVENT_IMG_HEIGHT + 
+	SUPEREVENT_BODY_HEIGHT +
+	TITLE_HEIGHT
+)
+
 class Superevent(GuiElement):
 	"""
 	A "Superevent" is a large pop up dominated by a large image, with some
@@ -22,51 +30,43 @@ class Superevent(GuiElement):
 		doing.
 	"""
 	def __init__(self, title="", image_path="", body="", dismiss_text=""):
+		w, h = SUPEREVENT_WIDTH, SUPEREVENT_HEIGHT
 		super().__init__()
-		w, h = self.dimensions()
 		self.panel = Panel(
-			rect=(self.origin(), self.dimensions()),
+			rect=((0,0), (w,h)),
+			parent=self,
 		)
 		self.title = Label(
 			rect=((0, 0), (w, TITLE_HEIGHT)),
 			text=title,
-			container=self.panel,
+			parent=self.panel,
 		)
 		self.img = Image(
 			rect=((0, TITLE_HEIGHT), (w, SUPEREVENT_IMG_HEIGHT)),
 			image=image_path,
-			container=self.panel
+			parent=self.panel
 		)
 		self.body = TextBox(
 			rect=((0, TITLE_HEIGHT + SUPEREVENT_IMG_HEIGHT), (w, 200)),
 			text=body,
-			container=self.panel
+			parent=self.panel
 		)
 		self.button = Button(
 			rect=((0, h - TITLE_HEIGHT), (w, TITLE_HEIGHT)),
-			label=dismiss_text,
-			container=self.panel
+			text=dismiss_text,
+			parent=self.panel
 		)
-	
+
+	@property
 	def origin(self):
-		width, height = self.dimensions()
-		s_width, s_height = self.screen_dimensions
-		x = (s_width - width) // 2
-		y = (s_height - height) // 2
-		return (x, y)
+		w, h = self.dimensions
+		screen_w, screen_h = self.gui_mgr.surface.get_size()
+		return ((screen_w - w) // 2, (screen_h - h) // 2)
 
-	def width(self):
-		return SUPEREVENT_IMG_WIDTH
-	
-	def height(self):
-		title = TITLE_HEIGHT
-		img = SUPEREVENT_IMG_HEIGHT
-		body = SUPEREVENT_BODY_HEIGHT
-		button = TITLE_HEIGHT
-		return title + img + body + button
-
+	@property
 	def dimensions(self):
-		return (self.width(), self.height())
+		return (SUPEREVENT_WIDTH, SUPEREVENT_HEIGHT)
+
 
 def superevent_from_json(file: str, event_key: str):
 	json_f = open(file, 'r')

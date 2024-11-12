@@ -51,7 +51,7 @@ class Control:
 		if event.type == pygame.QUIT and self.on_quit:
 			self.on_quit()
 			return True
-		elif self.gui_mgr.process_events(event):
+		elif self.gui_mgr.process_event(event):
 			return True
 		elif event.type == pygame.KEYDOWN:
 			self.interpret_pygame_camera_keyboard_event(event)
