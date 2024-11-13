@@ -2,15 +2,20 @@ from src.math.direction import Direction
 from src.math.cart_prod import spatial_cart_prod
 from src.math.vector2 import Vector2
 
+from src.gameobject.constants import NO_OWNER
+
 class GameObject:
 	"""
 	Represents a thing in the game world. Can be a character, a prop, or
 	invisible tiles that can be interacted with.
 	"""
+
 	evt_mgr = None
 	_pos = (0, 0)
 
-	def __init__(self, pos = None, size = None):
+	owner: int = NO_OWNER
+
+	def __init__(self, pos = None, size = None, owner = 0):
 		"""
 		Position is the top left tile that the game object occupies.
 		"""
@@ -22,6 +27,7 @@ class GameObject:
 		self._pos = pos
 		self.size = size
 		self.evt_mgr = get_event_manager()
+		self.owner = owner
 	
 	@property
 	def pos(self):

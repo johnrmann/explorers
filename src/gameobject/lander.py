@@ -2,9 +2,9 @@
 TODO(jm) - very temporary.
 """
 
-from src.gameobject.gameobject import GameObject
+from src.gameobject.interactable import Interactable
 
-class Lander(GameObject):
+class Lander(Interactable):
 	def __init__(self, pos=None):
 		if pos is None:
 			pos = (0,0)
