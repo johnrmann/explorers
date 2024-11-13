@@ -1,8 +1,7 @@
 from src.gameobject.gameobject import GameObject
 from src.gameobject.actor import Actor
 from src.world.world import World
-
-TICKS_PER_SECOND = 25
+from src.mgmt.constants import TICKS_PER_SECOND
 
 class GameManager:
 	"""

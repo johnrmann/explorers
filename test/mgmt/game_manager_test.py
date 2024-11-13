@@ -10,8 +10,8 @@ class GameManagerTest(unittest.TestCase):
 		gm = GameManager(None, None)
 		self.assertEqual(gm.utc, 0)
 		gm.tick(1)
-		self.assertEqual(gm.utc, 1 / 25)
-		gm.tick(24)
+		self.assertEqual(gm.utc, 1 / 50)
+		gm.tick(49)
 		self.assertEqual(gm.utc, 1)
 	
 	def test__rejects_time_travel(self):
