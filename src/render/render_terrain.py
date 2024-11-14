@@ -2,7 +2,7 @@ import pygame
 import math
 
 from ..world.world import World
-from src.render.viewport import Viewport
+from src.render.viewport import ZOOMS, Viewport
 from src.render.utils import *
 from src.math.map_range import map_range
 from src.math.direction import *
@@ -10,31 +10,24 @@ from src.rendermath.tile import tile_polygon, is_point_in_tile, is_tile_in_scree
 from src.rendermath.order import offset_tile_by_draw_order_vector
 from src.rendermath.geometry import is_point_in_screen
 from src.math.vector2 import Vector2
-
-GROUND_COLOR = (200, 0, 0)
-WALL_COLOR_1 = (100, 0, 0)
-WALL_COLOR_2 = (50, 0, 0)
+from src.render.render_tile import TileSurfaceCache, WALL_COLOR_1
 
 HIGHLIGHT_COLOR = (0, 250, 0)
 
 # TODO(jm) - how to inject this
 SCREEN_DIMS = Vector2(1440, 900)
 
-def polygons(vp: Viewport, terrain, tile):
-	x,y = tile
-	h = terrain.map[y][x]
-	tile_screen = vp.tile_to_screen_coords(tile)
-	bottom = tile_polygon(tile_screen, vp.tile_dimensions)
-	top = height_offset_tile(bottom, h / 8, vp)
-	return box_between_tiles(top, bottom)
-
 class RenderTerrain(object):
-	def __init__(self, window, world: World, vp: Viewport):
-		from src.mgmt.singletons import get_game_manager
-		self.game = get_game_manager()
+	def __init__(self, window, world: World, vp: Viewport, game_mgr=None):
+		if game_mgr is None:
+			from src.mgmt.singletons import get_game_manager
+			self.game = get_game_manager()
+		else:
+			self.game = game_mgr
 		self.world = world
 		self.window = window
 		self.vp = vp
+		self.tile_cache = TileSurfaceCache()
 	
 	@property
 	def terrain(self):
@@ -52,45 +45,66 @@ class RenderTerrain(object):
 		bottom = self.tile_bottom(tile_p)
 		return height_offset_tile(bottom, h / 8, self.vp)
 
-	def render_tile(self, p):
-		lat_long = self.terrain.lat_long(p)
+	def tile_bottom_screen_coords(self, tile_p):
+		tile_screen = self.vp.tile_to_screen_coords(tile_p)
+		return tile_screen
+
+	def tile_top_screen_coords(self, tile_p):
+		bottom_screen_p = self.tile_bottom_screen_coords(tile_p)
+		x, y = tile_p
+		h = self.terrain.map[y][x]
+		dy = (h * self.vp.terrain_z)
+		bsp_x, bsp_y = bottom_screen_p
+		return (bsp_x, bsp_y - dy)
+
+	def wall_heights(self, cell_p):
+		co = self.vp.camera_orientation
+		left = self.terrain.height_delta(cell_p, left_wall_direction(co))
+		right = self.terrain.height_delta(cell_p, right_wall_direction(co))
+		return (left, right)
+
+	def ridge_heights(self, cell_p):
+		co = self.vp.camera_orientation
+		left = self.terrain.height_delta(cell_p, left_ridge_direction(co))
+		right = self.terrain.height_delta(cell_p, right_ridge_direction(co))
+		return (left, right)
+
+	def should_render_ridges(self, cell_p):
+		left, right = self.ridge_heights(cell_p)
+		return (left > 0, right > 0)
+	
+	def _render_ridges(self, cell_p, screen_p=None):
+		left, right = self.should_render_ridges(cell_p)
+		if not left and not right:
+			return
+		if screen_p is None:
+			screen_p = self.tile_top_screen_coords(cell_p)
+		screen_x, screen_y = screen_p
+		half_w = self.vp.tile_width // 2
+		top_p = (screen_x, screen_y - (self.vp.tile_height // 2))
+		if left:
+			left_p = (screen_x - half_w, screen_y)
+			pygame.draw.line(self.window, WALL_COLOR_1, top_p, left_p)
+		if right:
+			right_p = (screen_x + half_w, screen_y)
+			pygame.draw.line(self.window, WALL_COLOR_1, top_p, right_p)
+
+	def render_tile(self, cell_p):
+		lat_long = self.terrain.lat_long(cell_p)
 		bness = self.world.horology.brightness(self.game.utc, lat_long)
 		bness2 = map_range(bness, (0, 1), (0.2, 1))
-		top, left_wall, right_wall = polygons(self.vp, self.terrain, p)
+		
+		screen_p = self.tile_top_screen_coords(cell_p)
+		zoom = self.vp.tile_width
 
-		if top:
-			color = scale_color(GROUND_COLOR, bness2)
-			pygame.draw.polygon(self.window, color, top)
-
-		should_render_left_wall = self.terrain.height_delta(
-			p,
-			left_wall_direction(self.vp.camera_orientation),
-		)
-		should_render_right_wall = self.terrain.height_delta(
-			p,
-			right_wall_direction(self.vp.camera_orientation),
-		)
-		if left_wall and should_render_left_wall:
-			color = scale_color(WALL_COLOR_1, bness2)
-			pygame.draw.polygon(self.window, color, left_wall)
-		if right_wall and should_render_right_wall:
-			color = scale_color(WALL_COLOR_2, bness2)
-			pygame.draw.polygon(self.window, color, right_wall)
-
-		should_render_left_ridge = self.terrain.height_delta(
-			p,
-			left_ridge_direction(self.vp.camera_orientation),
-		)
-		should_render_right_ridge = self.terrain.height_delta(
-			p,
-			right_ridge_direction(self.vp.camera_orientation)
-		)
-		if should_render_left_ridge:
-			color = scale_color(WALL_COLOR_1, bness2)
-			pygame.draw.line(self.window, color, top[3], top[0])
-		if should_render_right_ridge:
-			color = scale_color(WALL_COLOR_2, bness2)
-			pygame.draw.line(self.window, color, top[0], top[1])
+		walls = self.wall_heights(cell_p)
+		draws = self.tile_cache.surfaces_and_positions(screen_p, zoom, walls)
+		for draw in draws:
+			if draw is None:
+				continue
+			surface, top_left_pos = draw
+			self.window.blit(surface, surface.get_rect(topleft=top_left_pos))
+		self._render_ridges(cell_p, screen_p)
 
 	def tile_at_screen_pos(self, screen_p):
 		"""
