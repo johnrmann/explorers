@@ -10,7 +10,11 @@ from src.ctrl.event_id import (
 from src.math.direction import (
 	Direction,
 	direction_to_delta,
-	direction_rotate_90
+	direction_rotate_90,
+	left_wall_direction,
+	right_wall_direction,
+	left_ridge_direction,
+	right_ridge_direction,
 )
 from src.math.cart_prod import spatial_cart_prod
 from src.mgmt.listener import Listener
@@ -27,6 +31,11 @@ class Viewport(Listener):
 	_zoom_idx = 1
 
 	camera_orientation = Direction.NORTHWEST
+
+	left_wall_direction = left_wall_direction(Direction.NORTHWEST)
+	right_wall_direction = right_wall_direction(Direction.NORTHWEST)
+	left_ridge_direction = left_ridge_direction(Direction.NORTHWEST)
+	right_ridge_direction = right_ridge_direction(Direction.NORTHWEST)
 
 	def __init__(self, window_dims, terrain):
 		from src.mgmt.singletons import get_event_manager
@@ -86,6 +95,13 @@ class Viewport(Listener):
 			return
 		self._zoom_idx = min(max(0, self._zoom_idx + delta), len(ZOOMS) - 1)
 
+	def _update_walls_and_ridges(self):
+		co = self.camera_orientation
+		self.left_wall_direction = left_wall_direction(co)
+		self.right_wall_direction = right_wall_direction(co)
+		self.left_ridge_direction = left_ridge_direction(co)
+		self.right_ridge_direction = right_ridge_direction(co)
+
 	def rotate_camera(self, delta):
 		if delta == 0:
 			return
@@ -93,6 +109,7 @@ class Viewport(Listener):
 			self.camera_orientation,
 			quarter_turns=delta
 		)
+		self._update_walls_and_ridges()
 	
 	def move_camera(self, camdir: Direction):
 		if not camdir:

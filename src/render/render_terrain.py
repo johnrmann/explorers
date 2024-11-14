@@ -58,15 +58,13 @@ class RenderTerrain(object):
 		return (bsp_x, bsp_y - dy)
 
 	def wall_heights(self, cell_p):
-		co = self.vp.camera_orientation
-		left = self.terrain.height_delta(cell_p, left_wall_direction(co))
-		right = self.terrain.height_delta(cell_p, right_wall_direction(co))
+		left = self.terrain.height_delta(cell_p, self.vp.left_wall_direction)
+		right = self.terrain.height_delta(cell_p, self.vp.right_wall_direction)
 		return (left, right)
 
 	def ridge_heights(self, cell_p):
-		co = self.vp.camera_orientation
-		left = self.terrain.height_delta(cell_p, left_ridge_direction(co))
-		right = self.terrain.height_delta(cell_p, right_ridge_direction(co))
+		left = self.terrain.height_delta(cell_p, self.vp.left_ridge_direction)
+		right = self.terrain.height_delta(cell_p, self.vp.right_ridge_direction)
 		return (left, right)
 
 	def should_render_ridges(self, cell_p):
