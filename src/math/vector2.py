@@ -1,36 +1,43 @@
 """
-TODO(jm)
+Classes and functions for 2D vectors.
 """
 
 from math import sqrt
 
 class Vector2:
+	"""
+	A two-dimensional vector can either represent a direction or a point
+	in two-dimensional space.
+	"""
+
+	__slots__ = ["x", "y"]
+
 	def __init__(self, x, y):
 		self.x = x
 		self.y = y
-	
+
 	def __iter__(self):
 		yield self.x
 		yield self.y
-	
+
 	def __str__(self):
 		return "({x:.2f}, {y:.2f})".format(x = self.x, y = self.y)
-	
+
 	def __hash__(self):
 		return hash((self.x, self.y))
-	
+
 	def __eq__(self, q):
 		qx, qy = q
 		return self.x == qx and self.y == qy
-	
+
 	def __add__(self, q):
 		qx, qy = q
 		return Vector2(self.x + qx, self.y + qy)
-	
+
 	def __sub__(self, q):
 		qx, qy = q
 		return Vector2(self.x - qx, self.y - qy)
-		
+
 	def __mul__(self, k: float):
 		return Vector2(self.x * k, self.y * k)
 
@@ -46,7 +53,7 @@ class Vector2:
 		px,py = self
 		qx,qy = q
 		return (px,py) > (qx,qy)
-	
+
 	def is_cardinal(self):
 		"""
 		A vector represents a cardinal direction if either its x xor y
@@ -55,23 +62,36 @@ class Vector2:
 		if self.x == self.y == 0:
 			return False
 		return self.x == 0 or self.y == 0
-	
+
 	def is_diagonal(self):
+		"""
+		A direction is diagonal if its components are of the same magnitude.
+		"""
 		abs_x = abs(self.x)
 		abs_y = abs(self.y)
 		if abs_x == abs_y == 0:
 			return False
 		return abs_x == abs_y
-	
+
 	def magnitude2(self):
+		"""
+		Returns the square of the magnitude of the vector. For comparison
+		operations, strongly prefer this over magnitude.
+		"""
 		x2 = self.x**2
 		y2 = self.y**2
 		return x2 + y2
-	
+
 	def magnitude(self):
+		"""
+		Returns the magnitude of the vector.
+		"""
 		return sqrt(self.magnitude2())
-	
+
 	def normalized(self):
+		"""
+		Returns a vector in the same direction such that the magnitude is 1.
+		"""
 		mag = self.magnitude()
 		return Vector2(self.x / mag, self.y / mag)
 
@@ -80,6 +100,9 @@ class Vector2:
 		return Vector2(round(self.x), round(self.y))
 
 def vector2_lerp(p: Vector2, q: Vector2, k: float) -> Vector2:
+	"""
+	Linearly interpolates between two vectors.
+	"""
 	dq = q - p
 	return p + (dq * k)
 
