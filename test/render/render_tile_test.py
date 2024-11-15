@@ -55,14 +55,14 @@ class TestTileSurfaceCache(unittest.TestCase):
 		self.assertEqual(pos, (100, 100))
 
 	def test__surfaces_and_positions__valid_input(self):
-		surf_pos = self.cache.surfaces_and_positions((100, 100), 32, (1, 1))
-		self.assertEqual(len(surf_pos), 3)
-		self.assertIsInstance(surf_pos[0][0], pygame.Surface)
-		self.assertEqual(surf_pos[0][1], (84, 92))
-		self.assertIsInstance(surf_pos[1][0], pygame.Surface)
-		self.assertEqual(surf_pos[1][1], (84, 100))
-		self.assertIsInstance(surf_pos[2][0], pygame.Surface)
-		self.assertEqual(surf_pos[2][1], (100, 100))
+		p = (100, 100)
+		tile, left, right = self.cache.surfaces_and_positions(p, 32, (1, 1))
+		self.assertIsInstance(tile[0], pygame.Surface)
+		self.assertEqual(tile[1], (84, 92))
+		self.assertIsInstance(left[0], pygame.Surface)
+		self.assertEqual(left[1], (84, 100))
+		self.assertIsInstance(right[0], pygame.Surface)
+		self.assertEqual(right[1], (100, 100))
 
 class TestScreenDrawPositions(unittest.TestCase):
 

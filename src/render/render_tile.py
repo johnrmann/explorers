@@ -40,8 +40,13 @@ class TileSurfaceCache:
 	"""
 
 	tile_cache = {}
+
 	left_wall_cache = {}
 	right_wall_cache = {}
+
+	left_ridge_cache = {}
+	right_ridge_cache = {}
+	both_ridge_cache = {}
 
 	zooms: list[int]
 
@@ -51,14 +56,18 @@ class TileSurfaceCache:
 		self.zooms = zooms
 		self._init_tile_cache()
 		self._init_wall_caches()
+		self._init_ridge_caches()
+
+	def _make_tile_and_surface(self, w):
+		h = w // 2
+		surface = pygame.Surface((w, h), pygame.SRCALPHA)
+		tile = tile_polygon((w // 2, h // 2), (w, h))
+		pygame.draw.polygon(surface, GROUND_COLOR, tile)
+		return tile, surface
 
 	def _init_tile_cache(self):
 		for zoom in self.zooms:
-			w = zoom
-			h = w // 2
-			surface = pygame.Surface((w, h), pygame.SRCALPHA)
-			tile = tile_polygon((w // 2, h // 2), (w, h))
-			pygame.draw.polygon(surface, GROUND_COLOR, tile)
+			_, surface = self._make_tile_and_surface(zoom)
 			self.tile_cache[zoom] = surface
 
 	def _init_wall_caches(self):
@@ -74,11 +83,36 @@ class TileSurfaceCache:
 					_wall_surface('right', h, zoom, WALL_COLOR_2)
 				)
 
-	def tile_surface(self, zoom):
+	def _init_ridge_caches(self):
+		for zoom in self.zooms:
+			tile, both = self._make_tile_and_surface(zoom)
+			_, left = self._make_tile_and_surface(zoom)
+			_, right = self._make_tile_and_surface(zoom)
+			tile_top, tile_right, _, tile_left = tile
+			pygame.draw.line(left, WALL_COLOR_1, tile_left, tile_top)
+			pygame.draw.line(both, WALL_COLOR_1, tile_left, tile_top)
+			pygame.draw.line(right, WALL_COLOR_1, tile_top, tile_right)
+			pygame.draw.line(both, WALL_COLOR_1, tile_top, tile_right)
+			self.left_ridge_cache[zoom] = left
+			self.right_ridge_cache[zoom] = right
+			self.both_ridge_cache[zoom] = both
+
+	def tile_surface(self, zoom, ridges=None):
 		"""
 		Returns a pre-rendered tile top for the given zoom (tile width).
 		"""
-		return self.tile_cache[int(zoom)]
+		idx = int(zoom)
+		if ridges is None:
+			ridges = (False, False)
+		left, right = ridges
+		if not left and not right:
+			return self.tile_cache[idx]
+		elif left and right:
+			return self.both_ridge_cache[idx]
+		elif left:
+			return self.left_ridge_cache[idx]
+		else:
+			return self.right_ridge_cache[idx] 
 
 	def left_wall_surface(self, zoom, left_wall_h=0):
 		"""
@@ -102,13 +136,13 @@ class TileSurfaceCache:
 		else:
 			return None
 
-	def tile_surface_and_position(self, screen_p, zoom):
+	def tile_surface_and_position(self, screen_p, zoom, ridges=None):
 		"""
 		Given a position on the screen that is the center of the tile we want
 		to draw and the zoom factor, return the tile surface and blit position
 		(top left corner).
 		"""
-		surface = self.tile_surface(zoom)
+		surface = self.tile_surface(zoom, ridges)
 		position = tile_screen_draw_position(screen_p, zoom)
 		return surface, position
 
@@ -136,19 +170,20 @@ class TileSurfaceCache:
 		position = right_wall_screen_draw_position(screen_p, zoom)
 		return surface, position
 
-	def surfaces_and_positions(self, screen_p, zoom, wall_heights=None):
+	def surfaces_and_positions(self, screen_p, zoom, wall_hs=None, ridges=None):
 		"""
 		Return the surfaces and draw positions (top left corners) for the
 		(tile, left wall, right wall).
 		"""
-		if wall_heights is None:
-			wall_heights = (0, 0)
-		left, right = wall_heights
-		return [
-			self.tile_surface_and_position(screen_p, zoom),
-			self.left_wall_surface_and_position(screen_p, zoom, wall_h=left),
-			self.right_wall_surface_and_position(screen_p, zoom, wall_h=right)
-		]
+		if wall_hs is None:
+			wall_hs = (0, 0)
+		if ridges is None:
+			ridges = (False, False)
+		yield self.tile_surface_and_position(screen_p, zoom, ridges)
+		# Walls
+		left, right = wall_hs
+		yield self.left_wall_surface_and_position(screen_p, zoom, wall_h=left)
+		yield self.right_wall_surface_and_position(screen_p, zoom, wall_h=right)
 
 def tile_screen_draw_position(screen_p, tile_w):
 	"""

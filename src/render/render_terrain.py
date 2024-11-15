@@ -70,22 +70,6 @@ class RenderTerrain(object):
 	def should_render_ridges(self, cell_p):
 		left, right = self.ridge_heights(cell_p)
 		return (left > 0, right > 0)
-	
-	def _render_ridges(self, cell_p, screen_p=None):
-		left, right = self.should_render_ridges(cell_p)
-		if not left and not right:
-			return
-		if screen_p is None:
-			screen_p = self.tile_top_screen_coords(cell_p)
-		screen_x, screen_y = screen_p
-		half_w = self.vp.tile_width // 2
-		top_p = (screen_x, screen_y - (self.vp.tile_height // 2))
-		if left:
-			left_p = (screen_x - half_w, screen_y)
-			pygame.draw.line(self.window, WALL_COLOR_1, top_p, left_p)
-		if right:
-			right_p = (screen_x + half_w, screen_y)
-			pygame.draw.line(self.window, WALL_COLOR_1, top_p, right_p)
 
 	def render_tile(self, cell_p):
 		lat_long = self.terrain.lat_long(cell_p)
@@ -96,13 +80,12 @@ class RenderTerrain(object):
 		zoom = self.vp.tile_width
 
 		walls = self.wall_heights(cell_p)
-		draws = self.tile_cache.surfaces_and_positions(screen_p, zoom, walls)
+		draws = self.tile_cache.surfaces_and_positions(screen_p, zoom, walls, self.should_render_ridges(cell_p))
 		for draw in draws:
 			if draw is None:
 				continue
 			surface, top_left_pos = draw
 			self.window.blit(surface, surface.get_rect(topleft=top_left_pos))
-		self._render_ridges(cell_p, screen_p)
 
 	def tile_at_screen_pos(self, screen_p):
 		"""
