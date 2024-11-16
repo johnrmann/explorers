@@ -1,6 +1,9 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 
+# C-compiled stuff
+bin/**
+
 # macOS stuff
 **/.DS_Store
 

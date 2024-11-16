@@ -7,7 +7,7 @@ from src.math.voronoi import make_voronoi
 from src.math.adj import select_adj_degree, bool_adj_from_labels
 from src.math.smooth import smooth_matrix
 
-TERRAIN_X = 128
+TERRAIN_X = 256
 TERRAIN_Y = TERRAIN_X // 2
 TERRAIN_Z = TERRAIN_Y // 2
 
@@ -20,15 +20,11 @@ class TerrainGenerator(object):
 		self.terrain = np.zeros((height, width))
 		self._voronoi()
 	
-	def _voronoi(self, avg_area = 25):
+	def _voronoi(self, avg_area = 64):
 		h = len(self.terrain)
 		w = len(self.terrain[0])
 		n_points = (w * h) // avg_area
-		points_raw = np.random.rand(n_points, 2)
-		points = [
-			(int(x * w), int(y * h)) for x,y in points_raw
-		]
-		voronoi = make_voronoi((w,h), points)
+		voronoi = make_voronoi((w,h), avg_area)
 		v_adj = bool_adj_from_labels(voronoi, n_points)
 
 		remaining = set(range(n_points))

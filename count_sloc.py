@@ -9,11 +9,14 @@ def count_lines_in_file(file_path):
 		print(f"Error reading {file_path}: {e}")
 		return 0
 
+def should_count(file):
+	return file.endswith('.py') or file.endswith('.c') or file.endswith('.h')
+
 def count_lines_in_directory(directory):
 	total_lines = 0
 	for root, _, files in os.walk(directory):
 		for file in files:
-			if file.endswith('.py'):
+			if should_count(file):
 				file_path = os.path.join(root, file)
 				total_lines += count_lines_in_file(file_path)
 	return total_lines
