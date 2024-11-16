@@ -16,14 +16,14 @@ def render_gameobject(
 	height = 0,
 	image_map = {}
 ):
-	# An "ideal tile" is the position of the tile if there was no terrain.
+	# A "cell polygon" is the position of the tile if there was no terrain.
 	go_size = max(go.size[0], go.size[1])
 	go_center = go.draw_position
 	screen_pos = vp.tile_to_screen_coords(go_center)
-	ideal_tile = tile_polygon(screen_pos, vp.tile_dimensions, go_size)
+	cell_polygon = tile_polygon(screen_pos, vp.tile_dimensions, go_size)
 
 	# Now, move up by height to find the terrain start point.
-	terrain = height_offset_tile(ideal_tile, height / 8, vp)
+	terrain = height_offset_tile(cell_polygon, height / 8, vp)
 	if go.image_path() in image_map:
 		img = image_map[go.image_path()]
 		origin, img_dims = fit_img_rect_on_tile_base(img.get_size(), terrain)

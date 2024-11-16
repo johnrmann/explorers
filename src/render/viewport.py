@@ -18,7 +18,7 @@ from src.math.direction import (
 )
 from src.math.cart_prod import spatial_cart_prod
 from src.mgmt.listener import Listener
-from src.render.space import tile_screen_transform
+from src.rendermath.cell import cell_position_on_global_screen
 
 TILE_WIDTH = 48
 TILE_HEIGHT = TILE_WIDTH // 2
@@ -175,13 +175,12 @@ class Viewport(Listener):
 			y2 + (win_height // 2) - cy_screen,
 		)
 	
-	def global_tile_to_screen_coords(self, p):
-		half_w = self.tile_width // 2
-		half_h = self.tile_height // 2
-		tx, ty = tile_screen_transform(p, self.camera_orientation)
-		screen_x = tx * half_w
-		screen_y = ty * half_h
-		return (screen_x, screen_y)
+	def global_tile_to_screen_coords(self, cell_pos):
+		return cell_position_on_global_screen(
+			cell_pos,
+			self.camera_orientation,
+			self.tile_dimensions
+		)
 	
 	def screen_to_tile_coords(self, p_screen):
 		"""
