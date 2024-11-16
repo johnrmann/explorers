@@ -8,6 +8,11 @@ class _GuiManager:
 		if not self.surface:
 			raise ValueError("pygame not initialized yet")
 
+	def remove_element(self, element):
+		"""Removes the given element from being rendered."""
+		if element in self.elements:
+			self.elements.remove(element)
+
 	def process_event(self, event):
 		for elem in self.elements:
 			if elem.process_event(event):
@@ -43,8 +48,7 @@ class GuiElement:
 			self.gui_mgr.elements.append(self)
 
 	def __del__(self):
-		if self in self.gui_mgr.elements:
-			self.gui_mgr.elements.remove(self)
+		self.gui_mgr.remove_element(self)
 
 	def process_event(self, event):
 		"""Returns true if the event was for this controller."""
