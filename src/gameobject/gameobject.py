@@ -17,7 +17,7 @@ class GameObject:
 
 	def __init__(self, pos = None, size = None, owner = 0):
 		"""
-		Position is the top left tile that the game object occupies.
+		Position is the top left cell that the game object occupies.
 		"""
 		if pos is None:
 			pos = (0, 0)
@@ -53,9 +53,9 @@ class GameObject:
 		_, h = self.size
 		return range(y, y + h)
 
-	def tiles_occupied(self, view_sort = Direction.NORTHWEST):
+	def cells_occupied(self, view_sort = Direction.NORTHWEST):
 		"""
-		Returns an array of tiles that this object occupies. Optional view_sort
+		Returns an array of cells that this object occupies. Optional view_sort
 		is nice for determining draw order.
 		"""
 		xs = self.x_range()
