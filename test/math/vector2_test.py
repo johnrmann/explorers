@@ -4,6 +4,7 @@ from math import sqrt
 
 from src.math.vector2 import Vector2, vector2_lerp, vector2_bounding_rect
 from src.math.vector2 import vector2_move_points_near_zero
+from src.math.vector2 import vector2_rotate_points
 
 class Vector2Test(unittest.TestCase):
 	def test__print(self):
@@ -154,6 +155,36 @@ class Vector2Test(unittest.TestCase):
 		points = []
 		with self.assertRaises(ValueError):
 			vector2_move_points_near_zero(points)
+
+	def test__vector2_rotate_points__no_rotation(self):
+		points = [(1, 2), (3, 4)]
+		expected_points = [(1, 2), (3, 4)]
+		self.assertEqual(vector2_rotate_points(points, 0), expected_points)
+
+	def test__vector2_rotate_points__one_quarter_turn(self):
+		points = [(1, 2), (3, 4)]
+		expected_points = [(2, -1), (4, -3)]
+		self.assertEqual(vector2_rotate_points(points, 1), expected_points)
+
+	def test__vector2_rotate_points__two_quarter_turns(self):
+		points = [(1, 2), (3, 4)]
+		expected_points = [(-1, -2), (-3, -4)]
+		self.assertEqual(vector2_rotate_points(points, 2), expected_points)
+
+	def test__vector2_rotate_points__three_quarter_turns(self):
+		points = [(1, 2), (3, 4)]
+		expected_points = [(-2, 1), (-4, 3)]
+		self.assertEqual(vector2_rotate_points(points, 3), expected_points)
+
+	def test__vector2_rotate_points__four_quarter_turns(self):
+		points = [(1, 2), (3, 4)]
+		expected_points = [(1, 2), (3, 4)]
+		self.assertEqual(vector2_rotate_points(points, 4), expected_points)
+
+	def test__vector2_rotate_points__five_quarter_turns(self):
+		points = [(1, 2), (3, 4)]
+		expected_points = [(2, -1), (4, -3)]
+		self.assertEqual(vector2_rotate_points(points, 5), expected_points)
 
 if __name__ == "__main__":
 	unittest.main()
