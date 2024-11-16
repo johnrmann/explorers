@@ -4,7 +4,8 @@ from src.rendermath.geometry import (
 	sign,
 	is_point_in_triangle,
 	is_point_in_rect,
-	is_point_in_screen
+	is_point_in_screen,
+	is_point_in_hexagon
 )
 
 class GeometryTest(unittest.TestCase):
@@ -33,6 +34,13 @@ class GeometryTest(unittest.TestCase):
 		self.assertTrue(is_point_in_screen((0, 0), dimensions))
 		self.assertFalse(is_point_in_screen((2, 2), dimensions))
 		self.assertFalse(is_point_in_screen((3, 3), dimensions))
+
+	def test__is_point_in_hexagon(self):
+		hexagon = [(0, 0), (2, 0), (3, 2), (2, 4), (0, 4), (-1, 2)]
+		self.assertTrue(is_point_in_hexagon((1, 2), hexagon))
+		self.assertTrue(is_point_in_hexagon((0, 2), hexagon))
+		self.assertFalse(is_point_in_hexagon((3, 3), hexagon))
+		self.assertFalse(is_point_in_hexagon((4, 4), hexagon))
 
 if __name__ == '__main__':
 	unittest.main()

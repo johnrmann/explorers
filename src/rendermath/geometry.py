@@ -2,6 +2,8 @@
 Functions for general geometry stuff. 
 """
 
+from src.math.vector2 import vector2_average
+
 def sign(o, a, b):
 	"""
 	TODO(jm) - WTF is this?!?!
@@ -21,6 +23,17 @@ def is_point_in_triangle(p, triangle):
 	has_neg = (d1 < 0) or (d2 < 0) or (d3 < 0)
 	has_pos = (d1 > 0) or (d2 > 0) or (d3 > 0)
 	return not (has_neg and has_pos)
+
+def is_point_in_hexagon(p, hexagon):
+	"""
+	Is the point in a hexagon?
+	"""
+	center = vector2_average(hexagon)
+	for i in range(6):
+		j = (i + 1) % 6
+		if is_point_in_triangle(p, (hexagon[i], hexagon[j], center)):
+			return True
+	return False
 
 def is_point_in_rect(p, rect):
 	"""

@@ -150,6 +150,17 @@ def vector2_move_points_near_zero(ps):
 		qs.append((qx, qy))
 	return qs
 
+def vector2_average(ps):
+	"""
+	Computes the average of points.
+	"""
+	xs = [x for x, _ in ps]
+	ys = [y for _, y in ps]
+	return (
+		sum(xs) / len(ps),
+		sum(ys) / len(ps)
+	)
+
 def vector2_rotate_point(p, quarter_turns=0):
 	"""
 	Rotates a point by clockwise quarter turns.

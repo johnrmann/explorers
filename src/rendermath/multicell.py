@@ -84,7 +84,9 @@ def multicell_polygon_on_global_screen(bounds, cam_dir: Direction, tile_dims):
 	rx, ry = cell_position_on_global_screen(right, cam_dir, tile_dims)
 	bx, by = cell_position_on_global_screen(bottom, cam_dir, tile_dims)
 	lx, ly = cell_position_on_global_screen(left, cam_dir, tile_dims)
-	yield (tx, ty - dy)
-	yield (rx + dx, ry)
-	yield (bx, by + dy)
-	yield (lx - dx, ly)
+	return (
+		(tx, ty - dy),
+		(rx + dx, ry),
+		(bx, by + dy),
+		(lx - dx, ly)
+	)
