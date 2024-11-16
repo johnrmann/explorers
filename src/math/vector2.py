@@ -150,6 +150,21 @@ def vector2_move_points_near_zero(ps):
 		qs.append((qx, qy))
 	return qs
 
+def vector2_rotate_point(p, quarter_turns=0):
+	"""
+	Rotates a point by clockwise quarter turns.
+	"""
+	if quarter_turns >= 4:
+		return vector2_rotate_point(p, quarter_turns=quarter_turns % 4)
+	x, y = p
+	if quarter_turns == 1:
+		return (y, -x)
+	elif quarter_turns == 2:
+		return (-x, -y)
+	elif quarter_turns == 3:
+		return (-y, x)
+	return p
+
 def vector2_rotate_points(ps, quarter_turns=0):
 	"""
 	Rotates points by clockwise quarter turns.
