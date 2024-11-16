@@ -1,5 +1,7 @@
 import math
 
+from functools import lru_cache
+
 EARTH_DAY_LENGTH = 24 * 60
 EARTH_YEAR_LENGTH = 360
 
@@ -100,31 +102,11 @@ class Horology(object):
 			self.tilt_deg = EARTH_TILT
 		self.minutes_in_day = minutes_in_day
 		self.days_in_year = days_in_year
-	
-	@property
-	def tilt_rad(self):
-		"""
-		Axial tilt in radians.
-		"""
-		return math.radians(self.tilt_deg)
+		# Computed properties.
+		self.tilt_rad = math.radians(self.tilt_deg)
+		self.minutes_in_year = self.minutes_in_day * self.days_in_year
 
-	@property
-	def minutes_in_year(self):
-		"""
-		Number of minutes in a year. Since minutes per day and days per year
-		are defined separately, guaranteed to be a nice number.
-		"""
-		return self.minutes_in_day * self.days_in_year
-
-	def utc_to_planet_time_fracs(self, utc: float):
-		"""
-		Returns a tuple of fractions (0-0.999, 0-0.999) representing
-		how far along we are in the (day, year). Very useful for sun
-		angle calculations.
-		"""
-		minute, day, _ = self.utc_to_planet_calendar(utc)
-		return (minute / self.minutes_in_day, day / self.days_in_year)
-
+	@lru_cache(maxsize=5)
 	def utc_to_planet_calendar(self, utc: float):
 		"""
 		Converts UTC time to a date in the planet's calendar,
@@ -134,6 +116,16 @@ class Horology(object):
 		day = (utc // self.minutes_in_day) % self.days_in_year
 		year = utc // self.minutes_in_year
 		return (minute, day, year)
+
+	@lru_cache(maxsize=5)
+	def utc_to_planet_time_fracs(self, utc: float):
+		"""
+		Returns a tuple of fractions (0-0.999, 0-0.999) representing
+		how far along we are in the (day, year). Very useful for sun
+		angle calculations.
+		"""
+		minute, day, _ = self.utc_to_planet_calendar(utc)
+		return (minute / self.minutes_in_day, day / self.days_in_year)
 	
 	def local_time_at_longitude(self, utc: float, longitude: float) -> float:
 		"""

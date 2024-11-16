@@ -5,7 +5,20 @@ from src.math.vector2 import Vector2
 def make_height_delta():
 	return [0] * 4
 
+def lat(y, h):
+	center_y = h // 2
+	dy = center_y - y
+	return dy / h
+
+def long(x, w):
+	center_x = w // 2
+	dx = x - center_x
+	return (dx / w) * 2
+
 class Terrain(object):
+	lats = []
+	longs = []
+
 	def __init__(self, map):
 		self.map = map
 		w = len(self.map[0])
@@ -14,7 +27,8 @@ class Terrain(object):
 			[make_height_delta() for _ in range(w)] for _ in range(h)
 		]
 		self._calc_height_deltas()
-	
+		self._calc_lat_longs()
+
 	def _calc_height_deltas(self):
 		for y in range(self.height):
 			for x in range(self.width):
@@ -24,6 +38,19 @@ class Terrain(object):
 					x2,y2 = adjs[i]
 					delta = self.map[y][x] - self.map[y2][x2]
 					self._height_deltas[y][x][i] = delta
+
+	def _calc_lat_longs(self):
+		w, h = self.dimensions
+		self.lats = [lat(y, h) for y in range(h)]
+		self.longs = [long(x, w) for x in range(w)]
+
+	def lat_long(self, p):
+		"""
+		Returns the latitude and longitude of the given cell position. Note
+		that lat is y-axis and long is x-axis.
+		"""
+		x, y = p
+		return (self.lats[y], self.longs[x])
 
 	@property
 	def dimensions(self):
@@ -42,13 +69,6 @@ class Terrain(object):
 		w = len(self.map[0])
 		h = len(self.map)
 		return Vector2(w // 2, h // 2)
-	
-	def lat_long(self, p):
-		x,y = p
-		cent_x, cent_y = self.center
-		dy = cent_y - y
-		dx = x - cent_x
-		return (dy / self.height, (dx / self.width) * 2)
 
 	def is_valid_coordinates(self, p):
 		x_valid = 0 <= p.x < self.width

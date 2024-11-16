@@ -61,14 +61,32 @@ class ViewportTest(unittest.TestCase):
 	def test__zoom_camera__in(self):
 		vp = make_viewport()
 		self.assertEqual(vp.tile_width, 24)
+		self.assertEqual(vp.tile_height, 12)
+		self.assertAlmostEqual(vp.tile_z**2, 180)
 		vp.change_zoom(1)
 		self.assertEqual(vp.tile_width, 48)
+		self.assertEqual(vp.tile_height, 24)
+		self.assertAlmostEqual(vp.tile_z**2, 720)
 	
 	def test__zoom_camera__out(self):
 		vp = make_viewport()
+		self.assertEqual(vp.tile_width, 24)
 		self.assertEqual(vp.tile_height, 12)
+		self.assertAlmostEqual(vp.tile_z**2, 180)
 		vp.change_zoom(-1)
+		self.assertEqual(vp.tile_width, 12)
 		self.assertEqual(vp.tile_height, 6)
+		self.assertAlmostEqual(vp.tile_z**2, 45)
+
+	def test__zoom_camera__nothing(self):
+		vp = make_viewport()
+		self.assertEqual(vp.tile_width, 24)
+		self.assertEqual(vp.tile_height, 12)
+		self.assertAlmostEqual(vp.tile_z**2, 180)
+		vp.change_zoom(0)
+		self.assertEqual(vp.tile_width, 24)
+		self.assertEqual(vp.tile_height, 12)
+		self.assertAlmostEqual(vp.tile_z**2, 180)
 	
 	def test__zoom_camera__via_evt_mgr(self):
 		vp = make_viewport()
@@ -87,6 +105,12 @@ class ViewportTest(unittest.TestCase):
 		self.assertEqual(vp.camera_orientation, Direction.NORTHWEST)
 		vp.rotate_camera(-1)
 		self.assertEqual(vp.camera_orientation, Direction.SOUTHWEST)
+
+	def test__rotate_camera__nothing(self):
+		vp = make_viewport()
+		self.assertEqual(vp.camera_orientation, Direction.NORTHWEST)
+		vp.rotate_camera(0)
+		self.assertEqual(vp.camera_orientation, Direction.NORTHWEST)
 	
 	def test__rotate_camera__via_evt_mgr(self):
 		vp = make_viewport()

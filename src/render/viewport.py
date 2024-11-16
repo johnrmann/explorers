@@ -42,11 +42,20 @@ class Viewport(Listener):
 		self.evt_mgr = get_event_manager()
 		self.window_dims = window_dims
 		self.terrain_width, self.terrain_height = terrain.width, terrain.height
+		self.terrain_dims = (self.terrain_width, self.terrain_height)
 		self.camera_pos = terrain.center
 		self.evt_mgr.sub(EVENT_CAMERA_MOVE, self)
 		self.evt_mgr.sub(EVENT_CAMERA_ZOOM, self)
 		self.evt_mgr.sub(EVENT_CAMERA_ROTATE, self)
 		self.evt_mgr.sub(EVENT_MOUSE_CLICK_WORLD, self)
+		self._recompute_tile_dimensions()
+	
+	def _recompute_tile_dimensions(self):
+		self.tile_width = ZOOMS[self._zoom_idx]
+		self.tile_height = self.tile_width // 2
+		tw2 = (self.tile_width // 2)**2
+		th2 = (self.tile_height // 2)**2
+		self.tile_z = math.sqrt(tw2 + th2)
 	
 	def update(self, event_type, data):
 		if event_type == EVENT_CAMERA_MOVE:
@@ -65,26 +74,8 @@ class Viewport(Listener):
 			self.evt_mgr.pub("main.character.go", click_tile)
 	
 	@property
-	def terrain_dims(self):
-		return (self.terrain_width, self.terrain_height)
-
-	@property
-	def tile_width(self):
-		return ZOOMS[self._zoom_idx]
-	
-	@property
-	def tile_height(self):
-		return self.tile_width / 2
-	
-	@property
 	def tile_dimensions(self):
 		return (self.tile_width, self.tile_height)
-
-	@property
-	def tile_z(self):
-		w2 = (self.tile_width/2)**2
-		h2 = (self.tile_height/2)**2
-		return math.sqrt(w2 + h2)
 
 	@property
 	def terrain_z(self):
@@ -94,6 +85,7 @@ class Viewport(Listener):
 		if delta == 0:
 			return
 		self._zoom_idx = min(max(0, self._zoom_idx + delta), len(ZOOMS) - 1)
+		self._recompute_tile_dimensions()
 
 	def _update_walls_and_ridges(self):
 		co = self.camera_orientation
