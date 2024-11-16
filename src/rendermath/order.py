@@ -3,8 +3,45 @@ This module provides functions to determine the draw order vector and offset
 tiles by the draw order vector based on the camera orientation.
 """
 
-from src.math.vector2 import Vector2
-from src.math.direction import Direction, direction_to_delta
+from src.math.vector2 import Vector2, vector2_rotate_point
+from src.math.direction import Direction, direction_to_delta, quarter_turns_between_directions
+
+def draw_order_next_column(
+		cell_pos: Vector2,
+		cam_dir: Direction
+) -> Vector2:
+	q_turns = quarter_turns_between_directions(Direction.NORTHWEST, cam_dir)
+	dx, dy = vector2_rotate_point((1, -1), quarter_turns=q_turns)
+	x, y = cell_pos
+	return Vector2(x + dx, y + dy)
+
+def draw_order_next_row(
+		cell_pos: Vector2,
+		cam_dir: Direction,
+		carry: bool,
+) -> Vector2:
+	q_turns = quarter_turns_between_directions(Direction.NORTHWEST, cam_dir)
+	dy = 1 if carry else 0
+	dx = 0 if carry else 1
+	dx, dy = vector2_rotate_point((dx, dy), quarter_turns=q_turns)
+	x, y = cell_pos
+	return Vector2(x + dx, y + dy)
+
+def cells_in_draw_order(
+		origin: Vector2,
+		cam_dir: Direction,
+		tiles_wide: int,
+		tiles_tall: int,
+):
+	carry = True
+	x, y = origin
+	for col_count in range(tiles_wide):
+		next_x, next_y = draw_order_next_row((x, y), cam_dir, carry)
+		for row_count in range(tiles_tall):
+			yield (x, y)
+			x, y = draw_order_next_column((x, y), cam_dir)
+		x, y = next_x, next_y
+		carry = not carry
 
 def draw_order_vector(camera_orientation: Direction) -> Vector2:
 	"""

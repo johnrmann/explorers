@@ -49,13 +49,19 @@ class Viewport(Listener):
 		self.evt_mgr.sub(EVENT_CAMERA_ROTATE, self)
 		self.evt_mgr.sub(EVENT_MOUSE_CLICK_WORLD, self)
 		self._recompute_tile_dimensions()
-	
+		self._recompute_screen_dimensions()
+
 	def _recompute_tile_dimensions(self):
 		self.tile_width = ZOOMS[self._zoom_idx]
 		self.tile_height = self.tile_width // 2
 		tw2 = (self.tile_width // 2)**2
 		th2 = (self.tile_height // 2)**2
 		self.tile_z = math.sqrt(tw2 + th2)
+
+	def _recompute_screen_dimensions(self):
+		win_w, win_h = self.window_dims
+		self.tiles_wide = int(win_w // self.tile_width) + 2
+		self.tiles_tall = int(win_h // self.tile_height) + 2
 	
 	def update(self, event_type, data):
 		if event_type == EVENT_CAMERA_MOVE:
@@ -86,6 +92,7 @@ class Viewport(Listener):
 			return
 		self._zoom_idx = min(max(0, self._zoom_idx + delta), len(ZOOMS) - 1)
 		self._recompute_tile_dimensions()
+		self._recompute_screen_dimensions()
 
 	def _update_walls_and_ridges(self):
 		co = self.camera_orientation
@@ -123,45 +130,9 @@ class Viewport(Listener):
 		
 		self.camera_pos = (cx2, cy2)
 	
-	def get_x_range(self):
-		win_width, _ = self.window_dims
-		cx, _ = self.camera_pos
-		left = max(
-			0,
-			math.ceil(cx - (win_width / self.tile_width)) - SAFETY
-		)
-		right = min(
-			self.terrain_width,
-			math.ceil(cx + (win_width / self.tile_width)) + SAFETY
-		)
-		return range(left, right)
-	
-	def get_y_range(self):
-		_, win_height = self.window_dims
-		_, cy = self.camera_pos
-		top = max(
-			0,
-			math.ceil(cy - (win_height / self.tile_height)) - SAFETY
-		)
-		bottom = min(
-			self.terrain_height,
-			math.ceil(cy + (win_height / self.tile_height)) + SAFETY
-		)
-		return range(top, bottom)
-
-	def get_draw_points(self):
-		xr = self.get_x_range()
-		yr = self.get_y_range()
-		if self.camera_orientation == Direction.NORTHWEST:
-			return spatial_cart_prod(xr, yr)
-		elif self.camera_orientation == Direction.NORTHEAST:
-			return spatial_cart_prod(reversed(xr), yr)
-		elif self.camera_orientation == Direction.SOUTHEAST:
-			return spatial_cart_prod(reversed(xr), reversed(yr))
-		elif self.camera_orientation == Direction.SOUTHWEST:
-			return spatial_cart_prod(xr, reversed(yr))
-		else:
-			raise ValueError("Unknown camera orientation")
+	def get_draw_origin(self):
+		x, y = self.camera_pos
+		return (x - (self.tiles_tall // 2) - (self.tiles_wide // 2), y - (self.tiles_tall // 2) + (self.tiles_wide // 2))
 	
 	def tile_to_screen_coords(self, p_tile):
 		"""
@@ -190,14 +161,14 @@ class Viewport(Listener):
 		screen_x, screen_y = p_screen
 		win_width, win_height = self.window_dims
 		s_cam_x, s_cam_y = self.global_tile_to_screen_coords(self.camera_pos)
-		
+
 		# Adjust the screen coordinates relative to the centered camera
 		rel_screen_x = screen_x - (win_width // 2) + s_cam_x
 		rel_screen_y = screen_y - (win_height // 2) + s_cam_y
 
 		half_tw = self.tile_width // 2
 		half_th = self.tile_height // 2
-		
+
 		# Apply the reverse transformation based on camera orientation
 		if self.camera_orientation == Direction.NORTHWEST:
 			# Default orientation

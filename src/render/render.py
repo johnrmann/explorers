@@ -1,6 +1,6 @@
 import pygame
 
-from src.rendermath.tile import tile_polygon
+from src.rendermath.order import cells_in_draw_order
 from src.world.world import World
 from src.render.viewport import Viewport
 from src.render.render_terrain import RenderTerrain
@@ -35,8 +35,14 @@ class Render(object):
 		go_draw_keys = {}
 		for go in self.game.game_objects:
 			go_draw_keys[go.draw_point(self.vp.camera_orientation)] = go
-		
-		for p in self.vp.get_draw_points():
+
+		origin_cell = self.vp.get_draw_origin()
+		for p in cells_in_draw_order(
+			origin_cell,
+			self.vp.camera_orientation,
+			self.vp.tiles_wide,
+			self.vp.tiles_wide
+		):
 			(x,y) = p
 			self.render_terrain.render_tile(p)
 			if p in go_draw_keys:
