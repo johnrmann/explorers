@@ -141,5 +141,62 @@ class DirectionTest(unittest.TestCase):
 			Direction.NORTH,
 		)
 
+	def test__quarter_turns_between_directions__cardinal(self):
+		"""Test quarter turns between cardinal directions."""
+		self.assertEqual(
+			quarter_turns_between_directions(Direction.NORTH, Direction.EAST),
+			1
+		)
+		self.assertEqual(
+			quarter_turns_between_directions(Direction.NORTH, Direction.SOUTH),
+			2
+		)
+		self.assertEqual(
+			quarter_turns_between_directions(Direction.NORTH, Direction.WEST),
+			3
+		)
+		self.assertEqual(
+			quarter_turns_between_directions(Direction.EAST, Direction.NORTH),
+			3
+		)
+
+	def test__quarter_turns_between_directions__diagonal(self):
+		"""Test quarter turns between diagonal directions."""
+		self.assertEqual(
+			quarter_turns_between_directions(
+				Direction.NORTHEAST, Direction.SOUTHEAST
+			),
+			1
+		)
+		self.assertEqual(
+			quarter_turns_between_directions(
+				Direction.NORTHEAST, Direction.SOUTHWEST
+			),
+			2
+		)
+		self.assertEqual(
+			quarter_turns_between_directions(
+				Direction.NORTHEAST, Direction.NORTHWEST
+			),
+			3
+		)
+		self.assertEqual(
+			quarter_turns_between_directions(
+				Direction.SOUTHWEST, Direction.NORTHEAST
+			),
+			2
+		)
+
+	def test__quarter_turns_between_directions__invalid(self):
+		"""Test quarter turns between invalid direction pairs."""
+		with self.assertRaises(ValueError):
+			quarter_turns_between_directions(
+				Direction.NORTH, Direction.NORTHEAST
+			)
+		with self.assertRaises(ValueError):
+			quarter_turns_between_directions(
+				Direction.SOUTHWEST, Direction.EAST
+			)
+
 if __name__ == "__main__":
 	unittest.main()

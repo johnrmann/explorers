@@ -18,10 +18,10 @@ class Direction(Enum):
 	SOUTH = 2
 	WEST = 3
 	# Diagonals
-	NORTHEAST = 4
-	SOUTHEAST = 5
-	SOUTHWEST = 6
-	NORTHWEST = 7
+	NORTHWEST = 4
+	NORTHEAST = 5
+	SOUTHEAST = 6
+	SOUTHWEST = 7
 
 OPPOSITES = {
 	Direction.NORTH: Direction.SOUTH,
@@ -52,6 +52,19 @@ def direction_opposite(direction: Direction):
 	Return the opposite of a given direction.
 	"""
 	return OPPOSITES.get(direction)
+
+def quarter_turns_between_directions(d1: Direction, d2: Direction):
+	"""
+	Returns the number of clockwise quarter turns between directions.
+	"""
+	diff = 0
+	if is_direction_diagonal(d1) and is_direction_diagonal(d2):
+		diff = d2.value - d1.value
+	elif not is_direction_diagonal(d1) and not is_direction_diagonal(d2):
+		diff = d2.value - d1.value
+	else:
+		raise ValueError("Cannot have quarter turns btwn these directions")
+	return diff % 4
 
 def direction_rotate_90(direction: Direction, quarter_turns = 1):
 	"""
