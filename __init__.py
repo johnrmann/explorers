@@ -13,6 +13,7 @@ from src.ctrl.ctrl import Control
 from src.gui.mission_clock import MissionClock
 from src.gui.superevent import superevent_from_json
 from src.gui.fps import FpsCounter
+from src.gui.rangebar import Rangebar
 
 pygame.init()
 
@@ -66,6 +67,15 @@ def main():
 
 	mission_clock = MissionClock()
 	fps = FpsCounter()
+	# health = Rangebar(
+	# 	rect=((200,200), (200,30)),
+	# 	layers=[
+	# 		((250, 0, 0), 0, 0),
+	# 		((250, 250, 0), 0, 100),
+	# 		((0, 250, 0), 0, 100)
+	# 	],
+	# 	values=[66,33]
+	# )
 	# se = superevent_from_json(
 	# 	"assets/json/events/landing.json",
 	# 	"landing-neutral"

@@ -65,7 +65,7 @@ class Label(GuiPrimitive):
 		screen.blit(text_surface, text_rect)
 
 class Panel(GuiPrimitive):
-	"""Panels are basically rects."""
+	"""Panels are basically rects. Will add some more dressing on them soon."""
 
 	def __init__(self, rect=None, parent=None):
 		super().__init__(rect=rect, parent=parent)
