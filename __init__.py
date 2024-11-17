@@ -14,6 +14,7 @@ from src.gui.mission_clock import MissionClock
 from src.gui.superevent import superevent_from_json
 from src.gui.fps import FpsCounter
 from src.gui.rangebar import Rangebar
+from src.gui.menu import VerticalMenu
 
 pygame.init()
 
@@ -67,6 +68,14 @@ def main():
 
 	mission_clock = MissionClock()
 	fps = FpsCounter()
+	# vmenu = VerticalMenu(
+	# 	origin=(200,200),
+	# 	actions=[
+	# 		"Alpha",
+	# 		"Bravo",
+	# 		"Charlie"
+	# 	]
+	# )
 	# health = Rangebar(
 	# 	rect=((200,200), (200,30)),
 	# 	layers=[

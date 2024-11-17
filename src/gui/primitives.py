@@ -80,6 +80,7 @@ class Panel(GuiPrimitive):
 
 	def draw(self, screen):
 		pygame.draw.rect(screen, (0, 0, 255), self.pygame_rect)
+		super().draw(screen)
 
 class TextBox(GuiPrimitive):
 	"""Multi-line labels."""

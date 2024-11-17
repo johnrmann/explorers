@@ -37,18 +37,25 @@ def init_gui_manager():
 class GuiElement:
 	gui_mgr: _GuiManager
 	parent = None
-	elements = []
+	elements = None
 
 	def __init__(self, parent=None):
+		self.elements = []
 		self.gui_mgr = _global_gui_manager
 		if parent is not None:
 			self.parent = parent
-			self.parent.elements.append(self)
+			self.parent.add_child(self)
 		else:
 			self.gui_mgr.elements.append(self)
 
 	def __del__(self):
 		self.gui_mgr.remove_element(self)
+
+	def translate(self, dx, dy):
+		raise ArithmeticError("Unimplemented")
+
+	def add_child(self, child):
+		self.elements.append(child)
 
 	def process_event(self, event):
 		"""Returns true if the event was for this controller."""
@@ -80,6 +87,11 @@ class GuiPrimitive(GuiElement):
 	def screen_dimensions(self):
 		"""The dimensions of the screen."""
 		return self.gui_mgr.surface.get_size()
+
+	def translate(self, dx, dy):
+		print("Translate!")
+		x, y = self.relative_origin
+		self.relative_origin = (x + dx, y + dy)
 
 	@property
 	def origin(self):
