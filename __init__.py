@@ -37,7 +37,7 @@ def make_world():
 
 def make_lander(world: World):
 	"""Create the lander the player character arrives in."""
-	lander_pos = world.terrain.center + Vector2(0, -10)
+	lander_pos = world.terrain.center + Vector2(-5, -12)
 	lander = Lander(pos=lander_pos)
 	get_game_manager().add_game_object(lander)
 

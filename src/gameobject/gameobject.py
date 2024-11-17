@@ -40,7 +40,9 @@ class GameObject:
 
 	@property
 	def draw_position(self) -> Vector2:
-		return self.pos
+		x, y = self.pos
+		sx, sy, _ = self.size
+		return (x + (sx / 2), y + (sy / 2))
 
 	def x_range(self):
 		"""
