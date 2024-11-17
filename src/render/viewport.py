@@ -56,6 +56,7 @@ class Viewport(Listener):
 		tw2 = (self.tile_width // 2)**2
 		th2 = (self.tile_height // 2)**2
 		self.tile_z = math.sqrt(tw2 + th2)
+		self.tile_dimensions = (self.tile_width, self.tile_height)
 	
 	def update(self, event_type, data):
 		if event_type == EVENT_CAMERA_MOVE:
@@ -72,10 +73,6 @@ class Viewport(Listener):
 				int(click_tile[0]), int(click_tile[1])
 			)
 			self.evt_mgr.pub("main.character.go", click_tile)
-	
-	@property
-	def tile_dimensions(self):
-		return (self.tile_width, self.tile_height)
 
 	@property
 	def terrain_z(self):

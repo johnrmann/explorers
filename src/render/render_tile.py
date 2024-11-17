@@ -1,5 +1,7 @@
 import pygame
 
+from functools import lru_cache
+
 from src.math.line import extrude_line_segment_y
 from src.math.vector2 import (
 	vector2_bounding_rect,

@@ -3,6 +3,7 @@ Enums and functions useful for translation in space.
 """
 
 from enum import Enum
+from functools import cache
 
 from src.math.vector2 import Vector2
 
@@ -129,6 +130,7 @@ def delta_to_direction(v: Vector2) -> Direction:
 		return Direction.WEST
 	raise ValueError("Unknown direction")
 
+@cache
 def is_direction_diagonal(direction: Direction):
 	"""
 	Returns true if the direction is not a cardinal direction.
