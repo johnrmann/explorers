@@ -1,6 +1,8 @@
 import pygame
 
 from src.rendermath.order import cells_in_draw_order
+from src.rendermath.draw_graph import DrawGraph
+
 from src.world.world import World
 from src.render.viewport import Viewport
 from src.render.render_terrain import RenderTerrain
@@ -28,30 +30,50 @@ class Render(object):
 			if x == gx and y == gy:
 				return go
 		return None
+
+	def _render_game_object(self, gobj, drawn):
+		# First, render all terrain tiles below the gobj.
+		for p in gobj.cells_occupied(self.vp.camera_orientation):
+			self.render_terrain.render_tile(p)
+			drawn.add(p)
+		x, y = gobj.pos
+		h = self.world.terrain.map[y][x]
+		render_gameobject(
+			window=self.window,
+			vp=self.vp,
+			go=gobj,
+			height=h,
+			image_map=self.images
+		)
 	
 	def render(self):
 		self.window.fill((0,0,200))
 
-		go_draw_keys = {}
+		pre_go_draw_graph = {}
 		for go in self.game_mgr.game_objects:
-			go_draw_keys[go.draw_point(self.vp.camera_orientation)] = go
+			pre_go_draw_graph[go] = go.bounding_box()
+		draw_graph = DrawGraph(key_vals=pre_go_draw_graph)
+
+		gobj_cells = {}
+		for go in self.game_mgr.game_objects:
+			for go_cell in go.cells_occupied():
+				gobj_cells[go_cell] = go
 
 		origin_cell = self.vp.get_draw_origin()
-		for p in cells_in_draw_order(
+		cells = list(cells_in_draw_order(
 			origin_cell,
 			self.vp.camera_orientation,
 			self.vp.tiles_wide,
 			2 * self.vp.tiles_tall
-		):
-			(x,y) = p
+		))
+		drawn = set()
+
+		for p in cells:
+			if p in drawn:
+				continue
+			if p in gobj_cells:
+				go = gobj_cells[p]
+				self._render_game_object(go, drawn)
+				continue
 			self.render_terrain.render_tile(p)
-			if p in go_draw_keys:
-				go = go_draw_keys[p]
-				h = self.world.terrain.map[y][x]
-				render_gameobject(
-					window=self.window,
-					vp=self.vp,
-					go=go,
-					height=h,
-					image_map=self.images
-				)
+			drawn.add(p)
