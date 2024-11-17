@@ -5,9 +5,8 @@ from src.world.world import World
 from src.render.render import Render
 from src.math.vector2 import Vector2
 from src.gameobject.lander import Lander
-from src.mgmt.singletons import init_game_manager, get_game_manager, get_event_manager
+from src.mgmt.singletons import init_game_manager, get_game_manager
 from src.mgmt.constants import TICKS_PER_SECOND
-from src.gui.gui import init_gui_manager
 from src.render.viewport import Viewport
 from src.ctrl.ctrl import Control
 from src.gui.mission_clock import MissionClock
@@ -23,8 +22,6 @@ WINDOW_HEIGHT = 900
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 pygame.display.set_caption("Explorers")
-
-gui_mgr = init_gui_manager()
 
 def make_terrain():
 	"""Create the world's terrain."""
@@ -44,11 +41,12 @@ def make_lander(world: World):
 	lander = Lander(pos=lander_pos)
 	get_game_manager().add_game_object(lander)
 
-def make_game():
+def make_game(on_quit):
 	"""Initialize the game manager."""
 	world = make_world()
 	vp = Viewport((WINDOW_WIDTH, WINDOW_HEIGHT), world.terrain)
-	game_mgr = init_game_manager(world, vp)
+	game_mgr = init_game_manager(world, vp, on_quit=on_quit)
+	vp.game_mgr = game_mgr
 	game_mgr.new_player_character(world.terrain.center)
 	make_lander(world)
 	return game_mgr
@@ -59,8 +57,7 @@ def main():
 		nonlocal running
 		running = False
 
-	game = make_game()
-	ctrl = Control(gui_mgr, on_quit=on_quit)
+	game = make_game(on_quit)
 	world = game.world
 
 	clock = pygame.time.Clock()
@@ -92,11 +89,11 @@ def main():
 
 	while running:
 		dt = clock.tick(TICKS_PER_SECOND) / 1000
-		ctrl.interpret_pygame_input()
+		game.ctrl.interpret_pygame_input()
 		render.render()
 		render.render_terrain.highlight_tile_at_screen_pos(pygame.mouse.get_pos())
-		gui_mgr.update(dt)
-		gui_mgr.draw(window)
+		game.gui_mgr.update(dt)
+		game.gui_mgr.draw(window)
 		pygame.display.flip()
 		game.tick(1)
 

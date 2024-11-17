@@ -37,19 +37,16 @@ class Viewport(Listener):
 	left_ridge_direction = left_ridge_direction(Direction.NORTHWEST)
 	right_ridge_direction = right_ridge_direction(Direction.NORTHWEST)
 
+	_game_mgr = None
+	evt_mgr = None
+
 	def __init__(self, window_dims, terrain):
-		from src.mgmt.singletons import get_event_manager
-		self.evt_mgr = get_event_manager()
 		self.window_dims = window_dims
 		self.terrain_width, self.terrain_height = terrain.width, terrain.height
 		self.terrain_dims = (self.terrain_width, self.terrain_height)
 		self.camera_pos = terrain.center
-		self.evt_mgr.sub(EVENT_CAMERA_MOVE, self)
-		self.evt_mgr.sub(EVENT_CAMERA_ZOOM, self)
-		self.evt_mgr.sub(EVENT_CAMERA_ROTATE, self)
-		self.evt_mgr.sub(EVENT_MOUSE_CLICK_WORLD, self)
 		self._recompute_tile_dimensions()
-	
+
 	def _recompute_tile_dimensions(self):
 		self.tile_width = ZOOMS[self._zoom_idx]
 		self.tile_height = self.tile_width // 2
@@ -57,7 +54,25 @@ class Viewport(Listener):
 		th2 = (self.tile_height // 2)**2
 		self.tile_z = math.sqrt(tw2 + th2)
 		self.tile_dimensions = (self.tile_width, self.tile_height)
-	
+
+	def _subscribe_to_events(self):
+		self.evt_mgr.sub(EVENT_CAMERA_MOVE, self)
+		self.evt_mgr.sub(EVENT_CAMERA_ZOOM, self)
+		self.evt_mgr.sub(EVENT_CAMERA_ROTATE, self)
+		self.evt_mgr.sub(EVENT_MOUSE_CLICK_WORLD, self)
+
+	@property
+	def game_mgr(self):
+		return self._game_mgr
+
+	@game_mgr.setter
+	def game_mgr(self, value):
+		if self._game_mgr is not None:
+			raise ValueError("Write-once property.")
+		self._game_mgr = value
+		self.evt_mgr = value.evt_mgr
+		self._subscribe_to_events()
+
 	def update(self, event_type, data):
 		if event_type == EVENT_CAMERA_MOVE:
 			self.move_camera(data)
@@ -77,7 +92,7 @@ class Viewport(Listener):
 	@property
 	def terrain_z(self):
 		return self.tile_z / 8
-	
+
 	def change_zoom(self, delta):
 		if delta == 0:
 			return
@@ -99,7 +114,7 @@ class Viewport(Listener):
 			quarter_turns=delta
 		)
 		self._update_walls_and_ridges()
-	
+
 	def move_camera(self, camdir: Direction):
 		if not camdir:
 			return
@@ -112,14 +127,14 @@ class Viewport(Listener):
 			cy2 = 0
 		elif cy2 >= self.terrain_height:
 			cy2 = self.terrain_height - 1
-		
+
 		if cx2 == -1:
 			cx2 = self.terrain_width - 1
 		if cx2 >= self.terrain_width:
 			cx2 = 0
-		
+
 		self.camera_pos = (cx2, cy2)
-	
+
 	def get_x_range(self):
 		win_width, _ = self.window_dims
 		cx, _ = self.camera_pos
@@ -132,7 +147,7 @@ class Viewport(Listener):
 			math.ceil(cx + (win_width / self.tile_width)) + SAFETY
 		)
 		return range(left, right)
-	
+
 	def get_y_range(self):
 		_, win_height = self.window_dims
 		_, cy = self.camera_pos
@@ -159,7 +174,7 @@ class Viewport(Listener):
 			return spatial_cart_prod(xr, reversed(yr))
 		else:
 			raise ValueError("Unknown camera orientation")
-	
+
 	def tile_to_screen_coords(self, p_tile):
 		"""
 		Converts tile coordinates to screen coordinates.
@@ -171,14 +186,14 @@ class Viewport(Listener):
 			x2 + (win_width // 2) - cx_screen,
 			y2 + (win_height // 2) - cy_screen,
 		)
-	
+
 	def global_tile_to_screen_coords(self, cell_pos):
 		return cell_position_on_global_screen(
 			cell_pos,
 			self.camera_orientation,
 			self.tile_dimensions
 		)
-	
+
 	def screen_to_tile_coords(self, p_screen):
 		"""
 		Converts screen coordinates back into tile coordinates, considering
@@ -187,14 +202,14 @@ class Viewport(Listener):
 		screen_x, screen_y = p_screen
 		win_width, win_height = self.window_dims
 		s_cam_x, s_cam_y = self.global_tile_to_screen_coords(self.camera_pos)
-		
+
 		# Adjust the screen coordinates relative to the centered camera
 		rel_screen_x = screen_x - (win_width // 2) + s_cam_x
 		rel_screen_y = screen_y - (win_height // 2) + s_cam_y
 
 		half_tw = self.tile_width // 2
 		half_th = self.tile_height // 2
-		
+
 		# Apply the reverse transformation based on camera orientation
 		if self.camera_orientation == Direction.NORTHWEST:
 			# Default orientation

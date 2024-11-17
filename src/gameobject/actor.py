@@ -17,10 +17,10 @@ class Actor(GameObject, Listener):
 
 	_path_runner = PathRunner()
 
-	def __init__(self, pos=None, speed=5):
+	def __init__(self, game_mgr=None, pos=None, speed=5):
 		if not pos:
 			pos = Vector2(0,0)
-		super().__init__(pos=pos)
+		super().__init__(game_mgr=game_mgr, pos=pos)
 		self._path_runner = PathRunner(position=pos)
 		self.motives = ActorMotiveVector()
 		self.size = (1,1)

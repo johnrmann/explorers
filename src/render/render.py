@@ -9,7 +9,7 @@ from src.render.render_gameobject import render_gameobject
 class Render(object):
 	def __init__(self, window, world: World, vp: Viewport):
 		from src.mgmt.singletons import get_game_manager
-		self.game = get_game_manager()
+		self.game_mgr = get_game_manager()
 		self.window = window
 		self.world = world
 		self.vp = vp
@@ -22,7 +22,7 @@ class Render(object):
 		self.images['assets/img/lander.png'] = pygame.image.load('assets/img/lander.png')
 	
 	def game_object_at(self, p):
-		for go in self.game.game_objects:
+		for go in self.game_mgr.game_objects:
 			gx, gy = go.pos
 			x, y = p
 			if x == gx and y == gy:
@@ -33,7 +33,7 @@ class Render(object):
 		self.window.fill((0,0,200))
 
 		go_draw_keys = {}
-		for go in self.game.game_objects:
+		for go in self.game_mgr.game_objects:
 			go_draw_keys[go.draw_point(self.vp.camera_orientation)] = go
 		
 		for p in self.vp.get_draw_points():

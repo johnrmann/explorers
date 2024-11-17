@@ -21,9 +21,9 @@ class RenderTerrain(object):
 	def __init__(self, window, world: World, vp: Viewport, game_mgr=None):
 		if game_mgr is None:
 			from src.mgmt.singletons import get_game_manager
-			self.game = get_game_manager()
+			self.game_mgr = get_game_manager()
 		else:
-			self.game = game_mgr
+			self.game_mgr = game_mgr
 		self.world = world
 		self.window = window
 		self.vp = vp
@@ -73,7 +73,7 @@ class RenderTerrain(object):
 
 	def render_tile(self, cell_p):
 		lat_long = self.terrain.lat_long(cell_p)
-		bness = self.world.horology.brightness(self.game.utc, lat_long)
+		bness = self.world.horology.brightness(self.game_mgr.utc, lat_long)
 		bness2 = map_range(bness, (0, 1), (0.2, 1))
 		
 		screen_p = self.tile_top_screen_coords(cell_p)

@@ -4,8 +4,11 @@ from unittest.mock import MagicMock
 
 from math import modf
 
-from src.gameobject.actor import Actor
 from src.math.vector2 import Vector2
+from src.mgmt.game_manager import GameManager
+from src.mgmt.event_manager import EventManager
+
+from src.gameobject.actor import Actor
 
 CARDINAL_PATH = [
 	Vector2(0,0),
@@ -14,8 +17,14 @@ CARDINAL_PATH = [
 ]
 
 class ActorTest(unittest.TestCase):
+	def setUp(self):
+		evt_mgr = MagicMock(spec=EventManager)
+		game_mgr = MagicMock(spec=GameManager)
+		game_mgr.evt_mgr = evt_mgr
+		self.actor = Actor(speed=1, game_mgr=game_mgr)
+
 	def test__moves_on_path(self):
-		actor = Actor(speed=1)
+		actor = self.actor
 		actor._path_runner.path = (CARDINAL_PATH)
 		check_idx = 0
 		while actor.is_moving:
@@ -24,21 +33,21 @@ class ActorTest(unittest.TestCase):
 			check_idx += 1
 
 	def test__dies_when_hunger_depletes(self):
-		actor = Actor(speed=1)
+		actor = self.actor
 		actor.motives.hunger = 10
 		while actor.motives.hunger > 0:
 			actor.tick(25, 0)
 		self.assertTrue(actor.is_dead())
 
 	def test__dies_when_oxygen_depletes(self):
-		actor = Actor(speed=1)
+		actor = self.actor
 		actor.motives.oxygen = 10
 		while actor.motives.oxygen > 0:
 			actor.tick(25, 0)
 		self.assertTrue(actor.is_dead())
 
 	def test__evt_mgr_gets_died_from_hunger(self):
-		actor = Actor(speed=1)
+		actor = self.actor
 		actor.motives.hunger = 10
 		actor.evt_mgr = MagicMock()
 		while actor.motives.hunger > 0:
@@ -47,7 +56,7 @@ class ActorTest(unittest.TestCase):
 		actor.evt_mgr.pub.assert_called_with("character.died", actor)
 
 	def test__evt_mgr_gets_died_from_oxygen(self):
-		actor = Actor(speed=1)
+		actor = self.actor
 		actor.motives.oxygen = 10
 		actor.evt_mgr = MagicMock()
 		while actor.motives.oxygen > 0:
@@ -56,7 +65,7 @@ class ActorTest(unittest.TestCase):
 		actor.evt_mgr.pub.assert_called_with("character.died", actor)
 
 	def test__motives_decrease_over_time(self):
-		actor = Actor(speed=1)
+		actor = self.actor
 		initial_hunger = actor.motives.hunger
 		initial_oxygen = actor.motives.oxygen
 		actor.tick(1, 0)
@@ -64,7 +73,7 @@ class ActorTest(unittest.TestCase):
 		self.assertLess(actor.motives.oxygen, initial_oxygen)
 
 	def test__motives_decrease_faster_when_moving(self):
-		actor = Actor(speed=1)
+		actor = self.actor
 		actor._path_runner.path = CARDINAL_PATH
 		o2_init, hunger_init, _, _ = actor.motives
 		actor.tick(1, 0)
@@ -79,9 +88,6 @@ class ActorTest(unittest.TestCase):
 
 		self.assertLess(hunger_mvmt, hunger_still)
 		self.assertLess(o2_mvmt, o2_still)
-
-if __name__ == "__main__":
-	unittest.main()
 
 if __name__ == "__main__":
 	unittest.main()

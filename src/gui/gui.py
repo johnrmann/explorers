@@ -89,7 +89,6 @@ class GuiPrimitive(GuiElement):
 		return self.gui_mgr.surface.get_size()
 
 	def translate(self, dx, dy):
-		print("Translate!")
 		x, y = self.relative_origin
 		self.relative_origin = (x + dx, y + dy)
 

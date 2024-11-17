@@ -15,8 +15,8 @@ class Rocket(GameObject, Listener):
 	t = 0
 	in_transit = False
 
-	def __init__(self):
-		super().__init__()
+	def __init__(self, game_mgr=None):
+		super().__init__(game_mgr=game_mgr)
 		self.evt_mgr.sub('rocket_launch', self)
 		self.evt_mgr.sub('rocket_arrive', self)
 
@@ -35,8 +35,8 @@ class Launchpad(GameObject):
 	Launchpads SEND events to rockets.
 	"""
 
-	def __init__(self):
-		super().__init__()
+	def __init__(self, game_mgr=None):
+		super().__init__(game_mgr=game_mgr)
 
 	def launch(self):
 		"""Liftoff!"""
@@ -48,10 +48,10 @@ class Moon(GameObject, Listener):
 	the Moon, the moon SENDS an arrive event to the Rocket.
 	"""
 
-	def __init__(self):
-		super().__init__()
+	def __init__(self, game_mgr=None):
+		super().__init__(game_mgr=game_mgr)
 		self.evt_mgr.sub('rocket_cruise', self)
-	
+
 	def update(self, event_type, data):
 		if event_type == 'rocket_cruise' and data == 10:
 			self.evt_mgr.pub('rocket_arrive')
