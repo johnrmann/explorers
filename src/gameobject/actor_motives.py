@@ -41,10 +41,10 @@ class ActorMotiveVector:
 	def __init__(self, values=None):
 		if not values:
 			self.values = {
-				ActorMotive.OXYGEN: 100,
-				ActorMotive.ENERGY: 100,
-				ActorMotive.HUNGER: 100,
-				ActorMotive.SANITY: 100,
+				ActorMotive.OXYGEN: 0,
+				ActorMotive.ENERGY: 0,
+				ActorMotive.HUNGER: 0,
+				ActorMotive.SANITY: 0,
 			}
 		else:
 			self.values = values

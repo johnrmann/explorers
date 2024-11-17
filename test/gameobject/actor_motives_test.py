@@ -7,10 +7,10 @@ from src.gameobject.actor_motives import guess_motive_delta_for_distance
 class ActorMotiveVectorTest(unittest.TestCase):
 	def test__initial_values(self):
 		amv = ActorMotiveVector()
-		self.assertEqual(amv.get(ActorMotive.OXYGEN), 100)
-		self.assertEqual(amv.get(ActorMotive.ENERGY), 100)
-		self.assertEqual(amv.get(ActorMotive.HUNGER), 100)
-		self.assertEqual(amv.get(ActorMotive.SANITY), 100)
+		self.assertEqual(amv.get(ActorMotive.OXYGEN), 0)
+		self.assertEqual(amv.get(ActorMotive.ENERGY), 0)
+		self.assertEqual(amv.get(ActorMotive.HUNGER), 0)
+		self.assertEqual(amv.get(ActorMotive.SANITY), 0)
 
 	def test__custom_initial_values(self):
 		values = {
@@ -63,7 +63,12 @@ class ActorMotiveVectorTest(unittest.TestCase):
 			amv + 10
 	
 	def test__scalar(self):
-		amv = ActorMotiveVector()
+		amv = ActorMotiveVector({
+			ActorMotive.OXYGEN: 100,
+			ActorMotive.ENERGY: 100,
+			ActorMotive.HUNGER: 100,
+			ActorMotive.SANITY: 100,
+		})
 		amv2 = amv * 0.5
 		self.assertEqual(amv2.oxygen, 50)
 		self.assertEqual(amv2.hunger, 50)
