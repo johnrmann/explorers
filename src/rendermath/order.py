@@ -35,9 +35,9 @@ def cells_in_draw_order(
 ):
 	carry = True
 	x, y = origin
-	for col_count in range(tiles_wide):
+	for _ in range(tiles_tall):
 		next_x, next_y = draw_order_next_row((x, y), cam_dir, carry)
-		for row_count in range(tiles_tall):
+		for _ in range(tiles_wide):
 			yield (x, y)
 			x, y = draw_order_next_column((x, y), cam_dir)
 		x, y = next_x, next_y

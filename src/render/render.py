@@ -41,7 +41,7 @@ class Render(object):
 			origin_cell,
 			self.vp.camera_orientation,
 			self.vp.tiles_wide,
-			self.vp.tiles_wide
+			2 * self.vp.tiles_tall
 		):
 			(x,y) = p
 			self.render_terrain.render_tile(p)

@@ -15,8 +15,9 @@ from src.math.direction import (
 	right_wall_direction,
 	left_ridge_direction,
 	right_ridge_direction,
+	quarter_turns_between_directions,
 )
-from src.math.cart_prod import spatial_cart_prod
+from src.math.vector2 import vector2_rotate_point
 from src.mgmt.listener import Listener
 from src.rendermath.cell import cell_position_on_global_screen
 
@@ -103,8 +104,8 @@ class Viewport(Listener):
 
 	def _recompute_screen_dimensions(self):
 		win_w, win_h = self.window_dims
-		self.tiles_tall = win_h // self.tile_height
-		self.tiles_wide = win_w // self.tile_width
+		self.tiles_wide = int(win_w // self.tile_width) + 2
+		self.tiles_tall = 2 * int(win_h // self.tile_height) + 2
 
 	def _update_walls_and_ridges(self):
 		co = self.camera_orientation
@@ -144,7 +145,13 @@ class Viewport(Listener):
 
 	def get_draw_origin(self):
 		x, y = self.camera_pos
-		return (x - (self.tiles_tall // 2) - (self.tiles_wide // 2), y - (self.tiles_tall // 2) + (self.tiles_wide // 2))
+		dir_diff = quarter_turns_between_directions(
+			Direction.NORTHWEST, self.camera_orientation
+		)
+		dx = -((self.tiles_tall // 2) + (self.tiles_wide // 2))
+		dy = -((self.tiles_tall // 2) - (self.tiles_wide // 2))
+		dx, dy = vector2_rotate_point((dx, dy), dir_diff)
+		return (x + dx, y + dy)
 
 	def tile_to_screen_coords(self, p_tile):
 		"""
