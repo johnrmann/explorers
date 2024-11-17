@@ -46,4 +46,3 @@ class EventManager:
 		if event_type in self.listeners:
 			for listener in self.listeners[event_type]:
 				listener.update(event_type, data)
-

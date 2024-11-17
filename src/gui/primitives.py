@@ -1,11 +1,19 @@
 import pygame
 
-from typing import Callable
-
 from src.gui.gui import GuiPrimitive, GuiElement
 from src.gui.multiline import wrap_text
 
 BUTTON_CHROME = 3
+
+class Spacer(GuiPrimitive):
+	"""Empty space. Useful for auto layouts."""
+
+	def __init__(
+			self,
+			rect=None,
+			parent: GuiElement=None
+	):
+		super().__init__(rect=rect, parent=parent)
 
 class Button(GuiPrimitive):
 	"""Buttons can be clicked to trigger callbacks."""
@@ -72,6 +80,7 @@ class Panel(GuiPrimitive):
 
 	def draw(self, screen):
 		pygame.draw.rect(screen, (0, 0, 255), self.pygame_rect)
+		super().draw(screen)
 
 class TextBox(GuiPrimitive):
 	"""Multi-line labels."""

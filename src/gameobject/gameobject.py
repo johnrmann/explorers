@@ -15,7 +15,7 @@ class GameObject:
 
 	owner: int = NO_OWNER
 
-	def __init__(self, pos = None, size = None, owner = 0):
+	def __init__(self, game_mgr=None, pos = None, size = None, owner = 0):
 		"""
 		Position is the top left cell that the game object occupies.
 		"""
@@ -23,20 +23,22 @@ class GameObject:
 			pos = (0, 0)
 		if size is None:
 			size = (1, 1)
-		from src.mgmt.singletons import get_event_manager
+		if game_mgr is None:
+			from src.mgmt.singletons import get_game_manager
+			game_mgr = get_game_manager()
 		self._pos = pos
 		self.size = size
-		self.evt_mgr = get_event_manager()
+		self.evt_mgr = game_mgr.evt_mgr
 		self.owner = owner
-	
+
 	@property
 	def pos(self):
 		return self._pos
-	
+
 	@property
 	def draw_position(self) -> Vector2:
 		return self.pos
-	
+
 	def x_range(self):
 		"""
 		The x-range this object occupies.
@@ -44,7 +46,7 @@ class GameObject:
 		x, _ = self.pos
 		w, _ = self.size
 		return range(x, x + w)
-	
+
 	def y_range(self):
 		"""
 		The y-range this object occupies.
@@ -74,17 +76,16 @@ class GameObject:
 		elif camera_direction == Direction.SOUTHWEST:
 			return (x, y)
 		return (x + w, y + h)
-	
+
 	def image_path(self):
 		"""
 		Override this to specify an image to render.
 		"""
 		return None
-	
+
 	def tick(self, dt: float, utc: float):
 		"""
 		Signal from the game manager that time has passed. dt is the time since
 		the last draw in seconds. UTC is time since mission start in seconds.
 		"""
 		pass
-	

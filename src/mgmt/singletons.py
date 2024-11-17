@@ -1,21 +1,15 @@
 from src.render.viewport import Viewport
-from src.mgmt.event_manager import EventManager
 from src.mgmt.game_manager import GameManager
 from src.world.world import World
 
-_global_event_manager: EventManager = EventManager()
 _global_game_manager: GameManager = None
 
-def get_event_manager():
-	"""Returns event manager singleton."""
-	return _global_event_manager
-
-def init_game_manager(world: World, vp: Viewport):
+def init_game_manager(world: World, vp: Viewport, on_quit=None):
 	"""Initializes the game manager singleton."""
 	global _global_game_manager
 	if _global_game_manager is not None:
 		raise ValueError("Game manager already initialized.")
-	_global_game_manager = GameManager(world, vp)
+	_global_game_manager = GameManager(world, vp, on_quit=on_quit)
 	return _global_game_manager
 
 def get_game_manager():

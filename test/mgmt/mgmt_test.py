@@ -1,6 +1,6 @@
 import unittest
 
-from unittest.mock import MagicMock, call
+from unittest.mock import MagicMock, call, patch
 
 from src.mgmt.game_manager import GameManager, TICKS_PER_SECOND
 
@@ -12,13 +12,19 @@ from test.mgmt.test_objects import (
 )
 
 class MgmtTest(unittest.TestCase):
+
+	@patch('src.mgmt.singletons.get_game_manager')
+	def setUp(self, mock_get_game_manager):
+		self.game_mgr = GameManager(None, None)
+		mock_get_game_manager.return_value = self.game_mgr
+
 	def test__launch(self):
-		game_mgr = GameManager(None, None)
+		game_mgr = self.game_mgr
 
 		# BeginCareful - order matters for assert calls.
-		launchpad = Launchpad()
-		rocket = Rocket()
-		moon = Moon()
+		launchpad = Launchpad(game_mgr=game_mgr)
+		rocket = Rocket(game_mgr=game_mgr)
+		moon = Moon(game_mgr=game_mgr)
 		omni = OmniListener(rocket.evt_mgr)
 		# EndCareful
 

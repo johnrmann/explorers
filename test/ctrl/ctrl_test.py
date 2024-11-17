@@ -1,7 +1,11 @@
 import pygame
 import unittest
 
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
+
+from src.mgmt.event_manager import EventManager
+from src.mgmt.game_manager import GameManager
+
 from src.ctrl.ctrl import Control
 from src.ctrl.event_id import (
 	EVENT_CAMERA_MOVE, EVENT_CAMERA_ROTATE, EVENT_CAMERA_ZOOM
@@ -9,15 +13,15 @@ from src.ctrl.event_id import (
 
 class TestControl(unittest.TestCase):
 
-	@patch('src.mgmt.singletons.get_event_manager')
 	@patch('src.mgmt.singletons.get_game_manager')
-	def setUp(self, mock_get_game_manager, mock_get_event_manager):
-		self.mock_evt_mgr = Mock()
-		self.mock_game = Mock()
-		mock_get_event_manager.return_value = self.mock_evt_mgr
-		mock_get_game_manager.return_value = self.mock_game
+	def setUp(self, mock_get_game_manager):
+		self.mock_evt_mgr = MagicMock(spec=EventManager)
 		self.mock_gui_mgr = Mock()
-		self.control = Control(self.mock_gui_mgr)
+		self.mock_game_mgr = Mock(spec=GameManager)
+		self.mock_game_mgr.evt_mgr = self.mock_evt_mgr
+		self.mock_game_mgr.gui_mgr = self.mock_gui_mgr
+		mock_get_game_manager.return_value = self.mock_game_mgr
+		self.control = Control(self.mock_game_mgr)
 
 	def test_interpret_pygame_camera_keyboard_event_move(self):
 		event = Mock()
