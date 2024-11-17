@@ -16,3 +16,6 @@ class Interactable(GameObject):
 		if player_id == self.owner:
 			return True
 		return player_id in self.shared_with
+
+	def actions(self, player_id: int):
+		pass
