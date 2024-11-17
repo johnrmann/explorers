@@ -46,6 +46,7 @@ class Viewport(Listener):
 		self.terrain_dims = (self.terrain_width, self.terrain_height)
 		self.camera_pos = terrain.center
 		self._recompute_tile_dimensions()
+		self._recompute_screen_dimensions()
 
 	def _recompute_tile_dimensions(self):
 		self.tile_width = ZOOMS[self._zoom_idx]
@@ -100,6 +101,11 @@ class Viewport(Listener):
 		self._recompute_tile_dimensions()
 		self._recompute_screen_dimensions()
 
+	def _recompute_screen_dimensions(self):
+		win_w, win_h = self.window_dims
+		self.tiles_tall = win_h // self.tile_height
+		self.tiles_wide = win_w // self.tile_width
+
 	def _update_walls_and_ridges(self):
 		co = self.camera_orientation
 		self.left_wall_direction = left_wall_direction(co)
@@ -135,11 +141,11 @@ class Viewport(Listener):
 			cx2 = 0
 
 		self.camera_pos = (cx2, cy2)
-	
+
 	def get_draw_origin(self):
 		x, y = self.camera_pos
 		return (x - (self.tiles_tall // 2) - (self.tiles_wide // 2), y - (self.tiles_tall // 2) + (self.tiles_wide // 2))
-	
+
 	def tile_to_screen_coords(self, p_tile):
 		"""
 		Converts tile coordinates to screen coordinates.
