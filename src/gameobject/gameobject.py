@@ -49,7 +49,7 @@ class GameObject:
 		The x-range this object occupies.
 		"""
 		x, _ = self.pos
-		w, _ = self.size
+		w, _, _ = self.size
 		return range(x, x + w)
 
 	def y_range(self):
@@ -57,7 +57,7 @@ class GameObject:
 		The y-range this object occupies.
 		"""
 		_, y = self.pos
-		_, h = self.size
+		_, h, _ = self.size
 		return range(y, y + h)
 
 	def bounding_box(self):
