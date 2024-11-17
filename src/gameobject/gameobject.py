@@ -2,6 +2,8 @@ from src.math.direction import Direction
 from src.math.cart_prod import spatial_cart_prod
 from src.math.vector2 import Vector2
 
+from src.rendermath.box import Box
+
 from src.gameobject.constants import NO_OWNER
 
 class GameObject:
@@ -22,12 +24,13 @@ class GameObject:
 		if pos is None:
 			pos = (0, 0)
 		if size is None:
-			size = (1, 1)
+			size = (1, 1, 1)
 		if game_mgr is None:
 			from src.mgmt.singletons import get_game_manager
 			game_mgr = get_game_manager()
 		self._pos = pos
 		self.size = size
+		self.game_mgr = game_mgr
 		self.evt_mgr = game_mgr.evt_mgr
 		self.owner = owner
 
@@ -55,6 +58,14 @@ class GameObject:
 		_, h = self.size
 		return range(y, y + h)
 
+	def bounding_box(self):
+		"""
+		Returns the bounding box that this game object occupies.
+		"""
+		x, y = self.pos
+		z = self.game_mgr.world.terrain.height_at(self.pos) // 8 # TODO(jm)
+		return Box(p=(x, y, z), size=self.size)
+
 	def cells_occupied(self, view_sort = Direction.NORTHWEST):
 		"""
 		Returns an array of cells that this object occupies. Optional view_sort
@@ -65,8 +76,11 @@ class GameObject:
 		return spatial_cart_prod(xs, ys, view_sort)
 
 	def draw_point(self, camera_direction):
+		"""
+		Returns the point the object occupies that's closest to the camera.
+		"""
 		x, y = self.pos
-		w, h = self.size
+		w, h, _ = self.size
 		if camera_direction == Direction.NORTHWEST:
 			return (x + w, y + h)
 		elif camera_direction == Direction.NORTHEAST:

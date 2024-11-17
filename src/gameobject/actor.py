@@ -23,7 +23,7 @@ class Actor(GameObject, Listener):
 		super().__init__(game_mgr=game_mgr, pos=pos)
 		self._path_runner = PathRunner(position=pos)
 		self.motives = ActorMotiveVector()
-		self.size = (1,1)
+		self.size = (1,1,5)
 		# Speed is given in cells per second.
 		self.speed = speed
 		self.evt_mgr.sub("main.character.go", self)
