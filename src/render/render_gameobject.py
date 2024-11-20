@@ -23,17 +23,17 @@ def render_gameobject(
 	cell_polygon = tile_polygon(screen_pos, vp.tile_dimensions, go_size)
 
 	# Now, move up by height to find the terrain start point.
-	terrain = height_offset_tile(cell_polygon, height / 8, vp)
+	tile = height_offset_tile(cell_polygon, height / 8, vp)
 	if go.image_path() in image_map:
 		img = image_map[go.image_path()]
-		origin, img_dims = fit_img_rect_on_tile_base(img.get_size(), terrain)
+		origin, img_dims = fit_img_rect_on_tile_base(img.get_size(), tile)
 		window.blit(
 			pygame.transform.scale(img, img_dims),
 			pygame.Rect(origin, img_dims),
 		)
 	else:
-		top = height_offset_tile(terrain, 1, vp)
-		top_poly, left, right = box_between_tiles(top, terrain)
+		top = height_offset_tile(tile, 1, vp)
+		top_poly, left, right = box_between_tiles(top, tile)
 		pygame.draw.polygon(window, TOP_COLOR, top_poly)
 		pygame.draw.polygon(window, LEFT_COLOR, left)
 		pygame.draw.polygon(window, RIGHT_COLOR, right)

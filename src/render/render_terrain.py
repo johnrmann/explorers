@@ -72,6 +72,11 @@ class RenderTerrain(object):
 		return (left > 0, right > 0)
 
 	def render_tile(self, cell_p):
+		x, y = cell_p
+		if x < 0 or y < 0:
+			return
+		if x >= self.vp.terrain_width or y >= self.vp.terrain_height:
+			return
 		lat_long = self.terrain.lat_long(cell_p)
 		bness = self.world.horology.brightness(self.game_mgr.utc, lat_long)
 		bness2 = map_range(bness, (0, 1), (0.2, 1))

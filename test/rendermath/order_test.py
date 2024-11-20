@@ -3,6 +3,7 @@ import unittest
 from src.rendermath.order import draw_order_vector, offset_tile_by_draw_order_vector
 from src.math.vector2 import Vector2
 from src.math.direction import Direction
+from src.rendermath.order import cells_in_draw_order
 
 class OrderTest(unittest.TestCase):
 	def test__draw_order_vector(self):
@@ -28,6 +29,23 @@ class OrderTest(unittest.TestCase):
 		even, _ = offset_tile_by_draw_order_vector(p, Direction.NORTHWEST, 2)
 		self.assertEqual(even, (1, 1))
 
+	def test__cells_in_draw_order__single_cell(self):
+		origin = Vector2(0, 0)
+		cam_dir = Direction.NORTHWEST
+		num_cols = 1
+		num_rows = 1
+		expected = [(0, 0)]
+		result = list(cells_in_draw_order(origin, cam_dir, num_cols, num_rows))
+		self.assertEqual(result, expected)
+
+	def test__cells_in_draw_order__multiple_cells(self):
+		origin = Vector2(0, 0)
+		cam_dir = Direction.NORTHWEST
+		num_cols = 2
+		num_rows = 2
+		expected = [(0, 0), (1, -1), (0, 1), (1, 0)]
+		result = list(cells_in_draw_order(origin, cam_dir, num_cols, num_rows))
+		self.assertEqual(result, expected)
 
 if __name__ == '__main__':
 	unittest.main()

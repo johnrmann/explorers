@@ -6,6 +6,59 @@ tiles by the draw order vector based on the camera orientation.
 from src.math.vector2 import Vector2
 from src.math.direction import Direction, direction_to_delta
 
+def draw_order_next_column(
+		cell_pos: Vector2,
+		cam_dir: Direction
+) -> Vector2:
+	"""
+	Finding the next column from a cell position is a simple diagonal
+	translation, with the direction depending on the camera orientation.
+	"""
+	dx, dy = 1, -1
+	if cam_dir != Direction.NORTHWEST:
+		raise NotImplementedError("Only northwest is supported")
+	x, y = cell_pos
+	return Vector2(x + dx, y + dy)
+
+def draw_order_next_row(
+		cell_pos: Vector2,
+		cam_dir: Direction,
+		carry: bool,
+) -> Vector2:
+	"""
+	Given a cell position and camera direction, return the cell position of the
+	start of the next row on the screen.
+
+	The carry is used to account for the case where we have to move down for
+	the first row, then move right for the next row.
+	"""
+	dy = 1 if carry else 0
+	dx = 0 if carry else 1
+	if cam_dir != Direction.NORTHWEST:
+		raise NotImplementedError("Only northwest is supported")
+	x, y = cell_pos
+	return Vector2(x + dx, y + dy)
+
+def cells_in_draw_order(
+		origin: Vector2,
+		cam_dir: Direction,
+		num_cols: int,
+		num_rows: int,
+):
+	"""
+	Returns a generator that yields cells starting at an origin in the draw
+	order for a given camera direction and screen dimension (in rows/cols).
+	"""
+	carry = True
+	x, y = origin
+	for _ in range(num_rows):
+		next_x, next_y = draw_order_next_row((x, y), cam_dir, carry)
+		for _ in range(num_cols):
+			yield (x, y)
+			x, y = draw_order_next_column((x, y), cam_dir)
+		x, y = next_x, next_y
+		carry = not carry
+
 def draw_order_vector(camera_orientation: Direction) -> Vector2:
 	"""
 	The draw order vector is the vector along which we draw rows of
@@ -36,7 +89,7 @@ def offset_tile_by_draw_order_vector(
 	ox, oy = offset_vector
 	even_offset = k // 2
 	is_odd = k % 2
-	offset = (offset_vector * even_offset)
+	offset = offset_vector * even_offset
 	q = p + offset
 	if is_odd:
 		return (q + Vector2(ox, 0), q + Vector2(0, oy))

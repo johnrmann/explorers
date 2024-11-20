@@ -1,6 +1,8 @@
 import pygame
 
-from src.rendermath.tile import tile_polygon
+from src.rendermath.order import cells_in_draw_order
+from src.rendermath.draw_graph import DrawGraph
+
 from src.world.world import World
 from src.render.viewport import Viewport
 from src.render.render_terrain import RenderTerrain
@@ -28,24 +30,51 @@ class Render(object):
 			if x == gx and y == gy:
 				return go
 		return None
+
+	def _render_game_object(self, gobj, drawn_cells):
+		# First, render all terrain tiles below the gobj.
+		for p in gobj.cells_occupied(self.vp.camera_orientation):
+			self.render_terrain.render_tile(p)
+			drawn_cells.add(p)
+		x, y = gobj.pos
+		h = self.world.terrain.map[y][x]
+		render_gameobject(
+			window=self.window,
+			vp=self.vp,
+			go=gobj,
+			height=h,
+			image_map=self.images
+		)
 	
 	def render(self):
 		self.window.fill((0,0,200))
 
-		go_draw_keys = {}
+		pre_go_draw_graph = {}
 		for go in self.game_mgr.game_objects:
-			go_draw_keys[go.draw_point(self.vp.camera_orientation)] = go
-		
-		for p in self.vp.get_draw_points():
-			(x,y) = p
+			pre_go_draw_graph[go] = go.bounding_box()
+		draw_graph = DrawGraph(key_vals=pre_go_draw_graph)
+
+		gobj_cells = {}
+		for go in self.game_mgr.game_objects:
+			gobj_cells[go.draw_point(self.vp.camera_orientation)] = go
+
+		origin_cell = self.vp.get_draw_origin()
+		cells = list(cells_in_draw_order(
+			origin_cell,
+			self.vp.camera_orientation,
+			self.vp.tiles_wide,
+			2 * self.vp.tiles_tall
+		))
+		drawn = set()
+
+		for p in cells:
+			if p in drawn:
+				continue
 			self.render_terrain.render_tile(p)
-			if p in go_draw_keys:
-				go = go_draw_keys[p]
-				h = self.world.terrain.map[y][x]
-				render_gameobject(
-					window=self.window,
-					vp=self.vp,
-					go=go,
-					height=h,
-					image_map=self.images
-				)
+			drawn.add(p)
+			if p in gobj_cells:
+				go = gobj_cells[p]
+				to_draw = draw_graph.get_draws(go)
+				for draw_gobj in to_draw:
+					self._render_game_object(draw_gobj, drawn)
+					draw_graph.mark_drawn(draw_gobj)

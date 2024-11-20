@@ -25,7 +25,7 @@ class Lander(Interactable):
 			pos = (0,0)
 		super().__init__(
 			pos=pos,
-			size=(11,11,11)
+			size=(11,11,22)
 		)
 
 	def image_path(self):
