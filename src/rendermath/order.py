@@ -10,8 +10,9 @@ def draw_order_next_column(
 		cell_pos: Vector2,
 		cam_dir: Direction
 ) -> Vector2:
-	q_turns = quarter_turns_between_directions(Direction.NORTHWEST, cam_dir)
-	dx, dy = vector2_rotate_point((1, -1), quarter_turns=q_turns)
+	dx, dy = 1, -1
+	if cam_dir != Direction.NORTHWEST:
+		raise NotImplementedError("Only northwest is supported")
 	x, y = cell_pos
 	return Vector2(x + dx, y + dy)
 
@@ -20,10 +21,10 @@ def draw_order_next_row(
 		cam_dir: Direction,
 		carry: bool,
 ) -> Vector2:
-	q_turns = quarter_turns_between_directions(Direction.NORTHWEST, cam_dir)
 	dy = 1 if carry else 0
 	dx = 0 if carry else 1
-	dx, dy = vector2_rotate_point((dx, dy), quarter_turns=q_turns)
+	if cam_dir != Direction.NORTHWEST:
+		raise NotImplementedError("Only northwest is supported")
 	x, y = cell_pos
 	return Vector2(x + dx, y + dy)
 

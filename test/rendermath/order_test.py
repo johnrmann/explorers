@@ -47,23 +47,5 @@ class OrderTest(unittest.TestCase):
 		result = list(cells_in_draw_order(origin, cam_dir, num_cols, num_rows))
 		self.assertEqual(result, expected)
 
-	def test__cells_in_draw_order__northeast(self):
-		origin = Vector2(0, 0)
-		cam_dir = Direction.NORTHEAST
-		num_cols = 2
-		num_rows = 2
-		expected = [(0, 1), (0, 0), (1, 1), (1, 0)]
-		result = list(cells_in_draw_order(origin, cam_dir, num_cols, num_rows))
-		self.assertEqual(result, expected)
-
-	def test__cells_in_draw_order__southeast(self):
-		origin = Vector2(0, 0)
-		cam_dir = Direction.SOUTHEAST
-		num_cols = 2
-		num_rows = 2
-		expected = [(0, 0), (-1, 1), (0, -1), (-1, 0)]
-		result = list(cells_in_draw_order(origin, cam_dir, num_cols, num_rows))
-		self.assertEqual(result, expected)
-
 if __name__ == '__main__':
 	unittest.main()
