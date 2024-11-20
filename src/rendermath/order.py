@@ -30,14 +30,14 @@ def draw_order_next_row(
 def cells_in_draw_order(
 		origin: Vector2,
 		cam_dir: Direction,
-		tiles_wide: int,
-		tiles_tall: int,
+		num_cols: int,
+		num_rows: int,
 ):
 	carry = True
 	x, y = origin
-	for _ in range(tiles_tall):
+	for _ in range(num_rows):
 		next_x, next_y = draw_order_next_row((x, y), cam_dir, carry)
-		for _ in range(tiles_wide):
+		for _ in range(num_cols):
 			yield (x, y)
 			x, y = draw_order_next_column((x, y), cam_dir)
 		x, y = next_x, next_y
