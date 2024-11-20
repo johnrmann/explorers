@@ -30,7 +30,6 @@ class Actor(GameObject, Listener):
 	
 	def update(self, event_type, data):
 		if event_type == "main.character.go":
-			print(data)
 			self.set_destination(data)
 
 	@property

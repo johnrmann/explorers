@@ -31,11 +31,11 @@ class Render(object):
 				return go
 		return None
 
-	def _render_game_object(self, gobj, drawn):
+	def _render_game_object(self, gobj, drawn_cells):
 		# First, render all terrain tiles below the gobj.
 		for p in gobj.cells_occupied(self.vp.camera_orientation):
 			self.render_terrain.render_tile(p)
-			drawn.add(p)
+			drawn_cells.add(p)
 		x, y = gobj.pos
 		h = self.world.terrain.map[y][x]
 		render_gameobject(
@@ -56,8 +56,7 @@ class Render(object):
 
 		gobj_cells = {}
 		for go in self.game_mgr.game_objects:
-			for go_cell in go.cells_occupied():
-				gobj_cells[go_cell] = go
+			gobj_cells[go.draw_point(self.vp.camera_orientation)] = go
 
 		origin_cell = self.vp.get_draw_origin()
 		cells = list(cells_in_draw_order(
@@ -71,9 +70,11 @@ class Render(object):
 		for p in cells:
 			if p in drawn:
 				continue
-			if p in gobj_cells:
-				go = gobj_cells[p]
-				self._render_game_object(go, drawn)
-				continue
 			self.render_terrain.render_tile(p)
 			drawn.add(p)
+			if p in gobj_cells:
+				go = gobj_cells[p]
+				to_draw = draw_graph.get_draws(go)
+				for draw_gobj in to_draw:
+					self._render_game_object(draw_gobj, drawn)
+					draw_graph.mark_drawn(draw_gobj)

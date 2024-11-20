@@ -3,8 +3,8 @@ This module provides functions to determine the draw order vector and offset
 tiles by the draw order vector based on the camera orientation.
 """
 
-from src.math.vector2 import Vector2, vector2_rotate_point
-from src.math.direction import Direction, direction_to_delta, quarter_turns_between_directions
+from src.math.vector2 import Vector2
+from src.math.direction import Direction, direction_to_delta
 
 def draw_order_next_column(
 		cell_pos: Vector2,
