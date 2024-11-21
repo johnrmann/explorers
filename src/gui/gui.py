@@ -39,9 +39,12 @@ class GuiElement:
 	parent = None
 	elements = None
 
-	def __init__(self, parent=None):
+	def __init__(self, gui_mgr=None, parent=None):
 		self.elements = []
-		self.gui_mgr = _global_gui_manager
+		if gui_mgr is not None:
+			self.gui_mgr = gui_mgr
+		else:
+			self.gui_mgr = _global_gui_manager
 		if parent is not None:
 			self.parent = parent
 			self.parent.add_child(self)
