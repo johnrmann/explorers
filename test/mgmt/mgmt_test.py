@@ -34,7 +34,7 @@ class MgmtTest(unittest.TestCase):
 
 		mock_update = omni.update = MagicMock()
 		launchpad.launch()
-		for _ in range(0, 10):
+		for _ in range(0, 12):
 			game_mgr.tick(TICKS_PER_SECOND)
 		mock_update.assert_has_calls([
 			call('rocket_launch', None),
@@ -47,6 +47,6 @@ class MgmtTest(unittest.TestCase):
 			call('rocket_cruise', 7.0),
 			call('rocket_cruise', 8.0),
 			call('rocket_cruise', 9.0),
-			call('rocket_arrive', None),
 			call('rocket_cruise', 10.0),
+			call('rocket_arrive', None),
 		])

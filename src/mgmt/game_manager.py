@@ -52,6 +52,7 @@ class GameManager:
 			raise ValueError("Time travel not allowed")
 		self.ticks += n_ticks
 		dt = n_ticks / TICKS_PER_SECOND
+		self.evt_mgr.tick(dt, self.utc)
 		for obj in self.game_objects:
 			obj.tick(dt, self.utc)
 
