@@ -1,7 +1,8 @@
 import pygame
 import math
 
-from ..world.world import World
+from src.world.world import World
+from src.world.terrain import Terrain
 from src.render.viewport import ZOOMS, Viewport
 from src.render.utils import *
 from src.math.map_range import map_range
@@ -10,7 +11,7 @@ from src.rendermath.tile import tile_polygon, is_point_in_tile, is_tile_in_scree
 from src.rendermath.order import offset_tile_by_draw_order_vector
 from src.rendermath.geometry import is_point_in_screen
 from src.math.vector2 import Vector2
-from src.render.render_tile import TileSurfaceCache, WALL_COLOR_1
+from src.render.render_tile import TileSurfaceCache, NO_RIDGES, BOTH_RIDGES, LEFT_RIDGE, RIGHT_RIDGE
 
 HIGHLIGHT_COLOR = (0, 250, 0)
 
@@ -18,6 +19,10 @@ HIGHLIGHT_COLOR = (0, 250, 0)
 SCREEN_DIMS = Vector2(1440, 900)
 
 class RenderTerrain(object):
+	_ridge_draws: dict[int, dict[int, dict[Direction, int]]]
+
+	terrain: Terrain
+
 	def __init__(self, window, world: World, vp: Viewport, game_mgr=None):
 		if game_mgr is None:
 			from src.mgmt.singletons import get_game_manager
@@ -28,10 +33,29 @@ class RenderTerrain(object):
 		self.window = window
 		self.vp = vp
 		self.tile_cache = TileSurfaceCache()
-	
-	@property
-	def terrain(self):
-		return self.world.terrain
+		self.terrain = world.terrain
+		self._calc_ridges()
+
+	def _calc_ridge(self, cell_pos, direction: Direction):
+		x, y = cell_pos
+		left = self.terrain.height_delta(
+			cell_pos, left_ridge_direction(direction)
+		)
+		right = self.terrain.height_delta(
+			cell_pos, right_ridge_direction(direction)
+		)
+		left_bit = (left > 0) & 1
+		right_bit = (right > 0) << 1
+		self._ridge_draws[y][x][direction] = left_bit | right_bit
+
+	def _calc_ridges(self):
+		self._ridge_draws = {}
+		for y in range(self.world.terrain.height):
+			self._ridge_draws[y] = {}
+			for x in range(self.world.terrain.width):
+				self._ridge_draws[y][x] = {}
+				for d in [Direction.NORTHWEST, Direction.NORTHEAST, Direction.SOUTHEAST, Direction.SOUTHWEST]:
+					self._calc_ridge((x, y), d)
 
 	def tile_bottom(self, tile_p):
 		tile_screen = self.vp.tile_to_screen_coords(tile_p)
@@ -67,10 +91,6 @@ class RenderTerrain(object):
 		right = self.terrain.height_delta(cell_p, self.vp.right_ridge_direction)
 		return (left, right)
 
-	def should_render_ridges(self, cell_p):
-		left, right = self.ridge_heights(cell_p)
-		return (left > 0, right > 0)
-
 	def render_tile(self, cell_p):
 		x, y = cell_p
 		if x < 0 or y < 0:
@@ -85,7 +105,8 @@ class RenderTerrain(object):
 		zoom = self.vp.tile_width
 
 		walls = self.wall_heights(cell_p)
-		draws = self.tile_cache.surfaces_and_positions(screen_p, zoom, walls, self.should_render_ridges(cell_p))
+		ridges = self._ridge_draws[y][x][self.vp.camera_orientation]
+		draws = self.tile_cache.surfaces_and_positions(screen_p, zoom, walls, ridges)
 		for draw in draws:
 			if draw is None:
 				continue

@@ -17,6 +17,12 @@ WALL_COLOR_2 = (50, 0, 0)
 
 GEN_HEIGHTS = 8
 
+# Numeric codes for which ridges to draw. Faster than using a boolean tuple.
+NO_RIDGES = 0
+LEFT_RIDGE = 1
+RIGHT_RIDGE = 2
+BOTH_RIDGES = LEFT_RIDGE | RIGHT_RIDGE
+
 def _wall_for_direction_height_zoom(direction, z, zoom):
 	tile_w = zoom
 	tile_h = tile_w // 2
@@ -99,19 +105,18 @@ class TileSurfaceCache:
 			self.right_ridge_cache[zoom] = right
 			self.both_ridge_cache[zoom] = both
 
-	def tile_surface(self, zoom, ridges=None):
+	def tile_surface(self, zoom, ridges: int=None):
 		"""
 		Returns a pre-rendered tile top for the given zoom (tile width).
 		"""
 		idx = int(zoom)
 		if ridges is None:
-			ridges = (False, False)
-		left, right = ridges
-		if not left and not right:
+			ridges = NO_RIDGES
+		if ridges == NO_RIDGES:
 			return self.tile_cache[idx]
-		elif left and right:
+		elif ridges == BOTH_RIDGES:
 			return self.both_ridge_cache[idx]
-		elif left:
+		elif ridges == LEFT_RIDGE:
 			return self.left_ridge_cache[idx]
 		else:
 			return self.right_ridge_cache[idx] 
@@ -179,8 +184,6 @@ class TileSurfaceCache:
 		"""
 		if wall_hs is None:
 			wall_hs = (0, 0)
-		if ridges is None:
-			ridges = (False, False)
 		yield self.tile_surface_and_position(screen_p, zoom, ridges)
 		# Walls
 		left, right = wall_hs
