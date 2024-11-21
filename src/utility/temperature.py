@@ -9,37 +9,6 @@ Note - temperature is to be abbreviated as 'tpr' in this codebase, not as
 'temp' since that can be confused with 'temporary'.
 """
 
-# These temperatures are equal to 74deg - 84deg F. The ideal climate for human
-# habitation is somewhere between the Southern United States and the Carribean.
-# (Source: independent research by me)
-MIN_OPTIMAL_TPR = 296.483
-MAX_OPTIMAL_TPR = 302.039
-
-# The minimum habitable temperature is the freezing point of water. Although
-# humans can survive in colder temperatures, you can't have agriculture without
-# liquid surface water.
-MIN_HABITABLE_TPR = 273.15
-
-# The maximum recorded temperature on Earth was 134deg F in Death Valley,
-# California on 1913-July-10.
-MAX_HABITABLE_TPR = 329.817
-
-def temperature_habitability(tpr):
-	"""
-	Returns the habitability score of a given temperature.
-	"""
-	if tpr < MIN_HABITABLE_TPR:
-		return 0
-	elif tpr > MAX_HABITABLE_TPR:
-		return 0
-	elif tpr < MIN_OPTIMAL_TPR:
-		low_range = MIN_OPTIMAL_TPR - MIN_HABITABLE_TPR
-		return (tpr - MIN_HABITABLE_TPR) / low_range
-	elif tpr > MAX_OPTIMAL_TPR:
-		hi_range = MAX_HABITABLE_TPR - MAX_OPTIMAL_TPR
-		return (MAX_HABITABLE_TPR - tpr) / hi_range
-	return 1
-
 def kelvin_to_fahrenheit(kelvin):
 	"""
 	Converts a temperature in Kelvin to Fahrenheit.
