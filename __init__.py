@@ -5,6 +5,7 @@ from src.world.world import World
 from src.render.render import Render
 from src.math.vector2 import Vector2
 from src.gameobject.lander import Lander
+from src.gameobject.plant_flag import PlantFlag
 from src.mgmt.singletons import init_game_manager, get_game_manager
 from src.mgmt.constants import TICKS_PER_SECOND
 from src.render.viewport import Viewport
@@ -41,6 +42,12 @@ def make_lander(world: World):
 	lander = Lander(pos=lander_pos)
 	get_game_manager().add_game_object(lander)
 
+def make_plant_flag(world: World):
+	"""Create the flag the player plants."""
+	flag_pos = world.terrain.center + Vector2(0, 10)
+	flag = PlantFlag(pos=flag_pos)
+	get_game_manager().add_game_object(flag)
+
 def make_game(on_quit):
 	"""Initialize the game manager."""
 	world = make_world()
@@ -49,6 +56,7 @@ def make_game(on_quit):
 	vp.game_mgr = game_mgr
 	game_mgr.new_player_character(world.terrain.center)
 	make_lander(world)
+	make_plant_flag(world)
 	return game_mgr
 
 def main():

@@ -22,6 +22,8 @@ class Render(object):
 		self.images = {}
 		self.images['assets/img/astronaut-cropped.png'] = pygame.image.load('assets/img/astronaut-cropped.png')
 		self.images['assets/img/lander.png'] = pygame.image.load('assets/img/lander.png')
+		self.images['assets/img/sprite/click-here.png'] = pygame.image.load('assets/img/sprite/click-here.png')
+		self.images['assets/img/sprite/flag.png'] = pygame.image.load('assets/img/sprite/flag.png')
 	
 	def game_object_at(self, p):
 		for go in self.game_mgr.game_objects:

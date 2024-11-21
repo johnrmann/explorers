@@ -1,3 +1,5 @@
+EVENT_ID__DO_ACTION = "event.action.do"
+
 class Action:
 	"""
 	Things that the player can tell characters to do.
