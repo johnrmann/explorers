@@ -3,7 +3,12 @@ import pygame
 class _GuiManager:
 	elements = []
 
-	def __init__(self):
+	game_mgr = None
+
+	def __init__(self, game_mgr=None):
+		if game_mgr is None:
+			raise ValueError("Game manager must be provided.")
+		self.game_mgr = game_mgr
 		self.surface = pygame.display.get_surface()
 		if not self.surface:
 			raise ValueError("pygame not initialized yet")
@@ -29,9 +34,9 @@ class _GuiManager:
 
 _global_gui_manager = None
 
-def init_gui_manager():
+def init_gui_manager(game_mgr):
 	global _global_gui_manager
-	_global_gui_manager = _GuiManager()
+	_global_gui_manager = _GuiManager(game_mgr=game_mgr)
 	return _global_gui_manager
 
 class GuiElement:

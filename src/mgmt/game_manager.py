@@ -46,7 +46,7 @@ class GameManager:
 			self.evt_mgr = evt_mgr
 		else:
 			self.evt_mgr = EventManager()
-		self.gui_mgr = init_gui_manager()
+		self.gui_mgr = init_gui_manager(self)
 		self.clickmap = ClickMap(self.vp.window_dims)
 		self.ctrl = Control(self, on_quit=self.on_quit, clickmap=self.clickmap)
 
