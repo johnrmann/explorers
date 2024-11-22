@@ -22,8 +22,18 @@ def box_between_tiles(top, bottom):
 	)
 
 def scale_color(color, k):
-	r,g,b = color
-	return (k * r, k * g, k * b)
+	"""
+	Returns a copy of the given color such that each channel is multiplied by
+	the given factor.
+	"""
+	if len(color) == 4:
+		r,g,b,a = color
+		return (round(k * r), round(k * g), round(k * b), a)
+	elif len(color) == 3:
+		r,g,b = color
+		return (round(k * r), round(k * g), round(k * b))
+	else:
+		raise ValueError("Color must be a 3-tuple or 4-tuple.")
 
 def alpha_mask_from_surface(surface, fill_color=(255, 255, 255, 255)):
 	"""
@@ -43,3 +53,25 @@ def alpha_mask_from_surface(surface, fill_color=(255, 255, 255, 255)):
 				continue
 			alpha_mask.set_at((x, y), fill_color)
 	return alpha_mask.convert_alpha()
+
+def resize_surface(surface, factor=1):
+	"""
+	Returns a copy of the given surface resized to the given dimensions.
+	"""
+	w, h = surface.get_size()
+	w2 = int(round(w * factor))
+	h2 = int(round(h * factor))
+	return pygame.transform.scale(surface, (w2, h2))
+
+def relight_surface(surface, factor=1):
+	"""
+	Returns a copy of the given surface such that each pixel color is
+	multiplied by the given factor.
+	"""
+	w, h = surface.get_size()
+	surf2 = pygame.Surface((w, h), pygame.SRCALPHA)
+	for x in range(w):
+		for y in range(h):
+			color = surface.get_at((x, y))
+			surf2.set_at((x, y), scale_color(color, factor))
+	return surf2
