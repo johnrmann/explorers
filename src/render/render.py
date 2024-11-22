@@ -4,27 +4,39 @@ from src.rendermath.order import cells_in_draw_order
 from src.rendermath.draw_graph import DrawGraph
 
 from src.world.world import World
+
+from src.render.multisurface import MultiSurface
 from src.render.viewport import Viewport
 from src.render.render_terrain import RenderTerrain
 from src.render.render_gameobject import render_gameobject
 
+IMG_PATHS = [
+	'assets/img/astronaut-cropped.png',
+	'assets/img/lander.png',
+	'assets/img/sprite/click-here.png',
+	'assets/img/sprite/flag.png',
+]
+
 class Render(object):
-	def __init__(self, window, world: World, vp: Viewport):
-		from src.mgmt.singletons import get_game_manager
-		self.game_mgr = get_game_manager()
+	def __init__(self, window, world: World, vp: Viewport, game_mgr=None):
+		self.game_mgr = game_mgr
 		self.window = window
 		self.world = world
 		self.vp = vp
-		self.render_terrain = RenderTerrain(window, world, vp)
+		self.render_terrain = RenderTerrain(window, world, vp, self.game_mgr)
 		self._load_images()
 	
 	def _load_images(self):
 		self.images = {}
-		self.images['assets/img/astronaut-cropped.png'] = pygame.image.load('assets/img/astronaut-cropped.png')
-		self.images['assets/img/lander.png'] = pygame.image.load('assets/img/lander.png')
-		self.images['assets/img/sprite/click-here.png'] = pygame.image.load('assets/img/sprite/click-here.png')
-		self.images['assets/img/sprite/flag.png'] = pygame.image.load('assets/img/sprite/flag.png')
-	
+		for path in IMG_PATHS:
+			surface = pygame.image.load(path).convert_alpha()
+			multisurface = MultiSurface(
+				surface,
+				alpha_color=(255, 255, 255, 255),
+				zoom_factors=[1.0]
+			)
+			self.images[path] = multisurface
+
 	def game_object_at(self, p):
 		for go in self.game_mgr.game_objects:
 			gx, gy = go.pos
@@ -42,10 +54,11 @@ class Render(object):
 		h = self.world.terrain.map[y][x]
 		render_gameobject(
 			window=self.window,
+			clickmap=self.game_mgr.clickmap,
 			vp=self.vp,
 			go=gobj,
 			height=h,
-			image_map=self.images
+			image_map=self.images,
 		)
 	
 	def render(self):

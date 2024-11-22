@@ -11,10 +11,11 @@ RIGHT_COLOR = (0, 0, 50)
 
 def render_gameobject(
 	window=None,
+	clickmap=None,
 	vp: Viewport=None,
 	go: GameObject=None,
 	height = 0,
-	image_map = {}
+	image_map = None,
 ):
 	# A "cell polygon" is the position of the tile if there was no terrain.
 	go_size = max(go.size[0], go.size[1])
@@ -25,11 +26,15 @@ def render_gameobject(
 	# Now, move up by height to find the terrain start point.
 	tile = height_offset_tile(cell_polygon, height / 8, vp)
 	if go.image_path() in image_map:
-		img = image_map[go.image_path()]
+		img = image_map[go.image_path()].get()
+		alpha = image_map[go.image_path()].get_alpha()
 		origin, img_dims = fit_img_rect_on_tile_base(img.get_size(), tile)
 		window.blit(
 			pygame.transform.scale(img, img_dims),
 			pygame.Rect(origin, img_dims),
+		)
+		clickmap.mark_game_object(
+			go, origin, pygame.transform.scale(alpha, img_dims)
 		)
 	else:
 		top = height_offset_tile(tile, 1, vp)

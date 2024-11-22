@@ -5,7 +5,7 @@ from src.ctrl.camera import (
 	pygame_key_to_delta_camera_rotate,
 	pygame_key_to_camdir
 )
-
+from src.ctrl.clickmap import ClickMap
 from src.ctrl.event_id import (
 	EVENT_CAMERA_MOVE,
 	EVENT_CAMERA_ZOOM,
@@ -20,11 +20,19 @@ class Control:
 	"""
 
 	game_mgr = None
+	clickmap: ClickMap
 
 	lock_camera: bool
 
-	def __init__(self, game_mgr, lock_camera = False, on_quit = None):
+	def __init__(
+			self,
+			game_mgr,
+			lock_camera = False,
+			on_quit = None,
+			clickmap = None
+	):
 		self.game_mgr = game_mgr
+		self.clickmap = clickmap
 		self.lock_camera = lock_camera
 		self.on_quit = on_quit
 
@@ -54,6 +62,9 @@ class Control:
 			return True
 		elif event.type == pygame.MOUSEBUTTONDOWN:
 			click_x, click_y = pygame.mouse.get_pos()
+			if not self.clickmap.is_terrain((click_x, click_y)):
+				# TODO(mannjohn) - handle clicks on objects.
+				return True
 			self.game_mgr.evt_mgr.pub(
 				EVENT_MOUSE_CLICK_WORLD, (click_x, click_y)
 			)

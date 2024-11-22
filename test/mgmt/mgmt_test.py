@@ -2,8 +2,9 @@ import unittest
 
 from unittest.mock import MagicMock, call, patch
 
-from src.mgmt.game_manager import GameManager, TICKS_PER_SECOND
+from src.render.viewport import Viewport
 
+from src.mgmt.game_manager import GameManager, TICKS_PER_SECOND
 from test.mgmt.test_objects import (
 	Rocket,
 	Launchpad,
@@ -15,7 +16,9 @@ class MgmtTest(unittest.TestCase):
 
 	@patch('src.mgmt.singletons.get_game_manager')
 	def setUp(self, mock_get_game_manager):
-		self.game_mgr = GameManager(None, None)
+		self.viewport = MagicMock(spec=Viewport)
+		self.viewport.window_dims = (800, 600)
+		self.game_mgr = GameManager(None, self.viewport)
 		mock_get_game_manager.return_value = self.game_mgr
 
 	def test__launch(self):

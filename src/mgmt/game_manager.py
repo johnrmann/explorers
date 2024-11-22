@@ -3,6 +3,8 @@ from src.gameobject.actor import Actor
 from src.world.world import World
 from src.gui.gui import _GuiManager, init_gui_manager
 from src.ctrl.ctrl import Control
+from src.ctrl.clickmap import ClickMap
+from src.render.render import Render
 
 from src.mgmt.event_manager import EventManager
 from src.mgmt.constants import TICKS_PER_SECOND
@@ -15,13 +17,23 @@ class GameManager:
 	evt_mgr: EventManager
 	gui_mgr: _GuiManager
 	ctrl: Control
+	renderer: Render
+	clickmap: ClickMap
 
 	game_objects: list[GameObject]
 	ticks: int
 	world: World
 	vp = None
 
-	def __init__(self, world: World, viewport, on_quit=None, evt_mgr=None):
+	def __init__(
+			self,
+			world: World,
+			viewport,
+			on_quit=None,
+			evt_mgr=None,
+			screen=None,
+	):
+		self.screen = screen
 		self.ticks = 0
 		self.game_objects = []
 		self.world = world
@@ -35,7 +47,8 @@ class GameManager:
 		else:
 			self.evt_mgr = EventManager()
 		self.gui_mgr = init_gui_manager()
-		self.ctrl = Control(self, on_quit=self.on_quit)
+		self.clickmap = ClickMap(self.vp.window_dims)
+		self.ctrl = Control(self, on_quit=self.on_quit, clickmap=self.clickmap)
 
 	@property
 	def utc(self) -> float:
@@ -55,6 +68,16 @@ class GameManager:
 		self.evt_mgr.tick(dt, self.utc)
 		for obj in self.game_objects:
 			obj.tick(dt, self.utc)
+
+	def prepare_render(self):
+		"""
+		Call this ONCE if this game manager is going to render things.
+		"""
+		self.renderer = Render(self.screen, self.world, self.vp, game_mgr=self)
+
+	def render(self):
+		self.clickmap.clear()
+		self.renderer.render()
 
 	@property
 	def player_character(self):
