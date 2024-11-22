@@ -19,12 +19,13 @@ class VerticalMenu(GuiElement):
 			parent=None,
 	):
 		super().__init__(parent=parent)
-		self.layout = VerticalLayout(origin=origin)
+		self.relative_origin = origin
+		self.layout = VerticalLayout(origin=(0,0), parent=self)
 		for action_txt in actions:
 			Button(
 				rect=((0,0), (width,50)),
 				text=action_txt,
-				parent=self.layout
+				parent=self,
 			)
 
 class HorizontalMenu(GuiElement):
@@ -40,10 +41,12 @@ class HorizontalMenu(GuiElement):
 			parent=None,
 	):
 		super().__init__(parent=parent)
-		self.layout = HorizontalLayout(origin=origin)
+		self.relative_origin = origin
+		self.layout = HorizontalLayout(origin=(0,0), parent=self)
 		for action_txt in actions:
-			Button(
-				rect=((0,0), (100,height)),
-				text=action_txt,
-				parent=self.layout
+			self.add_child(
+				Button(
+					rect=((0,0), (100,height)),
+					text=action_txt,
+				)
 			)

@@ -44,6 +44,9 @@ class GuiElement:
 	parent = None
 	elements = None
 
+	relative_origin: tuple[int, int]
+	dimensions: tuple[int, int]
+
 	def __init__(self, gui_mgr=None, parent=None):
 		self.elements = []
 		if gui_mgr is not None:
@@ -57,16 +60,43 @@ class GuiElement:
 			self.gui_mgr.elements.append(self)
 
 	def __del__(self):
-		self.gui_mgr.remove_element(self)
+		self.remove_me()
 
-	def translate(self, dx, dy):
-		raise ArithmeticError("Unimplemented")
+	def remove_me(self):
+		"""
+		Removes this element from the GUI manager.
+		"""
+		if self.parent is not None:
+			self.parent.remove_child(self)
+			self.parent = None
+		else:
+			self.gui_mgr.remove_element(self)
+
+	@property
+	def origin(self):
+		rx, ry = self.relative_origin
+		if self.parent is not None:
+			px, py = self.parent.origin
+			return px + rx, py + ry
+		return rx, ry
 
 	def add_child(self, child):
+		"""Adds a child element to this element."""
 		self.elements.append(child)
+		child.parent = self
+
+	def remove_child(self, child):
+		"""Removes a child element."""
+		if child in self.elements:
+			self.elements.remove(child)
+			child.parent = None
+			del child
 
 	def process_event(self, event):
 		"""Returns true if the event was for this controller."""
+		for child in self.elements:
+			if child.process_event(event):
+				return True
 		return False
 
 	def update(self, dt: float):
@@ -95,19 +125,6 @@ class GuiPrimitive(GuiElement):
 	def screen_dimensions(self):
 		"""The dimensions of the screen."""
 		return self.gui_mgr.surface.get_size()
-
-	def translate(self, dx, dy):
-		x, y = self.relative_origin
-		self.relative_origin = (x + dx, y + dy)
-
-	@property
-	def origin(self):
-		if self.parent is None:
-			return self.relative_origin
-		else:
-			pox, poy = self.parent.origin
-			x, y = self.relative_origin
-			return (pox + x, poy + y)
 
 	@property
 	def pygame_rect(self):

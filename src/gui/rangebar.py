@@ -27,7 +27,7 @@ class Rangebar(GuiElement):
 		self.layers = layers
 		self.values = values
 		origin, dimensions = rect
-		self.origin = origin
+		self.relative_origin = origin
 		self.dimensions = dimensions
 
 	@property

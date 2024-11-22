@@ -40,12 +40,14 @@ def make_lander(world: World):
 	"""Create the lander the player character arrives in."""
 	lander_pos = world.terrain.center + Vector2(-5, -12)
 	lander = Lander(pos=lander_pos)
+	lander.owner = 1
 	get_game_manager().add_game_object(lander)
 
 def make_plant_flag(world: World):
 	"""Create the flag the player plants."""
 	flag_pos = world.terrain.center + Vector2(0, 10)
 	flag = PlantFlag(pos=flag_pos)
+	flag.owner = 1
 	get_game_manager().add_game_object(flag)
 
 def make_game(on_quit):
@@ -71,14 +73,6 @@ def main():
 
 	mission_clock = MissionClock()
 	fps = FpsCounter()
-	# vmenu = VerticalMenu(
-	# 	origin=(200,200),
-	# 	actions=[
-	# 		"Alpha",
-	# 		"Bravo",
-	# 		"Charlie"
-	# 	]
-	# )
 	# health = Rangebar(
 	# 	rect=((200,200), (200,30)),
 	# 	layers=[

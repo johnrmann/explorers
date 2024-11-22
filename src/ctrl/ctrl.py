@@ -1,5 +1,7 @@
 import pygame
 
+from src.gui.action_menu import ActionMenu
+
 from src.ctrl.camera import (
 	pygame_key_to_delta_zoom,
 	pygame_key_to_delta_camera_rotate,
@@ -11,6 +13,7 @@ from src.ctrl.event_id import (
 	EVENT_CAMERA_ZOOM,
 	EVENT_CAMERA_ROTATE,
 	EVENT_MOUSE_CLICK_WORLD,
+	EVENT_MOUSE_CLICK_OBJECT,
 )
 
 class Control:
@@ -63,7 +66,15 @@ class Control:
 		elif event.type == pygame.MOUSEBUTTONDOWN:
 			click_x, click_y = pygame.mouse.get_pos()
 			if not self.clickmap.is_terrain((click_x, click_y)):
-				# TODO(mannjohn) - handle clicks on objects.
+				gobj = self.clickmap.game_object_at((click_x, click_y))
+				# self.game_mgr.evt_mgr.pub(
+				# 	EVENT_MOUSE_CLICK_OBJECT,
+				# 	(gobj, (click_x, click_y))
+				# )
+				ActionMenu(
+					origin=(click_x, click_y),
+					clicked=gobj,
+				)
 				return True
 			self.game_mgr.evt_mgr.pub(
 				EVENT_MOUSE_CLICK_WORLD, (click_x, click_y)
