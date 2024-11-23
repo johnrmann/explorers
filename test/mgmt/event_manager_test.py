@@ -4,6 +4,12 @@ from unittest.mock import MagicMock
 
 from src.mgmt.event_manager import EventManager
 from src.mgmt.listener import Listener
+from src.mgmt.event import Event
+
+class DummyEvent(Event):
+	def __init__(self, payload):
+		super().__init__(event_type='foo')
+		self.payload = payload
 
 class EventManagerTest(unittest.TestCase):
 	def test__pub_unsub(self):
@@ -33,7 +39,7 @@ class EventManagerTest(unittest.TestCase):
 		evt_mgr.sub('foo', dummy)
 		evt_mgr.tick(0.1, 1.0)
 		self.assertEqual(dummy.update.call_count, 0)
-		evt_mgr.pub('foo', 'bar')
+		evt_mgr.pub(DummyEvent('bar'))
 		self.assertEqual(dummy.update.call_count, 0)	
 		evt_mgr.tick(0.1, 1.1)
 		self.assertEqual(dummy.update.call_count, 1)
@@ -42,7 +48,7 @@ class EventManagerTest(unittest.TestCase):
 		evt_mgr = EventManager()
 		dummy = MagicMock(spec=Listener)
 		evt_mgr.sub('foo', dummy)
-		evt_mgr.pub('foo', 'bar')
+		evt_mgr.pub(DummyEvent('bar'))
 		evt_mgr.tick(0.1, 1.0)
 		self.assertEqual(dummy.update.call_count, 1)
 		evt_mgr.tick(0.1, 1.1)

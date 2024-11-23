@@ -1,5 +1,7 @@
 import pygame
 
+from src.gameobject.actor import MoveActorEvent
+
 from src.gui.action_menu import ActionMenu
 
 from src.ctrl.camera import (
@@ -76,9 +78,16 @@ class Control:
 					clicked=gobj,
 				)
 				return True
-			self.game_mgr.evt_mgr.pub(
-				EVENT_MOUSE_CLICK_WORLD, (click_x, click_y)
-			)
+			else:
+				player_character = self.game_mgr.player_character
+				click_tile = self.game_mgr.vp.screen_to_tile_coords((click_x, click_y))
+				click_tile = (int(click_tile[0]), int(click_tile[1]))
+				self.game_mgr.evt_mgr.pub(
+					MoveActorEvent(
+						actor=player_character,
+						to_position=click_tile,
+					)
+				)
 			return True
 		return False
 

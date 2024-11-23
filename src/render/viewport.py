@@ -19,6 +19,7 @@ from src.math.direction import (
 )
 from src.math.vector2 import vector2_rotate_point
 from src.mgmt.listener import Listener
+from src.gameobject.actor import MoveActorEvent
 from src.rendermath.cell import cell_position_on_global_screen
 
 TILE_WIDTH = 48
@@ -82,14 +83,6 @@ class Viewport(Listener):
 			self.change_zoom(data)
 		elif event_type == EVENT_CAMERA_ROTATE:
 			self.rotate_camera(data)
-		elif event_type == EVENT_MOUSE_CLICK_WORLD:
-			# TODO(jm) - i don't think this should go here, maybe explore a
-			# mouse/screen interface class later?
-			click_tile = self.screen_to_tile_coords(data)
-			click_tile = (
-				int(click_tile[0]), int(click_tile[1])
-			)
-			self.evt_mgr.pub("main.character.go", click_tile)
 
 	@property
 	def terrain_z(self):

@@ -1,3 +1,5 @@
+from src.mgmt.event import Event
+
 class EventManager:
 	_queue: list[tuple[str, any]]
 
@@ -42,18 +44,18 @@ class EventManager:
 		event_listeners = self.listeners[event_type]
 		return listener in event_listeners
 
-	def pub(self, event_type, data=None):
+	def pub(self, event: Event):
 		"""
 		Publish an event with a data payload.
 		"""
-		self._queue.append((event_type, data))
+		self._queue.append(event)
 
 	def tick(self, dt: float, utc: float):
 		"""
 		Process events from the last tick in this one.
 		"""
-		for event_type, data in self._queue:
-			if event_type in self.listeners:
-				for listener in self.listeners[event_type]:
-					listener.update(event_type, data)
+		for event in self._queue:
+			if event.event_type in self.listeners:
+				for listener in self.listeners[event.event_type]:
+					listener.update(event)
 		self._queue = []

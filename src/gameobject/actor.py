@@ -3,6 +3,7 @@ from src.gameobject.gameobject import GameObject
 from src.math.vector2 import Vector2
 from src.path.path_runner import PathRunner
 from src.mgmt.listener import Listener
+from src.mgmt.event import Event
 
 from src.gameobject.actor_motives import (
 	ActorMotiveVector,
@@ -27,10 +28,10 @@ class Actor(GameObject, Listener):
 		# Speed is given in cells per second.
 		self.speed = speed
 		self.evt_mgr.sub("main.character.go", self)
-	
-	def update(self, event_type, data):
-		if event_type == "main.character.go":
-			self.set_destination(data)
+
+	def update(self, event: Event):
+		if isinstance(event, MoveActorEvent) and event.actor == self:
+			self.set_destination(event.to_position)
 
 	@property
 	def pos(self):
@@ -64,7 +65,7 @@ class Actor(GameObject, Listener):
 			d_motives.mutate(ActorMotiveVector(MOVEMENT_MOTIVE_DELTAS) * dt)
 		self.motives.mutate(d_motives)
 		if self.is_dead():
-			self.evt_mgr.pub("character.died", self)
+			self.evt_mgr.pub(ActorDiedEvent(actor=self))
 
 	def tick(self, dt: float, t: float):
 		self._path_runner.tick(dt * self.speed)
@@ -72,3 +73,46 @@ class Actor(GameObject, Listener):
 
 	def image_path(self):
 		return "assets/img/astronaut-cropped.png"
+
+class MoveActorEvent(Event):
+	"""
+	An event to tell an actor to move to a position on the map.
+	"""
+
+	actor: Actor
+	to_position: Vector2
+
+	def __init__(
+			self,
+			actor: Actor = None,
+			to_position: Vector2 = None
+	):
+		super().__init__(event_type="main.character.go")
+		self.actor = actor
+		self.to_position = to_position
+
+	def __eq__(self, other):
+		if not isinstance(other, MoveActorEvent):
+			return False
+		return (
+			other.actor == self.actor and
+			other.to_position == self.to_position
+		)
+
+class ActorDiedEvent(Event):
+	"""
+	An event broadcasted by an actor indicating that they just died :-(
+	"""
+
+	actor: Actor
+
+	def __init__(self, actor: Actor = None):
+		super().__init__(event_type="character.died")
+		self.actor = actor
+
+	def __eq__(self, other):
+		if not isinstance(other, ActorDiedEvent):
+			return False
+		return (
+			other.actor == self.actor
+		)

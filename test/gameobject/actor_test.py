@@ -8,7 +8,7 @@ from src.math.vector2 import Vector2
 from src.mgmt.game_manager import GameManager
 from src.mgmt.event_manager import EventManager
 
-from src.gameobject.actor import Actor
+from src.gameobject.actor import Actor, ActorDiedEvent
 
 CARDINAL_PATH = [
 	Vector2(0,0),
@@ -53,7 +53,7 @@ class ActorTest(unittest.TestCase):
 		while actor.motives.hunger > 0:
 			actor.tick(25, 0)
 		self.assertTrue(actor.is_dead())
-		actor.evt_mgr.pub.assert_called_with("character.died", actor)
+		actor.evt_mgr.pub.assert_called_with(ActorDiedEvent(actor))
 
 	def test__evt_mgr_gets_died_from_oxygen(self):
 		actor = self.actor
@@ -62,7 +62,7 @@ class ActorTest(unittest.TestCase):
 		while actor.motives.oxygen > 0:
 			actor.tick(25, 0)
 		self.assertTrue(actor.is_dead())
-		actor.evt_mgr.pub.assert_called_with("character.died", actor)
+		actor.evt_mgr.pub.assert_called_with(ActorDiedEvent(actor))
 
 	def test__motives_decrease_over_time(self):
 		actor = self.actor

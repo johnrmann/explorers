@@ -9,7 +9,10 @@ from test.mgmt.test_objects import (
 	Rocket,
 	Launchpad,
 	Moon,
-	OmniListener
+	OmniListener,
+	RocketLaunchEvent,
+	RocketCruiseEvent,
+	RocketArriveEvent
 )
 
 class MgmtTest(unittest.TestCase):
@@ -39,17 +42,13 @@ class MgmtTest(unittest.TestCase):
 		launchpad.launch()
 		for _ in range(0, 12):
 			game_mgr.tick(TICKS_PER_SECOND)
-		mock_update.assert_has_calls([
-			call('rocket_launch', None),
-			call('rocket_cruise', 1.0),
-			call('rocket_cruise', 2.0),
-			call('rocket_cruise', 3.0),
-			call('rocket_cruise', 4.0),
-			call('rocket_cruise', 5.0),
-			call('rocket_cruise', 6.0),
-			call('rocket_cruise', 7.0),
-			call('rocket_cruise', 8.0),
-			call('rocket_cruise', 9.0),
-			call('rocket_cruise', 10.0),
-			call('rocket_arrive', None),
-		])
+		calls = [
+			RocketLaunchEvent(),
+			*[
+				RocketCruiseEvent(utc)
+				for utc in range(1, 11)
+			],
+			RocketArriveEvent()
+		]
+		for i in range(len(calls)):
+			self.assertEqual(mock_update.call_args_list[i], call(calls[i]))

@@ -1,4 +1,5 @@
 from src.mgmt.listener import Listener
+from src.mgmt.event import Event
 
 from src.gameobject.action import Action, EVENT_ID__DO_ACTION
 from src.gameobject.interactable import Interactable
@@ -45,7 +46,7 @@ class PlantFlag(Interactable, Listener):
 
 	def _signal_plant(self):
 		if self._is_first:
-			self.evt_mgr.pub("flag.planted", self)
+			self.evt_mgr.pub(FlagPlantedEvent())
 
 	def actions(self, player_id: int):
 		if not self._is_planted and player_id == self.owner:
@@ -54,3 +55,7 @@ class PlantFlag(Interactable, Listener):
 			]
 		else:
 			return []
+
+class FlagPlantedEvent(Event):
+	def __init__(self):
+		super().__init__(event_type="flag.planted")
