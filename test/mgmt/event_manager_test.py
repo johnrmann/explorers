@@ -54,5 +54,20 @@ class EventManagerTest(unittest.TestCase):
 		evt_mgr.tick(0.1, 1.1)
 		self.assertEqual(dummy.update.call_count, 1)
 
+	def test__tick__publishes_after_delay(self):
+		evt_mgr = EventManager()
+		dummy = MagicMock(spec=Listener)
+		evt_mgr.sub('foo', dummy)
+		evt_mgr.tick(0.1, 0.1)
+		evt_mgr.pub(DummyEvent('bar'), delay=4.0)
+		evt_mgr.tick(0.9, 1.0)
+		self.assertEqual(dummy.update.call_count, 0)
+		evt_mgr.tick(1.0, 2.0)
+		evt_mgr.tick(1.0, 3.0)
+		evt_mgr.tick(1.0, 4.0)
+		self.assertEqual(dummy.update.call_count, 0)
+		evt_mgr.tick(0.1, 4.1)
+		self.assertEqual(dummy.update.call_count, 1)
+
 if __name__ == "__main__":
 	unittest.main()

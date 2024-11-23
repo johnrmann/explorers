@@ -1,12 +1,20 @@
 from src.mgmt.event import Event
 
 class EventManager:
+	"""
+	Manages event subscriptions and publications.
+	"""
+
+	_utc: float
+
 	_queue: list[tuple[str, any]]
+	_delay_queue: list[tuple[str, any, float]]
 
 	def __init__(self):
 		self.listeners = {}
 		self.all_listeners = {}
 		self._queue = []
+		self._delay_queue = []
 
 	def sub(self, event_type, listener):
 		"""
@@ -44,18 +52,29 @@ class EventManager:
 		event_listeners = self.listeners[event_type]
 		return listener in event_listeners
 
-	def pub(self, event: Event):
+	def pub(self, event, delay=0):
 		"""
 		Publish an event with a data payload.
 		"""
-		self._queue.append(event)
+		if delay == 0:
+			self._queue.append(event)
+		else:
+			self._delay_queue.append((event, delay + self._utc))
 
 	def tick(self, dt: float, utc: float):
 		"""
 		Process events from the last tick in this one.
 		"""
+		self._utc = utc
 		for event in self._queue:
 			if event.event_type in self.listeners:
 				for listener in self.listeners[event.event_type]:
 					listener.update(event)
+		for delayed_event in self._delay_queue:
+			event, at_time = delayed_event
+			if utc >= at_time:
+				if event.event_type in self.listeners:
+					for listener in self.listeners[event.event_type]:
+						listener.update(event)
+					self._delay_queue.remove(delayed_event)
 		self._queue = []
