@@ -1,3 +1,5 @@
+from src.gui.superevent import ShowSupereventEvent
+
 from src.mgmt.listener import Listener
 from src.mgmt.event import Event
 
@@ -37,6 +39,14 @@ class PlantFlag(Interactable, Listener):
 	def _plant(self):
 		self._is_planted = True
 		self.size = (2,1,5)
+		if self._is_first:
+			self.evt_mgr.pub(
+				ShowSupereventEvent(
+					json_file="assets/json/events/landing.json",
+					json_id="landing-neutral"
+				),
+				delay=2,
+			)
 
 	def _make_plant_flag_action(self):
 		return Action(

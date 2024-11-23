@@ -1,5 +1,4 @@
 import pygame
-
 from src.mgmt.event_manager import EventManager
 
 class _GuiManager:
@@ -122,12 +121,12 @@ class GuiPrimitive(GuiElement):
 	"""
 
 	def __init__(self, rect=None, parent=None, evt_mgr=None):
-		super().__init__(parent=parent, evt_mgr=evt_mgr)
 		if rect is None:
 			raise ValueError("Every GUI element must have a rect.")
 		origin, dimensions = rect
 		self.relative_origin = origin
 		self.dimensions = dimensions
+		super().__init__(parent=parent, evt_mgr=evt_mgr)
 
 	@property
 	def screen_dimensions(self):

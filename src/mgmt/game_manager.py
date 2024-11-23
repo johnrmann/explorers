@@ -7,9 +7,10 @@ from src.ctrl.clickmap import ClickMap
 from src.render.render import Render
 
 from src.mgmt.event_manager import EventManager
+from src.mgmt.listener import Listener
 from src.mgmt.constants import TICKS_PER_SECOND
 
-class GameManager:
+class GameManager(Listener):
 	"""
 	Primarily responsible for managing game state and the passage of time.
 	"""
@@ -41,6 +42,7 @@ class GameManager:
 		self.vp = viewport
 		self.on_quit = on_quit
 		self._init_managers(evt_mgr, no_gui)
+		self._subscribe_to_events()
 
 	def _init_managers(self, evt_mgr, no_gui):
 		if evt_mgr is not None:
@@ -51,6 +53,15 @@ class GameManager:
 			self.gui_mgr = init_gui_manager(self)
 		self.clickmap = ClickMap(self.vp.window_dims)
 		self.ctrl = Control(self, on_quit=self.on_quit, clickmap=self.clickmap)
+
+	def _subscribe_to_events(self):
+		self.evt_mgr.sub("gui.superevent.show", self)
+
+	def update(self, event):
+		# TODO(jm) - this really should be in the gui manager instead of the
+		# game manager.
+		if event.event_type == "gui.superevent.show":
+			event.make_superevent()
 
 	@property
 	def utc(self) -> float:

@@ -44,7 +44,7 @@ class VerticalMenu(GuiElement):
 				text=option.label,
 				callback=option.callback,
 				events=option.events,
-				parent=self,
+				parent=self.layout,
 			)
 
 class HorizontalMenu(GuiElement):

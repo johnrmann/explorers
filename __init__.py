@@ -46,7 +46,7 @@ def make_lander(world: World):
 def make_plant_flag(world: World):
 	"""Create the flag the player plants."""
 	flag_pos = world.terrain.center + Vector2(0, 10)
-	flag = PlantFlag(pos=flag_pos)
+	flag = PlantFlag(pos=flag_pos, is_first=True)
 	flag.owner = 1
 	get_game_manager().add_game_object(flag)
 
@@ -81,10 +81,6 @@ def main():
 	# 		((0, 250, 0), 0, 100)
 	# 	],
 	# 	values=[66,33]
-	# )
-	# se = superevent_from_json(
-	# 	"assets/json/events/landing.json",
-	# 	"landing-neutral"
 	# )
 
 	while running:
