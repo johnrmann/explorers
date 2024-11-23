@@ -2,6 +2,10 @@ import unittest
 
 import pygame
 
+from unittest.mock import MagicMock
+
+from src.mgmt.game_manager import GameManager
+
 from src.gui.gui import init_gui_manager
 from src.gui.mission_clock import MissionClock, DEFAULT_FUNCTION_MAP
 
@@ -10,7 +14,8 @@ class TestMissionClock(unittest.TestCase):
 	def setUp(self):
 		pygame.init()
 		pygame.display.set_mode((800, 600))
-		init_gui_manager()
+		self.game_mgr = MagicMock(spec=GameManager)
+		init_gui_manager(self.game_mgr)
 		self.mission_clock = MissionClock()
 
 	def tearDown(self):
