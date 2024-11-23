@@ -15,12 +15,19 @@ class PathRunner:
 	_path: list[Vector2] = []
 	_idx = -1
 	_direction: Direction
+	_on_done = None
 
 	# Should be between [-0.5, 0.5) which represents how far we are to the next
 	# cell in the path.
 	_k = 0
 
-	def __init__(self, position = None, path = None, direction = None):
+	def __init__(
+			self,
+			position = None,
+			path = None,
+			direction = None,
+			on_done = None
+	):
 		if position is None:
 			position = Vector2(0,0)
 		if direction is None:
@@ -28,6 +35,7 @@ class PathRunner:
 		self._direction = direction
 		self._position = position
 		self.path = path
+		self._on_done = on_done
 	
 	def _clearPath(self):
 		self._path = []
@@ -91,7 +99,7 @@ class PathRunner:
 			return self.position
 		delta = self._delta() * self._k
 		return self.position + delta
-	
+
 	@property
 	def path(self):
 		"""
@@ -100,7 +108,7 @@ class PathRunner:
 		Setting a new path if a current one is in progress stops it.
 		"""
 		return self._path
-	
+
 	@path.setter
 	def path(self, value):
 		if value is None:
@@ -130,6 +138,8 @@ class PathRunner:
 		if self._k >= 0 and self._idx == len(self._path) - 1:
 			self._position = self._path[-1]
 			self._clearPath()
+			if self._on_done:
+				self._on_done()
 
 def path_evolve_modulo(k: float):
 	"""

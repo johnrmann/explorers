@@ -1,7 +1,17 @@
 import pygame
 
+from src.gameobject.actor import ActorDoActionEvent
+
 from src.gui.gui import GuiElement
-from src.gui.menu import VerticalMenu
+from src.gui.menu import VerticalMenu, MenuOption
+
+def action_to_menu_option(action, actor):
+	return MenuOption(
+		label=action.display_label,
+		events=[
+			ActorDoActionEvent(actor, action),
+		]
+	)
 
 class ActionMenu(GuiElement):
 	"""
@@ -17,19 +27,21 @@ class ActionMenu(GuiElement):
 	):
 		super().__init__(parent=parent)
 		self.relative_origin = origin
-		action_txts = [action.display_label for action in clicked.actions(1)]
+		options = [
+			action_to_menu_option(action, self.gui_mgr.game_mgr.player_character)
+			for action in clicked.actions(1)
+		]
 		self.menu = VerticalMenu(
 			origin=(0,0),
 			width=width,
-			actions=action_txts,
+			options=options,
 			parent=self,
 		)
 
 	def process_event(self, event):
 		button_clicked = self.menu.process_event(event)
 		if button_clicked:
-			print("CLICKED!!!")
-			# TODO(mannjohn) - trigger the action.
+			self.remove_me()
 			return True
 		elif event.type == pygame.MOUSEBUTTONDOWN:
 			self.remove_me()

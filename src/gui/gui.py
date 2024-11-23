@@ -1,5 +1,7 @@
 import pygame
 
+from src.mgmt.event_manager import EventManager
+
 class _GuiManager:
 	elements = []
 
@@ -41,18 +43,24 @@ def init_gui_manager(game_mgr):
 
 class GuiElement:
 	gui_mgr: _GuiManager
+	evt_mgr: EventManager
+
 	parent = None
 	elements = None
 
 	relative_origin: tuple[int, int]
 	dimensions: tuple[int, int]
 
-	def __init__(self, gui_mgr=None, parent=None):
+	def __init__(self, gui_mgr=None, parent=None, evt_mgr=None):
 		self.elements = []
 		if gui_mgr is not None:
 			self.gui_mgr = gui_mgr
 		else:
 			self.gui_mgr = _global_gui_manager
+		if evt_mgr is not None:
+			self.evt_mgr = evt_mgr
+		else:
+			self.evt_mgr = self.gui_mgr.game_mgr.evt_mgr
 		if parent is not None:
 			self.parent = parent
 			self.parent.add_child(self)
@@ -113,8 +121,8 @@ class GuiPrimitive(GuiElement):
 	To be extended by the various GUI controls to be shown on the screen.
 	"""
 
-	def __init__(self, rect=None, parent=None):
-		super().__init__(parent=parent)
+	def __init__(self, rect=None, parent=None, evt_mgr=None):
+		super().__init__(parent=parent, evt_mgr=evt_mgr)
 		if rect is None:
 			raise ValueError("Every GUI element must have a rect.")
 		origin, dimensions = rect

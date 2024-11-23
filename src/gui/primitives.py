@@ -25,11 +25,16 @@ class Button(GuiPrimitive):
 			rect=None,
 			text="",
 			callback=None,
-			parent: GuiElement=None
+			events=None,
+			parent: GuiElement=None,
+			evt_mgr=None,
 	):
-		super().__init__(rect=rect, parent=parent)
+		super().__init__(rect=rect, parent=parent, evt_mgr=evt_mgr)
 		self.text = text
 		self.callback = callback
+		if events is None:
+			events = []
+		self.events = events
 
 	@property
 	def _inner_pygame_rect(self):
@@ -54,6 +59,8 @@ class Button(GuiPrimitive):
 			if self.pygame_rect.collidepoint(event.pos):
 				if callable(self.callback):
 					self.callback()
+				for event in self.events:
+					self.evt_mgr.pub(event)
 				return True
 		return False
 
@@ -62,8 +69,8 @@ class Label(GuiPrimitive):
 
 	text = ""
 
-	def __init__(self, rect=None, text="", parent=None):
-		super().__init__(rect=rect, parent=parent)
+	def __init__(self, rect=None, text="", parent=None, evt_mgr=None):
+		super().__init__(rect=rect, parent=parent, evt_mgr=evt_mgr)
 		self.text = text
 
 	def draw(self, screen):
@@ -75,8 +82,8 @@ class Label(GuiPrimitive):
 class Panel(GuiPrimitive):
 	"""Panels are basically rects. Will add some more dressing on them soon."""
 
-	def __init__(self, rect=None, parent=None):
-		super().__init__(rect=rect, parent=parent)
+	def __init__(self, rect=None, parent=None, evt_mgr=None):
+		super().__init__(rect=rect, parent=parent, evt_mgr=evt_mgr)
 
 	def draw(self, screen):
 		pygame.draw.rect(screen, (0, 0, 255), self.pygame_rect)
@@ -87,8 +94,8 @@ class TextBox(GuiPrimitive):
 
 	text = ""
 
-	def __init__(self, rect=None, text="", parent=None):
-		super().__init__(rect=rect, parent=parent)
+	def __init__(self, rect=None, text="", parent=None, evt_mgr=None):
+		super().__init__(rect=rect, parent=parent, evt_mgr=evt_mgr)
 		self.text = text
 
 	def draw(self, screen):
@@ -105,8 +112,8 @@ class TextBox(GuiPrimitive):
 class Image(GuiPrimitive):
 	"""An image drawn on the screen within a rect."""
 
-	def __init__(self, rect=None, image=None, parent=None):
-		super().__init__(rect=rect, parent=parent)
+	def __init__(self, rect=None, image=None, parent=None, evt_mgr=None):
+		super().__init__(rect=rect, parent=parent, evt_mgr=evt_mgr)
 		if image is None:
 			raise ValueError("Need either an image object or image path.")
 		if isinstance(image, str):

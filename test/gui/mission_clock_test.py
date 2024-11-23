@@ -5,6 +5,7 @@ import pygame
 from unittest.mock import MagicMock
 
 from src.mgmt.game_manager import GameManager
+from src.mgmt.event_manager import EventManager
 
 from src.gui.gui import init_gui_manager
 from src.gui.mission_clock import MissionClock, DEFAULT_FUNCTION_MAP
@@ -15,6 +16,7 @@ class TestMissionClock(unittest.TestCase):
 		pygame.init()
 		pygame.display.set_mode((800, 600))
 		self.game_mgr = MagicMock(spec=GameManager)
+		self.game_mgr.evt_mgr = MagicMock(spec=EventManager)
 		init_gui_manager(self.game_mgr)
 		self.mission_clock = MissionClock()
 

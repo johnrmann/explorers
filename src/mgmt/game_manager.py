@@ -32,6 +32,7 @@ class GameManager:
 			on_quit=None,
 			evt_mgr=None,
 			screen=None,
+			no_gui=False,
 	):
 		self.screen = screen
 		self.ticks = 0
@@ -39,14 +40,15 @@ class GameManager:
 		self.world = world
 		self.vp = viewport
 		self.on_quit = on_quit
-		self._init_managers(evt_mgr)
+		self._init_managers(evt_mgr, no_gui)
 
-	def _init_managers(self, evt_mgr):
+	def _init_managers(self, evt_mgr, no_gui):
 		if evt_mgr is not None:
 			self.evt_mgr = evt_mgr
 		else:
 			self.evt_mgr = EventManager()
-		self.gui_mgr = init_gui_manager(self)
+		if not no_gui:
+			self.gui_mgr = init_gui_manager(self)
 		self.clickmap = ClickMap(self.vp.window_dims)
 		self.ctrl = Control(self, on_quit=self.on_quit, clickmap=self.clickmap)
 

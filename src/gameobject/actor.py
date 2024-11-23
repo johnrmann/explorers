@@ -1,4 +1,5 @@
 from src.gameobject.gameobject import GameObject
+from src.gameobject.action import Action
 
 from src.math.vector2 import Vector2
 from src.path.path_runner import PathRunner
@@ -16,22 +17,30 @@ class Actor(GameObject, Listener):
 	_is_played = True
 	_dead = False
 
-	_path_runner = PathRunner()
+	_path_runner: PathRunner = None
+	_action: Action = None
 
 	def __init__(self, game_mgr=None, pos=None, speed=5):
 		if not pos:
 			pos = Vector2(0,0)
 		super().__init__(game_mgr=game_mgr, pos=pos)
-		self._path_runner = PathRunner(position=pos)
+		self._path_runner = PathRunner(
+			position=pos,
+			on_done=self._finished_path
+		)
 		self.motives = ActorMotiveVector()
 		self.size = (1,1,5)
 		# Speed is given in cells per second.
 		self.speed = speed
 		self.evt_mgr.sub("main.character.go", self)
+		self.evt_mgr.sub("main.character.action", self)
 
 	def update(self, event: Event):
 		if isinstance(event, MoveActorEvent) and event.actor == self:
 			self.set_destination(event.to_position)
+		elif isinstance(event, ActorDoActionEvent) and event.actor == self:
+			self.set_destination(event.action.position)
+			self._action = event.action
 
 	@property
 	def pos(self):
@@ -53,11 +62,16 @@ class Actor(GameObject, Listener):
 		return self.motives.is_dead()
 
 	def set_destination(self, dest):
+		self._action = None
 		from src.path.astar import astar
-		from src.mgmt.singletons import get_game_manager
-		world = get_game_manager().world
+		world = self.game_mgr.world
 		astar_path = astar(world, self.pos, dest)
 		self._path_runner.path = astar_path
+
+	def _finished_path(self):
+		if self._action:
+			self.evt_mgr.pub(self._action.event)
+			self._action = None
 
 	def _tick_motives(self, dt: float):
 		d_motives = ActorMotiveVector(BASE_MOTIVE_DELTAS) * dt
@@ -97,6 +111,31 @@ class MoveActorEvent(Event):
 		return (
 			other.actor == self.actor and
 			other.to_position == self.to_position
+		)
+
+class ActorDoActionEvent(Event):
+	"""
+	An event to tell an actor to do an action.
+	"""
+
+	actor: Actor
+	action: Action
+
+	def __init__(
+			self,
+			actor: Actor = None,
+			action: Action = None
+	):
+		super().__init__(event_type="main.character.action")
+		self.actor = actor
+		self.action = action
+
+	def __eq__(self, other):
+		if not isinstance(other, ActorDoActionEvent):
+			return False
+		return (
+			other.actor == self.actor and
+			other.action == self.action
 		)
 
 class ActorDiedEvent(Event):

@@ -6,6 +6,23 @@ from src.gui.gui import GuiElement
 from src.gui.layout import VerticalLayout, HorizontalLayout
 from src.gui.primitives import Button
 
+class MenuOption:
+	"""Glorified tuple for menus options."""
+
+	label: str
+	callback: callable
+	events: list[tuple[str, any]]
+
+	def __init__(self, label=None, callback=None, event=None, events=None):
+		if label is None:
+			raise ValueError("Label required.")
+		self.label = label
+		self.callback = callback
+		if event is not None:
+			self.events = [event]
+		else:
+			self.events = events
+
 class VerticalMenu(GuiElement):
 	"""
 	Shows a menu of buttons.
@@ -14,17 +31,19 @@ class VerticalMenu(GuiElement):
 	def __init__(
 			self,
 			origin=None,
-			width=200,
-			actions=None,
-			parent=None,
+			width: int = 200,
+			options: list[MenuOption] = None,
+			parent: GuiElement = None,
 	):
 		super().__init__(parent=parent)
 		self.relative_origin = origin
 		self.layout = VerticalLayout(origin=(0,0), parent=self)
-		for action_txt in actions:
+		for option in options:
 			Button(
 				rect=((0,0), (width,50)),
-				text=action_txt,
+				text=option.label,
+				callback=option.callback,
+				events=option.events,
 				parent=self,
 			)
 
@@ -37,16 +56,17 @@ class HorizontalMenu(GuiElement):
 			self,
 			origin=None,
 			height=50,
-			actions=None,
+			options: list[MenuOption] = None,
 			parent=None,
 	):
 		super().__init__(parent=parent)
 		self.relative_origin = origin
 		self.layout = HorizontalLayout(origin=(0,0), parent=self)
-		for action_txt in actions:
-			self.add_child(
-				Button(
-					rect=((0,0), (100,height)),
-					text=action_txt,
-				)
+		for option in options:
+			Button(
+				rect=((0,0), (100,height)),
+				text=option.label,
+				callback=option.callback,
+				events=option.events,
+				parent=self,
 			)

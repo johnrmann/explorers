@@ -81,5 +81,21 @@ class PathRunnerTest(unittest.TestCase):
 		runner.tick(0.5)
 		self.assertEqual(runner.direction, Direction.SOUTH)
 
+	def test__tick__calls_on_done(self):
+		callback_called = False
+		def on_done():
+			nonlocal callback_called
+			callback_called = True
+
+		runner = PathRunner(path=BASIC_PATH, on_done=on_done)
+		runner.tick(0.5)
+		runner.tick(0.5)
+		runner.tick(0.5)
+		runner.tick(0.5)
+		runner.tick(0.5)
+		self.assertTrue(callback_called)
+		self.assertEqual(runner.position, Vector2(1, 1))
+		self.assertFalse(runner.is_moving)
+
 if __name__ == "__main__":
 	unittest.main()
