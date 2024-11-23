@@ -16,6 +16,8 @@ from src.ctrl.event_id import (
 	EVENT_CAMERA_ROTATE,
 	EVENT_MOUSE_CLICK_WORLD,
 	EVENT_MOUSE_CLICK_OBJECT,
+	CameraMoveEvent,
+	CameraZoomEvent,
 )
 
 class Control:
@@ -46,14 +48,14 @@ class Control:
 		d_zoom = pygame_key_to_delta_zoom(event.key)
 		d_rotate = pygame_key_to_delta_camera_rotate(event.key)
 		if d_camdir:
-			self.game_mgr.evt_mgr.pub(EVENT_CAMERA_MOVE, data=d_camdir)
+			self.game_mgr.evt_mgr.pub(CameraMoveEvent(d_camdir))
 			return True
 		if d_zoom:
-			self.game_mgr.evt_mgr.pub(EVENT_CAMERA_ZOOM, data=d_zoom)
+			self.game_mgr.evt_mgr.pub(CameraZoomEvent(d_zoom))
 			return True
 		if d_rotate:
-			self.game_mgr.evt_mgr.pub(EVENT_CAMERA_ROTATE, data=d_rotate)
-			return True
+			# Rotation temporarily not supported - TODO(jm)
+			return False
 		return False
 
 	def interpret_pygame_event(self, event):

@@ -76,13 +76,13 @@ class Viewport(Listener):
 		self.evt_mgr = value.evt_mgr
 		self._subscribe_to_events()
 
-	def update(self, event_type, data):
-		if event_type == EVENT_CAMERA_MOVE:
-			self.move_camera(data)
-		elif event_type == EVENT_CAMERA_ZOOM:
-			self.change_zoom(data)
-		elif event_type == EVENT_CAMERA_ROTATE:
-			self.rotate_camera(data)
+	def update(self, event):
+		if event.event_type == EVENT_CAMERA_MOVE:
+			self.move_camera(event.direction)
+		elif event.event_type == EVENT_CAMERA_ZOOM:
+			self.change_zoom(event.delta)
+		elif event.event_type == EVENT_CAMERA_ROTATE:
+			self.rotate_camera(event.delta)
 
 	@property
 	def terrain_z(self):

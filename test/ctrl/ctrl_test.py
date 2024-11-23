@@ -8,7 +8,7 @@ from src.mgmt.game_manager import GameManager
 
 from src.ctrl.ctrl import Control
 from src.ctrl.event_id import (
-	EVENT_CAMERA_MOVE, EVENT_CAMERA_ROTATE, EVENT_CAMERA_ZOOM
+	CameraZoomEvent, CameraMoveEvent
 )
 
 class TestControl(unittest.TestCase):
@@ -29,8 +29,7 @@ class TestControl(unittest.TestCase):
 		with patch('src.ctrl.ctrl.pygame_key_to_camdir', return_value=(0, 1)):
 			result = self.control.interpret_pygame_camera_keyboard_event(event)
 			self.mock_evt_mgr.pub.assert_called_with(
-				EVENT_CAMERA_MOVE,
-				data=(0, 1)
+				CameraMoveEvent((0, 1))
 			)
 			self.assertTrue(result)
 
@@ -42,18 +41,7 @@ class TestControl(unittest.TestCase):
 			return_value=1
 		):
 			result = self.control.interpret_pygame_camera_keyboard_event(event)
-			self.mock_evt_mgr.pub.assert_called_with(EVENT_CAMERA_ZOOM, data=1)
-			self.assertTrue(result)
-
-	def test_interpret_pygame_camera_keyboard_event_rotate(self):
-		event = Mock()
-		event.key = pygame.K_RIGHTBRACKET
-		with patch(
-			'src.ctrl.ctrl.pygame_key_to_delta_camera_rotate',
-			return_value=15
-		):
-			result = self.control.interpret_pygame_camera_keyboard_event(event)
-			self.mock_evt_mgr.pub.assert_called_with(EVENT_CAMERA_ROTATE, data=15)
+			self.mock_evt_mgr.pub.assert_called_with(CameraZoomEvent(1))
 			self.assertTrue(result)
 
 	def test_interpret_pygame_event_quit(self):

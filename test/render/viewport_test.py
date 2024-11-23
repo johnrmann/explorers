@@ -1,6 +1,11 @@
 import unittest
 
 from src.world.terrain import Terrain
+from src.ctrl.event_id import (
+	CameraMoveEvent,
+	CameraZoomEvent,
+	CameraRotateEvent
+)
 from src.render.viewport import Viewport, Direction
 
 def make_terrain():
@@ -55,7 +60,7 @@ class ViewportTest(unittest.TestCase):
 	def test__move_camera__via_evt_mgr(self):
 		vp = make_viewport()
 		vp.camera_pos = (0, 0)
-		vp.update("camera.move", Direction.EAST)
+		vp.update(CameraMoveEvent(Direction.EAST))
 		self.assertEqual(vp.camera_pos, (1,0))
 	
 	def test__zoom_camera__in(self):
@@ -91,7 +96,7 @@ class ViewportTest(unittest.TestCase):
 	def test__zoom_camera__via_evt_mgr(self):
 		vp = make_viewport()
 		self.assertEqual(vp.tile_width, 24)
-		vp.update("camera.zoom", 1)
+		vp.update(CameraZoomEvent(1))
 		self.assertEqual(vp.tile_width, 48)
 	
 	def test__rotate_camera__left(self):
@@ -115,7 +120,7 @@ class ViewportTest(unittest.TestCase):
 	def test__rotate_camera__via_evt_mgr(self):
 		vp = make_viewport()
 		self.assertEqual(vp.camera_orientation, Direction.NORTHWEST)
-		vp.update("camera.rotate", 1)
+		vp.update(CameraRotateEvent(1))
 		self.assertEqual(vp.camera_orientation, Direction.NORTHEAST)
 	
 if __name__ == "__main__":
