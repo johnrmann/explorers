@@ -20,10 +20,10 @@ class Actor(GameObject, Listener):
 	_path_runner: PathRunner = None
 	_action: Action = None
 
-	def __init__(self, game_mgr=None, pos=None, speed=5):
+	def __init__(self, game_mgr=None, pos=None, speed=5, owner=0):
 		if not pos:
 			pos = Vector2(0,0)
-		super().__init__(game_mgr=game_mgr, pos=pos)
+		super().__init__(game_mgr=game_mgr, pos=pos, owner=owner)
 		self._path_runner = PathRunner(
 			position=pos,
 			on_done=self._finished_path
@@ -34,6 +34,8 @@ class Actor(GameObject, Listener):
 		self.speed = speed
 		self.evt_mgr.sub("main.character.go", self)
 		self.evt_mgr.sub("main.character.action", self)
+		self.evt_mgr.sub("rabbit_hole.enter", self)
+		self.evt_mgr.sub("rabbit_hole.exit", self)
 
 	def update(self, event: Event):
 		if isinstance(event, MoveActorEvent) and event.actor == self:
@@ -41,6 +43,10 @@ class Actor(GameObject, Listener):
 		elif isinstance(event, ActorDoActionEvent) and event.actor == self:
 			self.set_destination(event.action.position)
 			self._action = event.action
+		elif event.event_type == 'rabbit_hole.enter' and event.actor == self:
+			self.hidden = True
+		elif event.event_type == 'rabbit_hole.exit' and event.actor == self:
+			self.hidden = False
 
 	@property
 	def pos(self):

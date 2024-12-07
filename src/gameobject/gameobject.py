@@ -14,6 +14,7 @@ class GameObject:
 
 	evt_mgr = None
 	_pos = (0, 0)
+	hidden: bool = False
 
 	owner: int = NO_OWNER
 

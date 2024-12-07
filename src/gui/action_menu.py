@@ -27,9 +27,10 @@ class ActionMenu(GuiElement):
 	):
 		super().__init__(parent=parent)
 		self.relative_origin = origin
+		actor = self.gui_mgr.game_mgr.player_character
 		options = [
-			action_to_menu_option(action, self.gui_mgr.game_mgr.player_character)
-			for action in clicked.actions(1)
+			action_to_menu_option(action, actor)
+			for action in clicked.actions(actor)
 		]
 		self.menu = VerticalMenu(
 			origin=(0,0),

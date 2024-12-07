@@ -1,3 +1,4 @@
+from src.gameobject.actor import Actor
 from src.gameobject.gameobject import GameObject
 from src.gameobject.constants import NO_OWNER
 
@@ -17,5 +18,5 @@ class Interactable(GameObject):
 			return True
 		return player_id in self.shared_with
 
-	def actions(self, player_id: int):
-		pass
+	def actions(self, actor: Actor):
+		raise NotImplementedError

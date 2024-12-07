@@ -17,6 +17,10 @@ def render_gameobject(
 	height = 0,
 	image_map = None,
 ):
+	# Easy out if the gameobject is hidden
+	if go.hidden:
+		return
+
 	# A "cell polygon" is the position of the tile if there was no terrain.
 	go_size = max(go.size[0], go.size[1])
 	go_center = go.draw_position

@@ -3,7 +3,8 @@ from src.gui.superevent import ShowSupereventEvent
 from src.mgmt.listener import Listener
 from src.mgmt.event import Event
 
-from src.gameobject.action import Action
+from src.gameobject.action import Action, EVENT_ID__DO_ACTION
+from src.gameobject.actor import Actor
 from src.gameobject.interactable import Interactable
 
 IMAGE_ID__FLAG__CLICK_HERE = "assets/img/sprite/click-here.png"
@@ -57,8 +58,8 @@ class PlantFlag(Interactable, Listener):
 			event=FlagPlantedEvent()
 		)
 
-	def actions(self, player_id: int):
-		if not self._is_planted and player_id == self.owner:
+	def actions(self, actor: Actor):
+		if not self._is_planted and actor.owner == self.owner:
 			return [
 				self._make_plant_flag_action()
 			]

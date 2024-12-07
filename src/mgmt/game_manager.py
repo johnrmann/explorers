@@ -103,8 +103,8 @@ class GameManager(Listener):
 					return go
 		raise ValueError("No player character - should never happen!")
 	
-	def new_player_character(self, position):
-		self.game_objects.append(Actor(self, pos=position))
+	def new_player_character(self, position, owner: int = 1):
+		self.game_objects.append(Actor(self, pos=position, owner=owner))
 
 	def add_game_object(self, go: GameObject):
 		self.game_objects.append(go)
