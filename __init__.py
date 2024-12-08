@@ -7,7 +7,7 @@ from src.math.vector2 import Vector2
 from src.gameobject.lander import Lander
 from src.gameobject.plant_flag import PlantFlag
 from src.mgmt.singletons import init_game_manager, get_game_manager
-from src.mgmt.constants import TICKS_PER_SECOND
+from src.mgmt.constants import TARGET_FPS
 from src.render.viewport import Viewport
 from src.ctrl.ctrl import Control
 from src.gui.mission_clock import MissionClock
@@ -79,7 +79,7 @@ def main():
 	)
 
 	while running:
-		dt = clock.tick(TICKS_PER_SECOND) / 1000
+		dt = clock.tick(TARGET_FPS) / 1000
 		game.ctrl.interpret_pygame_input()
 		game.render()
 		game.renderer.render_terrain.highlight_tile_at_screen_pos(
@@ -88,7 +88,7 @@ def main():
 		game.gui_mgr.update(dt)
 		game.gui_mgr.draw(window)
 		pygame.display.flip()
-		game.tick(1)
+		game.tick(dt)
 
 	pygame.quit()
 

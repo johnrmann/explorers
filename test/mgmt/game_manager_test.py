@@ -20,9 +20,9 @@ class GameManagerTest(unittest.TestCase):
 		"""Test that UTC changes with the flow of time."""
 		gm = GameManager(self.world, self.viewport)
 		self.assertEqual(gm.utc, 0)
-		gm.tick(1)
+		gm.tick(1 / 50)
 		self.assertEqual(gm.utc, 1 / 50)
-		gm.tick(49)
+		gm.tick(49 / 50)
 		self.assertEqual(gm.utc, 1)
 	
 	def test__rejects_time_travel(self):

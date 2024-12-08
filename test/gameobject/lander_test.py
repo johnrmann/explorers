@@ -16,6 +16,7 @@ class LanderTest(unittest.TestCase):
 		evt_mgr = MagicMock(spec=EventManager)
 		self.game_mgr = MagicMock(spec=GameManager)
 		self.game_mgr.evt_mgr = evt_mgr
+		self.game_mgr.utc = 0
 		self.lander = Lander(game_mgr=self.game_mgr)
 		self.actor = MagicMock(spec=Actor)
 

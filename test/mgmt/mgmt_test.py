@@ -4,7 +4,8 @@ from unittest.mock import MagicMock, call, patch
 
 from src.render.viewport import Viewport
 
-from src.mgmt.game_manager import GameManager, TICKS_PER_SECOND
+from src.mgmt.game_manager import GameManager
+from src.mgmt.constants import TARGET_FPS
 from test.mgmt.test_objects import (
 	Rocket,
 	Launchpad,
@@ -41,7 +42,7 @@ class MgmtTest(unittest.TestCase):
 		mock_update = omni.update = MagicMock()
 		launchpad.launch()
 		for _ in range(0, 12):
-			game_mgr.tick(TICKS_PER_SECOND)
+			game_mgr.tick(1)
 		calls = [
 			RocketLaunchEvent(),
 			*[

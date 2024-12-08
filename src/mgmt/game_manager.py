@@ -8,7 +8,6 @@ from src.render.render import Render
 
 from src.mgmt.event_manager import EventManager
 from src.mgmt.listener import Listener
-from src.mgmt.constants import TICKS_PER_SECOND
 
 class GameManager(Listener):
 	"""
@@ -22,7 +21,7 @@ class GameManager(Listener):
 	clickmap: ClickMap
 
 	game_objects: list[GameObject]
-	ticks: int
+	utc: float
 	world: World
 	vp = None
 
@@ -36,7 +35,7 @@ class GameManager(Listener):
 			no_gui=False,
 	):
 		self.screen = screen
-		self.ticks = 0
+		self.utc = 0.0
 		self.game_objects = []
 		self.world = world
 		self.vp = viewport
@@ -63,21 +62,13 @@ class GameManager(Listener):
 		if event.event_type == "gui.superevent.show":
 			event.make_superevent()
 
-	@property
-	def utc(self) -> float:
-		"""
-		Seconds since game start.
-		"""
-		return self.ticks / TICKS_PER_SECOND
-
-	def tick(self, n_ticks=1):
+	def tick(self, dt: float):
 		"""
 		Send an event to listeners about the passage of time.
 		"""
-		if n_ticks <= 0:
+		if dt <= 0:
 			raise ValueError("Time travel not allowed")
-		self.ticks += n_ticks
-		dt = n_ticks / TICKS_PER_SECOND
+		self.utc += dt
 		self.evt_mgr.tick(dt, self.utc)
 		for obj in self.game_objects:
 			obj.tick(dt, self.utc)

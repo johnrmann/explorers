@@ -2,4 +2,4 @@
 Defines constants for game management.
 """
 
-TICKS_PER_SECOND = 50
+TARGET_FPS = 50
