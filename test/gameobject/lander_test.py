@@ -44,6 +44,30 @@ class LanderTest(unittest.TestCase):
 		)
 		self.assertIn(self.actor, self.lander.inside)
 
+	def test__tick__actor_fills_motive(self):
+		# Mock actor's motives to return 50 when added.
+		self.actor.motives.max = MagicMock(return_value=100)
+		self.actor.motives.add = MagicMock(return_value=50)
+
+		# Dispatch the event. We want to refill oxygen.
+		self.lander.update(
+			EnterRabbitHoleEvent(
+				actor=self.actor,
+				rabbit_hole=self.lander,
+				data=ActorMotive.OXYGEN
+			)
+		)
+
+		# The first tick should not remove the actor.
+		self.lander.tick(1, 100)
+		self.actor.motives.add.assert_called_once_with(ActorMotive.OXYGEN, 25)
+		self.assertIn(self.actor, self.lander.inside)
+
+		# The second tick should remove the actor.
+		self.actor.motives.add = MagicMock(return_value=100)
+		self.lander.tick(1, 101)
+		self.assertNotIn(self.actor, self.lander.inside)
+
 	def test__exit__actor_exits_lander(self):
 		self.lander.inside.add(self.actor)
 		self.lander.exit(self.actor)

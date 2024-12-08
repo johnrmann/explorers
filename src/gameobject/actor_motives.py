@@ -38,7 +38,14 @@ DESPERATION_CUTOFFS = {
 }
 
 class ActorMotiveVector:
-	def __init__(self, values=None):
+	values: dict[ActorMotive, float]
+	maxs: dict[ActorMotive, float]
+
+	def __init__(self, values=None, maxs=float('inf')):
+		self._init_values(values)
+		self._init_maxs(maxs)
+
+	def _init_values(self, values=None):
 		if not values:
 			self.values = {
 				ActorMotive.OXYGEN: 0,
@@ -53,6 +60,15 @@ class ActorMotiveVector:
 			}
 		else:
 			self.values = values
+
+	def _init_maxs(self, maxs=float('inf')):
+		if not isinstance(maxs, dict):
+			self.maxs = {
+				mkey: maxs
+				for mkey in ActorMotive
+			}
+		else:
+			self.maxs = maxs
 
 	@property
 	def hunger(self):
@@ -116,6 +132,10 @@ class ActorMotiveVector:
 		"""This wrapper is very useful when looping through motives."""
 		return self.values[motive]
 
+	def max(self, motive: ActorMotive):
+		"""Returns the maximum value for a motive."""
+		return self.maxs[motive]
+
 	def set(self, mkey: ActorMotive, value: int):
 		"""
 		Sets a motive to be equal to a value.
@@ -128,6 +148,15 @@ class ActorMotiveVector:
 		"""
 		for mkey in ActorMotive:
 			self.values[mkey] = value
+
+	def add(self, motive: ActorMotive, value: float):
+		"""
+		Adds a value to a motive.
+		"""
+		self.values[motive] += value
+		if self.values[motive] > self.maxs[motive]:
+			self.values[motive] = self.maxs[motive]
+		return self.values[motive]
 
 	def is_desperate_for(self, motive: ActorMotive):
 		"""

@@ -17,6 +17,8 @@ ACTION_ID__LANDER__REFILL_OXYGEN = "action.lander.refill_oxygen"
 ACTION_ID__LANDER__REFILL_HUNGER = "action.lander.refill_hunger"
 ACTION_ID__LANDER__REFILL_ENERGY = "action.lander.refill_energy"
 
+FILL_RATE = 25
+
 LANDER_COOLDOWN = 10
 LANDER_PER_ACTOR_COOLDOWN = LANDER_COOLDOWN * 2
 
@@ -53,14 +55,17 @@ class Lander(Interactable, RabbitHole, Listener):
 			is_me = event.rabbit_hole == self
 			if is_me:
 				self.enter(event.actor)
+				self.motive_filling = event.data
 
 	def image_path(self):
 		return "assets/img/lander.png"
 
 	def tick(self, dt: float, utc: float):
 		for actor in self.inside.copy():
-			actor_next_time = self.next_use_for_actor.get(actor, 0)
-			if utc >= actor_next_time:
+			max_motive = actor.motives.max(self.motive_filling)
+			curr_motive = actor.motives.add(self.motive_filling, FILL_RATE * dt)
+			if curr_motive >= max_motive:
+				self.next_use_for_actor[actor] = utc + LANDER_PER_ACTOR_COOLDOWN
 				self.exit(actor)
 
 	def enter(self, actor: Actor):
@@ -80,7 +85,13 @@ class Lander(Interactable, RabbitHole, Listener):
 			)
 		)
 
-	def _make_refill_action(self, actor: Actor, label: str, ev):
+	def _make_refill_action(
+			self,
+			actor: Actor,
+			label: str,
+			motive: ActorMotive,
+			ev
+	):
 		return Action(
 			target=self,
 			offset=(5, 11),
@@ -89,17 +100,24 @@ class Lander(Interactable, RabbitHole, Listener):
 			event=EnterRabbitHoleEvent(
 				actor=actor,
 				rabbit_hole=self,
+				data=motive,
 			)
 		)
 
 	def _make_refill_oxygen_action(self, actor: Actor):
-		return self._make_refill_action(actor, "Refill Oxygen", FILL_OXYGEN)
+		return self._make_refill_action(
+			actor, "Refill Oxygen", ActorMotive.OXYGEN, FILL_OXYGEN
+		)
 
 	def _make_refill_hunger_action(self, actor: Actor):
-		return self._make_refill_action(actor, "Have Meal", FILL_HUNGER)
+		return self._make_refill_action(
+			actor, "Have Meal", ActorMotive.HUNGER, FILL_HUNGER
+		)
 
 	def _make_refill_energy_action(self, actor: Actor):
-		return self._make_refill_action(actor, "Sleep", FILL_ENERGY)
+		return self._make_refill_action(
+			actor, "Sleep", ActorMotive.ENERGY, FILL_ENERGY
+		)
 
 	def actions(self, actor: Actor):
 		# Can't use the lander if it's full.

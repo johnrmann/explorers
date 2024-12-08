@@ -20,6 +20,8 @@ class Actor(GameObject, Listener):
 	_path_runner: PathRunner = None
 	_action: Action = None
 
+	motives: ActorMotiveVector = None
+
 	def __init__(self, game_mgr=None, pos=None, speed=5, owner=0):
 		if not pos:
 			pos = Vector2(0,0)
@@ -28,7 +30,7 @@ class Actor(GameObject, Listener):
 			position=pos,
 			on_done=self._finished_path
 		)
-		self.motives = ActorMotiveVector()
+		self.motives = ActorMotiveVector(maxs=100)
 		self.size = (1,1,5)
 		# Speed is given in cells per second.
 		self.speed = speed
