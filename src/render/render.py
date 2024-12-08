@@ -18,6 +18,8 @@ IMG_PATHS = [
 ]
 
 class Render(object):
+	_last_zoom = 0
+
 	def __init__(self, window, world: World, vp: Viewport, game_mgr=None):
 		self.game_mgr = game_mgr
 		self.window = window
@@ -25,6 +27,7 @@ class Render(object):
 		self.vp = vp
 		self.render_terrain = RenderTerrain(window, world, vp, self.game_mgr)
 		self._load_images()
+		self._calc_draw_order()
 	
 	def _load_images(self):
 		self.images = {}
@@ -36,6 +39,15 @@ class Render(object):
 				zoom_factors=[1.0]
 			)
 			self.images[path] = multisurface
+
+	def _calc_draw_order(self):
+		self._last_zoom = self.vp.tile_width
+		self.draw_order = list(cells_in_draw_order(
+			(0, 0),
+			self.vp.camera_orientation,
+			self.vp.tiles_wide,
+			2 * self.vp.tiles_tall
+		))
 
 	def game_object_at(self, p):
 		for go in self.game_mgr.game_objects:
@@ -62,6 +74,9 @@ class Render(object):
 		)
 	
 	def render(self):
+		if self.vp.tile_width != self._last_zoom:
+			self._calc_draw_order()
+
 		self.window.fill((0,0,200))
 
 		pre_go_draw_graph = {}
@@ -73,16 +88,13 @@ class Render(object):
 		for go in self.game_mgr.game_objects:
 			gobj_cells[go.draw_point(self.vp.camera_orientation)] = go
 
-		origin_cell = self.vp.get_draw_origin()
-		cells = list(cells_in_draw_order(
-			origin_cell,
-			self.vp.camera_orientation,
-			self.vp.tiles_wide,
-			2 * self.vp.tiles_tall
-		))
+		ox, oy = self.vp.get_draw_origin()
 		drawn = set()
 
-		for p in cells:
+		for dx, dy in self.draw_order:
+			x = ox + dx
+			y = oy + dy
+			p = (x, y)
 			if p in drawn:
 				continue
 			self.render_terrain.render_tile(p)
