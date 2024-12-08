@@ -15,7 +15,7 @@ class Rangebar(GuiElement):
 	A GUI Element rendering a bar with multiple layers.
 	"""
 
-	def __init__(self, rect=None, layers=None, values=None):
+	def __init__(self, rect=None, layers=None, values=None, parent=None):
 		if rect is None:
 			raise ValueError('Need rect.')
 		if layers is None:
@@ -23,12 +23,12 @@ class Rangebar(GuiElement):
 		upper_layers = layers[1:]
 		if values is None:
 			values = [(low + hi) // 2 for _, low, hi in upper_layers]
-		super().__init__()
-		self.layers = layers
-		self.values = values
 		origin, dimensions = rect
 		self.relative_origin = origin
 		self.dimensions = dimensions
+		super().__init__(parent=parent)
+		self.layers = layers
+		self.values = values
 
 	@property
 	def pygame_rect(self):

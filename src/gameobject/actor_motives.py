@@ -46,6 +46,11 @@ class ActorMotiveVector:
 				ActorMotive.HUNGER: 0,
 				ActorMotive.SANITY: 0,
 			}
+		elif isinstance(values, int):
+			self.values = {
+				mkey: values
+				for mkey in ActorMotive
+			}
 		else:
 			self.values = values
 
@@ -110,6 +115,19 @@ class ActorMotiveVector:
 	def get(self, motive: ActorMotive):
 		"""This wrapper is very useful when looping through motives."""
 		return self.values[motive]
+
+	def set(self, mkey: ActorMotive, value: int):
+		"""
+		Sets a motive to be equal to a value.
+		"""
+		self.values[mkey] = value
+
+	def set_all(self, value: int):
+		"""
+		Sets all motives to be equal to a value.
+		"""
+		for mkey in ActorMotive:
+			self.values[mkey] = value
 
 	def is_desperate_for(self, motive: ActorMotive):
 		"""

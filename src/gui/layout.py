@@ -13,8 +13,8 @@ class VerticalLayout(GuiElement):
 	_width = 0
 
 	def __init__(self, origin=None, parent=None):
-		super().__init__(parent=parent)
 		self.relative_origin = origin
+		super().__init__(parent=parent)
 
 	def add_child(self, child):
 		super().add_child(child)
@@ -37,8 +37,8 @@ class HorizontalLayout(GuiElement):
 	_width = 0
 
 	def __init__(self, origin=None, parent=None):
-		super().__init__(parent=parent)
 		self.relative_origin = origin
+		super().__init__(parent=parent)
 
 	def add_child(self, child):
 		super().add_child(child)

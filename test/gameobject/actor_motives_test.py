@@ -12,6 +12,13 @@ class ActorMotiveVectorTest(unittest.TestCase):
 		self.assertEqual(amv.get(ActorMotive.HUNGER), 0)
 		self.assertEqual(amv.get(ActorMotive.SANITY), 0)
 
+	def test__initial_value(self):
+		amv = ActorMotiveVector(values=100)
+		self.assertEqual(amv.get(ActorMotive.OXYGEN), 100)
+		self.assertEqual(amv.get(ActorMotive.ENERGY), 100)
+		self.assertEqual(amv.get(ActorMotive.HUNGER), 100)
+		self.assertEqual(amv.get(ActorMotive.SANITY), 100)
+
 	def test__custom_initial_values(self):
 		values = {
 			ActorMotive.OXYGEN: 80,
@@ -24,7 +31,27 @@ class ActorMotiveVectorTest(unittest.TestCase):
 		self.assertEqual(amv.get(ActorMotive.ENERGY), 70)
 		self.assertEqual(amv.get(ActorMotive.HUNGER), 60)
 		self.assertEqual(amv.get(ActorMotive.SANITY), 50)
-	
+
+	def test__set(self):
+		amv = ActorMotiveVector()
+		self.assertEqual(amv.get(ActorMotive.OXYGEN), 0)
+		amv.set(ActorMotive.OXYGEN, 77)
+		self.assertEqual(amv.oxygen, 77)
+
+	def test__set_all(self):
+		values = {
+			ActorMotive.OXYGEN: 80,
+			ActorMotive.ENERGY: 70,
+			ActorMotive.HUNGER: 60,
+			ActorMotive.SANITY: 50,
+		}
+		amv = ActorMotiveVector(values)
+		amv.set_all(100)
+		self.assertEqual(amv.get(ActorMotive.OXYGEN), 100)
+		self.assertEqual(amv.get(ActorMotive.ENERGY), 100)
+		self.assertEqual(amv.get(ActorMotive.HUNGER), 100)
+		self.assertEqual(amv.get(ActorMotive.SANITY), 100)
+
 	def test__properties(self):
 		values = {
 			ActorMotive.OXYGEN: 80,
