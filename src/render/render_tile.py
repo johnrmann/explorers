@@ -37,7 +37,7 @@ def _wall_surface(direction, h, zoom, color):
 	wall = _wall_for_direction_height_zoom(direction, h, zoom)
 	zeroed = vector2_move_points_near_zero(wall)
 	__, (w,h) = vector2_bounding_rect(zeroed)
-	surface = pygame.Surface((w,h), pygame.SRCALPHA)
+	surface = pygame.Surface((w,h), pygame.SRCALPHA).convert_alpha()
 	pygame.draw.polygon(surface, color, zeroed)
 	return surface
 
@@ -68,7 +68,7 @@ class TileSurfaceCache:
 
 	def _make_tile_and_surface(self, w):
 		h = w // 2
-		surface = pygame.Surface((w, h), pygame.SRCALPHA)
+		surface = pygame.Surface((w, h), pygame.SRCALPHA).convert_alpha()
 		tile = tile_polygon((w // 2, h // 2), (w, h))
 		pygame.draw.polygon(surface, GROUND_COLOR, tile)
 		return tile, surface
