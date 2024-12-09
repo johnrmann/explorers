@@ -81,8 +81,11 @@ class Control:
 				return True
 			else:
 				player_character = self.game_mgr.player_character
-				click_tile = self.game_mgr.vp.screen_to_tile_coords((click_x, click_y))
-				click_tile = (int(click_tile[0]), int(click_tile[1]))
+				r_terrain = self.game_mgr.renderer.render_terrain
+				tile_x, tile_y = r_terrain.tile_at_screen_pos(
+					(click_x, click_y)
+				)
+				click_tile = (round(tile_x), round(tile_y))
 				self.game_mgr.evt_mgr.pub(
 					MoveActorEvent(
 						actor=player_character,
