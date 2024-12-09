@@ -67,7 +67,7 @@ class ClickMap:
 			px, py = int(px), int(py)
 			qx = px + alpha_mask.get_width()
 			qy = py + alpha_mask.get_height()
-			if not px <= sx < qx and not py <= sy < qy:
+			if not px <= sx < qx or not py <= sy < qy:
 				continue
 			color = alpha_mask.get_at((sx - px, sy - py))
 			if color[0] != 0 and color[1] != 0 and color[2] != 0:

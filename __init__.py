@@ -57,6 +57,8 @@ def make_game(on_quit):
 	game_mgr = init_game_manager(world, vp, on_quit=on_quit, screen=window)
 	vp.game_mgr = game_mgr
 	game_mgr.new_player_character(world.terrain.center)
+	game_mgr.new_player_character(world.terrain.center + Vector2(2, 0))
+	game_mgr.new_player_character(world.terrain.center + Vector2(-2, 0))
 	make_lander(world)
 	make_plant_flag(world)
 	return game_mgr
@@ -74,7 +76,7 @@ def main():
 	mission_clock = MissionClock()
 	fps = FpsCounter()
 	motives_gui = ActorMotivesGui(
-		motives=game.player_character.motives,
+		get_motives=lambda: game.player_character.motives,
 		origin=(0, WINDOW_HEIGHT - 105),
 	)
 

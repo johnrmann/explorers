@@ -13,16 +13,23 @@ from src.gameobject.actor_motives import (
 )
 
 class Actor(GameObject, Listener):
+	"""
+	This class represents characters in the game.
+	"""
+
 	_is_playable = True
-	_is_played = True
 	_dead = False
 
 	_path_runner: PathRunner = None
 	_action: Action = None
 
+	name: str
+
 	motives: ActorMotiveVector = None
 
-	def __init__(self, game_mgr=None, pos=None, speed=5, owner=0):
+	def __init__(self, game_mgr=None, pos=None, speed=5, owner=0, name=None):
+		if name is None:
+			name = "Default"
 		if not pos:
 			pos = Vector2(0,0)
 		super().__init__(game_mgr=game_mgr, pos=pos, owner=owner)
@@ -30,10 +37,12 @@ class Actor(GameObject, Listener):
 			position=pos,
 			on_done=self._finished_path
 		)
+		self.name = name
 		self.motives = ActorMotiveVector(maxs=100)
 		self.size = (1,1,5)
 		# Speed is given in cells per second.
 		self.speed = speed
+		# Subscribe to events.
 		self.evt_mgr.sub("main.character.go", self)
 		self.evt_mgr.sub("main.character.action", self)
 		self.evt_mgr.sub("rabbit_hole.enter", self)
@@ -64,9 +73,11 @@ class Actor(GameObject, Listener):
 
 	@property
 	def is_moving(self):
+		"""Is the actor currently running a path?"""
 		return self._path_runner.is_moving
 
 	def is_dead(self):
+		"""Is the actor dead?"""
 		return self.motives.is_dead()
 
 	def set_destination(self, dest):
@@ -89,7 +100,7 @@ class Actor(GameObject, Listener):
 		if self.is_dead():
 			self.evt_mgr.pub(ActorDiedEvent(actor=self))
 
-	def tick(self, dt: float, t: float):
+	def tick(self, dt: float, utc: float):
 		self._path_runner.tick(dt * self.speed)
 		self._tick_motives(dt)
 

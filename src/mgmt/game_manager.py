@@ -25,6 +25,8 @@ class GameManager(Listener):
 	world: World
 	vp = None
 
+	selected_actors: dict[int, Actor] = None
+
 	def __init__(
 			self,
 			world: World,
@@ -40,6 +42,7 @@ class GameManager(Listener):
 		self.world = world
 		self.vp = viewport
 		self.on_quit = on_quit
+		self.selected_actors = {}
 		self._init_managers(evt_mgr, no_gui)
 		self._subscribe_to_events()
 
@@ -83,21 +86,29 @@ class GameManager(Listener):
 		self.clickmap.clear()
 		self.renderer.render()
 
+	def select_actor(self, player_id=1, actor=None):
+		if not actor:
+			raise ValueError("Expected actor!")
+		self.selected_actors[player_id] = actor
+
 	@property
 	def player_character(self):
 		"""
-		Returns the currently selected player character.
+		Returns the currently selected player character. DEPRECATED - because
+		of future multiplayer.
 		"""
-		for go in self.game_objects:
-			if isinstance(go, Actor):
-				if go._is_played: # TODO(jm) - evil private access
-					return go
-		raise ValueError("No player character - should never happen!")
-	
+		pc = self.selected_actors.get(1)
+		if not pc:
+			raise ValueError("No player character - should never happen!")
+		return pc
+
 	def new_player_character(self, position, owner: int = 1):
 		new_character = Actor(self, pos=position, owner=owner)
 		new_character.motives.set_all(100)
 		self.game_objects.append(new_character)
+		if self.selected_actors.get(owner) is None:
+			self.selected_actors[owner] = new_character
+		return new_character
 
 	def add_game_object(self, go: GameObject):
 		self.game_objects.append(go)

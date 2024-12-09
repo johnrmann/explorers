@@ -1,6 +1,6 @@
 import pygame
 
-from src.gameobject.actor import MoveActorEvent
+from src.gameobject.actor import MoveActorEvent, Actor
 
 from src.gui.action_menu import ActionMenu
 
@@ -71,14 +71,13 @@ class Control:
 			click_x, click_y = pygame.mouse.get_pos()
 			if not self.clickmap.is_terrain((click_x, click_y)):
 				gobj = self.clickmap.game_object_at((click_x, click_y))
-				# self.game_mgr.evt_mgr.pub(
-				# 	EVENT_MOUSE_CLICK_OBJECT,
-				# 	(gobj, (click_x, click_y))
-				# )
-				ActionMenu(
-					origin=(click_x, click_y),
-					clicked=gobj,
-				)
+				if isinstance(gobj, Actor):
+					self.game_mgr.select_actor(actor=gobj)
+				else:
+					ActionMenu(
+						origin=(click_x, click_y),
+						clicked=gobj,
+					)
 				return True
 			else:
 				player_character = self.game_mgr.player_character

@@ -1,3 +1,5 @@
+from typing import Callable
+
 from src.gameobject.actor_motives import ActorMotive, ActorMotiveVector
 
 from src.gui.gui import GuiElement
@@ -17,15 +19,22 @@ ACTOR_MOTIVES_WIDTH = (LABEL_WIDTH * 2) + (SPACER_WIDTH * 3)
 LABELS = ["Oxygen", "Hunger", "Energy", "Sanity"]
 
 class ActorMotivesGui(GuiElement):
+	motives: ActorMotiveVector
+	_get_motives: Callable[[], ActorMotiveVector]
+
 	def __init__(
 		self,
 		origin=None,
 		parent=None,
-		motives: ActorMotiveVector = None
+		motives: ActorMotiveVector = None,
+		get_motives: Callable[[], ActorMotiveVector] = None
 	):
-		if motives is None:
+		if motives is None and get_motives is None:
 			raise ValueError("Need motives")
-		self.motives = motives
+		elif motives is None:
+			self._get_motives = get_motives
+		else:
+			self.motives = motives
 		if origin is None:
 			origin = (0, 0)
 		w, h = ACTOR_MOTIVES_WIDTH, ACTOR_MOTIVES_HEIGHT
@@ -81,5 +90,7 @@ class ActorMotivesGui(GuiElement):
 			)
 
 	def update(self, dt: float):
+		if self._get_motives:
+			self.motives = self._get_motives()
 		for mkey in ActorMotive:
 			self.bars[mkey].values = [self.motives.get(mkey)]
