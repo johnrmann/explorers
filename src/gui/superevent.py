@@ -33,7 +33,9 @@ class Superevent(GuiElement):
 	"""
 	def __init__(self, title="", image_path="", body="", dismiss_text=""):
 		w, h = SUPEREVENT_WIDTH, SUPEREVENT_HEIGHT
-		super().__init__()
+		super().__init__(dimensions=(w, h))
+		screen_w, screen_h = self.gui_mgr.surface.get_size()
+		self.relative_origin = ((screen_w - w) // 2, (screen_h - h) // 2)
 		self.panel = Panel(
 			rect=((0,0), (w,h)),
 			parent=self,
@@ -59,17 +61,6 @@ class Superevent(GuiElement):
 			parent=self.panel,
 			callback=self.remove_me
 		)
-
-	@property
-	def origin(self):
-		w, h = self.dimensions
-		screen_w, screen_h = self.gui_mgr.surface.get_size()
-		return ((screen_w - w) // 2, (screen_h - h) // 2)
-
-	@property
-	def dimensions(self):
-		return (SUPEREVENT_WIDTH, SUPEREVENT_HEIGHT)
-
 
 def superevent_from_json(file: str, event_key: str):
 	"""

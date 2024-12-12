@@ -41,6 +41,11 @@ def init_gui_manager(game_mgr):
 	return _global_gui_manager
 
 class GuiElement:
+	"""
+	All GUI Elements have an origin, dimensions, and a connection to the GUI
+	Manager. They optionally have a parent and list of children.
+	"""
+
 	gui_mgr: _GuiManager
 	evt_mgr: EventManager
 
@@ -50,8 +55,19 @@ class GuiElement:
 	relative_origin: tuple[int, int]
 	dimensions: tuple[int, int]
 
-	def __init__(self, gui_mgr=None, parent=None, evt_mgr=None):
+	def __init__(
+			self,
+			parent=None,
+			rect = None, origin=None, dimensions=None,
+			gui_mgr=None, evt_mgr=None
+	):
 		self.elements = []
+		if rect is not None:
+			origin, dimensions = rect
+		if origin is not None:
+			self.relative_origin = origin
+		if dimensions is not None:
+			self.dimensions = dimensions
 		if gui_mgr is not None:
 			self.gui_mgr = gui_mgr
 		else:
@@ -81,11 +97,23 @@ class GuiElement:
 
 	@property
 	def origin(self):
+		"""The absolute origin of the element."""
+		if self.relative_origin is None:
+			raise ValueError("No origin set.")
 		rx, ry = self.relative_origin
 		if self.parent is not None:
 			px, py = self.parent.origin
 			return px + rx, py + ry
 		return rx, ry
+
+	@property
+	def pygame_rect(self):
+		"""The absolute origin and dimensions of the element."""
+		if self.dimensions is None:
+			raise ValueError("No dimensions set.")
+		ox, oy = self.origin
+		w, h = self.dimensions
+		return pygame.Rect(ox, oy, w, h)
 
 	def add_child(self, child):
 		"""Adds a child element to this element."""
@@ -114,27 +142,3 @@ class GuiElement:
 		"""Draws the element on the screen."""
 		for elem in self.elements:
 			elem.draw(screen)
-
-class GuiPrimitive(GuiElement):
-	"""
-	To be extended by the various GUI controls to be shown on the screen.
-	"""
-
-	def __init__(self, rect=None, parent=None, evt_mgr=None):
-		if rect is None:
-			raise ValueError("Every GUI element must have a rect.")
-		origin, dimensions = rect
-		self.relative_origin = origin
-		self.dimensions = dimensions
-		super().__init__(parent=parent, evt_mgr=evt_mgr)
-
-	@property
-	def screen_dimensions(self):
-		"""The dimensions of the screen."""
-		return self.gui_mgr.surface.get_size()
-
-	@property
-	def pygame_rect(self):
-		ox, oy = self.origin
-		w, h = self.dimensions
-		return pygame.Rect(ox, oy, w, h)

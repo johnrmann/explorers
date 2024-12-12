@@ -1,35 +1,23 @@
 import pygame
 
-from src.gui.gui import GuiPrimitive, GuiElement
+from src.gui.gui import GuiElement
 from src.gui.multiline import wrap_text
 
 BUTTON_CHROME = 3
 
-class Spacer(GuiPrimitive):
+class Spacer(GuiElement):
 	"""Empty space. Useful for auto layouts."""
 
-	def __init__(
-			self,
-			rect=None,
-			parent: GuiElement=None
-	):
-		super().__init__(rect=rect, parent=parent)
+	def __init__(self, **kwargs):
+		super().__init__(**kwargs)
 
-class Button(GuiPrimitive):
+class Button(GuiElement):
 	"""Buttons can be clicked to trigger callbacks."""
 
 	text = None
 
-	def __init__(
-			self,
-			rect=None,
-			text="",
-			callback=None,
-			events=None,
-			parent: GuiElement=None,
-			evt_mgr=None,
-	):
-		super().__init__(rect=rect, parent=parent, evt_mgr=evt_mgr)
+	def __init__(self, text="", callback=None, events=None, **kwargs):
+		super().__init__(**kwargs)
 		self.text = text
 		self.callback = callback
 		if events is None:
@@ -64,13 +52,13 @@ class Button(GuiPrimitive):
 				return True
 		return False
 
-class Label(GuiPrimitive):
+class Label(GuiElement):
 	"""Labels show text on the sceren."""
 
 	text = ""
 
-	def __init__(self, rect=None, text="", parent=None, evt_mgr=None):
-		super().__init__(rect=rect, parent=parent, evt_mgr=evt_mgr)
+	def __init__(self, text="", **kwargs):
+		super().__init__(**kwargs)
 		self.text = text
 
 	def draw(self, screen):
@@ -79,23 +67,23 @@ class Label(GuiPrimitive):
 		text_rect = text_surface.get_rect(center=self.pygame_rect.center)
 		screen.blit(text_surface, text_rect)
 
-class Panel(GuiPrimitive):
+class Panel(GuiElement):
 	"""Panels are basically rects. Will add some more dressing on them soon."""
 
-	def __init__(self, rect=None, parent=None, evt_mgr=None):
-		super().__init__(rect=rect, parent=parent, evt_mgr=evt_mgr)
+	def __init__(self, **kwargs):
+		super().__init__(**kwargs)
 
 	def draw(self, screen):
 		pygame.draw.rect(screen, (0, 0, 255), self.pygame_rect)
 		super().draw(screen)
 
-class TextBox(GuiPrimitive):
+class TextBox(GuiElement):
 	"""Multi-line labels."""
 
 	text = ""
 
-	def __init__(self, rect=None, text="", parent=None, evt_mgr=None):
-		super().__init__(rect=rect, parent=parent, evt_mgr=evt_mgr)
+	def __init__(self, text="", **kwargs):
+		super().__init__(**kwargs)
 		self.text = text
 
 	def draw(self, screen):
@@ -109,11 +97,11 @@ class TextBox(GuiPrimitive):
 			screen.blit(text_draw, (self.pygame_rect.left + 5, y))
 			y += 26
 
-class Image(GuiPrimitive):
+class Image(GuiElement):
 	"""An image drawn on the screen within a rect."""
 
-	def __init__(self, rect=None, image=None, parent=None, evt_mgr=None):
-		super().__init__(rect=rect, parent=parent, evt_mgr=evt_mgr)
+	def __init__(self, image=None, **kwargs):
+		super().__init__(**kwargs)
 		if image is None:
 			raise ValueError("Need either an image object or image path.")
 		if isinstance(image, str):

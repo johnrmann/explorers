@@ -30,12 +30,6 @@ class Rangebar(GuiElement):
 		self.layers = layers
 		self.values = values
 
-	@property
-	def pygame_rect(self):
-		ox, oy = self.origin
-		w, h = self.dimensions
-		return pygame.Rect(ox, oy, w, h)
-
 	def _draw_background(self, screen):
 		bg_color, __, __ = self.layers[0]
 		pygame.draw.rect(screen, bg_color, self.pygame_rect)
