@@ -142,3 +142,27 @@ class GuiElement:
 		"""Draws the element on the screen."""
 		for elem in self.elements:
 			elem.draw(screen)
+
+class GuiPrimitive(GuiElement):
+	"""
+	To be extended by the various GUI controls to be shown on the screen.
+	"""
+
+	def __init__(self, rect=None, parent=None, evt_mgr=None):
+		if rect is None:
+			raise ValueError("Every GUI element must have a rect.")
+		origin, dimensions = rect
+		self.relative_origin = origin
+		self.dimensions = dimensions
+		super().__init__(parent=parent, evt_mgr=evt_mgr)
+
+	@property
+	def screen_dimensions(self):
+		"""The dimensions of the screen."""
+		return self.gui_mgr.surface.get_size()
+
+	@property
+	def pygame_rect(self):
+		ox, oy = self.origin
+		w, h = self.dimensions
+		return pygame.Rect(ox, oy, w, h)
