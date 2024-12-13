@@ -79,14 +79,16 @@ class Render(object):
 
 		self.window.fill((0,0,200))
 
-		pre_go_draw_graph = {}
-		for go in self.game_mgr.game_objects:
-			pre_go_draw_graph[go] = go.bounding_box()
+		pre_go_draw_graph = {
+			go: go.bounding_box()
+			for go in self.game_mgr.game_objects
+		}
 		draw_graph = DrawGraph(key_vals=pre_go_draw_graph)
 
-		gobj_cells = {}
-		for go in self.game_mgr.game_objects:
-			gobj_cells[go.draw_point(self.vp.camera_orientation)] = go
+		gobj_cells = {
+			go.draw_point(self.vp.camera_orientation): go
+			for go in self.game_mgr.game_objects
+		}
 
 		ox, oy = self.vp.get_draw_origin()
 		drawn = set()

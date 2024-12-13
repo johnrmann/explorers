@@ -20,7 +20,7 @@ class GameManager(Listener):
 	renderer: Render
 	clickmap: ClickMap
 
-	game_objects: list[GameObject]
+	game_objects: set[GameObject]
 	utc: float
 	world: World
 	vp = None
@@ -38,7 +38,7 @@ class GameManager(Listener):
 	):
 		self.screen = screen
 		self.utc = 0.0
-		self.game_objects = []
+		self.game_objects = set()
 		self.world = world
 		self.vp = viewport
 		self.on_quit = on_quit
@@ -105,10 +105,10 @@ class GameManager(Listener):
 	def new_player_character(self, position, owner: int = 1):
 		new_character = Actor(self, pos=position, owner=owner)
 		new_character.motives.set_all(100)
-		self.game_objects.append(new_character)
+		self.game_objects.add(new_character)
 		if self.selected_actors.get(owner) is None:
 			self.selected_actors[owner] = new_character
 		return new_character
 
 	def add_game_object(self, go: GameObject):
-		self.game_objects.append(go)
+		self.game_objects.add(go)

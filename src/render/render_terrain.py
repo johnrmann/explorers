@@ -11,12 +11,9 @@ from src.rendermath.tile import tile_polygon, is_point_in_tile, is_tile_in_scree
 from src.rendermath.order import offset_tile_by_draw_order_vector
 from src.rendermath.geometry import is_point_in_screen
 from src.math.vector2 import Vector2
-from src.render.render_tile import TileSurfaceCache, NO_RIDGES, BOTH_RIDGES, LEFT_RIDGE, RIGHT_RIDGE
+from src.render.render_tile import TileSurfaceCache
 
 HIGHLIGHT_COLOR = (0, 250, 0)
-
-# TODO(jm) - how to inject this
-SCREEN_DIMS = Vector2(1440, 900)
 
 class RenderTerrain(object):
 	_ridge_draws: dict[int, dict[int, dict[Direction, int]]]
@@ -77,7 +74,7 @@ class RenderTerrain(object):
 		bottom_screen_p = self.tile_bottom_screen_coords(tile_p)
 		x, y = tile_p
 		h = self.terrain.map[y][x]
-		dy = (h * self.vp.terrain_z)
+		dy = h * self.vp.terrain_z
 		bsp_x, bsp_y = bottom_screen_p
 		return (bsp_x, bsp_y - dy)
 

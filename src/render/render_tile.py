@@ -56,6 +56,8 @@ class TileSurfaceCache:
 	right_ridge_cache = {}
 	both_ridge_cache = {}
 
+	_jut = None
+
 	zooms: list[int]
 
 	def __init__(self, zooms=None):
@@ -65,6 +67,7 @@ class TileSurfaceCache:
 		self._init_tile_cache()
 		self._init_wall_caches()
 		self._init_ridge_caches()
+		self._init_jut()
 
 	def _make_tile_and_surface(self, w):
 		h = w // 2
@@ -105,6 +108,14 @@ class TileSurfaceCache:
 			self.right_ridge_cache[zoom] = right
 			self.both_ridge_cache[zoom] = both
 
+	def _init_jut(self):
+		self._jut = {
+			NO_RIDGES: self.tile_cache,
+			LEFT_RIDGE: self.left_ridge_cache,
+			RIGHT_RIDGE: self.right_ridge_cache,
+			BOTH_RIDGES: self.both_ridge_cache
+		}
+
 	def tile_surface(self, zoom, ridges: int=None):
 		"""
 		Returns a pre-rendered tile top for the given zoom (tile width).
@@ -112,14 +123,7 @@ class TileSurfaceCache:
 		idx = int(zoom)
 		if ridges is None:
 			ridges = NO_RIDGES
-		if ridges == NO_RIDGES:
-			return self.tile_cache[idx]
-		elif ridges == BOTH_RIDGES:
-			return self.both_ridge_cache[idx]
-		elif ridges == LEFT_RIDGE:
-			return self.left_ridge_cache[idx]
-		else:
-			return self.right_ridge_cache[idx] 
+		return self._jut[ridges][idx]
 
 	def left_wall_surface(self, zoom, left_wall_h=0):
 		"""

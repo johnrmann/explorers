@@ -21,6 +21,7 @@ from src.math.vector2 import vector2_rotate_point
 from src.mgmt.listener import Listener
 from src.gameobject.actor import MoveActorEvent
 from src.rendermath.cell import cell_position_on_global_screen
+from src.rendermath.terrain import TERRAIN_STEPS_PER_CELL
 
 TILE_WIDTH = 48
 TILE_HEIGHT = TILE_WIDTH // 2
@@ -49,6 +50,12 @@ class Viewport(Listener):
 		self.camera_pos = terrain.center
 		self._recompute_tile_dimensions()
 		self._recompute_screen_dimensions()
+		self._recompute_camera()
+
+	def _recompute_camera(self):
+		self._camera_screen_pos = self.global_tile_to_screen_coords(
+			self.camera_pos
+		)
 
 	def _recompute_tile_dimensions(self):
 		self.tile_width = ZOOMS[self._zoom_idx]
@@ -57,6 +64,7 @@ class Viewport(Listener):
 		th2 = (self.tile_height // 2)**2
 		self.tile_z = math.sqrt(tw2 + th2)
 		self.tile_dimensions = (self.tile_width, self.tile_height)
+		self.terrain_z = self.tile_z / TERRAIN_STEPS_PER_CELL
 
 	def _subscribe_to_events(self):
 		self.evt_mgr.sub(EVENT_CAMERA_MOVE, self)
@@ -84,16 +92,13 @@ class Viewport(Listener):
 		elif event.event_type == EVENT_CAMERA_ROTATE:
 			self.rotate_camera(event.delta)
 
-	@property
-	def terrain_z(self):
-		return self.tile_z / 8
-
 	def change_zoom(self, delta):
 		if delta == 0:
 			return
 		self._zoom_idx = min(max(0, self._zoom_idx + delta), len(ZOOMS) - 1)
 		self._recompute_tile_dimensions()
 		self._recompute_screen_dimensions()
+		self._recompute_camera()
 
 	def _recompute_screen_dimensions(self):
 		win_w, win_h = self.window_dims
@@ -115,6 +120,7 @@ class Viewport(Listener):
 			quarter_turns=delta
 		)
 		self._update_walls_and_ridges()
+		self._recompute_camera()
 
 	def move_camera(self, camdir: Direction):
 		if not camdir:
@@ -135,6 +141,7 @@ class Viewport(Listener):
 			cx2 = 0
 
 		self.camera_pos = (cx2, cy2)
+		self._recompute_camera()
 
 	def get_draw_origin(self):
 		x, y = self.camera_pos
@@ -151,7 +158,7 @@ class Viewport(Listener):
 		Converts tile coordinates to screen coordinates.
 		"""
 		win_width, win_height = self.window_dims
-		cx_screen, cy_screen = self.global_tile_to_screen_coords(self.camera_pos)
+		cx_screen, cy_screen = self._camera_screen_pos
 		x2,y2 = self.global_tile_to_screen_coords(p_tile)
 		return (
 			x2 + (win_width // 2) - cx_screen,
@@ -172,7 +179,7 @@ class Viewport(Listener):
 		"""
 		screen_x, screen_y = p_screen
 		win_width, win_height = self.window_dims
-		s_cam_x, s_cam_y = self.global_tile_to_screen_coords(self.camera_pos)
+		s_cam_x, s_cam_y = self._camera_screen_pos
 
 		# Adjust the screen coordinates relative to the centered camera
 		rel_screen_x = screen_x - (win_width // 2) + s_cam_x

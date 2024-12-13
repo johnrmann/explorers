@@ -35,9 +35,9 @@ class MgmtTest(unittest.TestCase):
 		omni = OmniListener(rocket.evt_mgr)
 		# EndCareful
 
-		game_mgr.game_objects.append(launchpad)
-		game_mgr.game_objects.append(moon)
-		game_mgr.game_objects.append(rocket)
+		game_mgr.add_game_object(launchpad)
+		game_mgr.add_game_object(moon)
+		game_mgr.add_game_object(rocket)
 
 		mock_update = omni.update = MagicMock()
 		launchpad.launch()
