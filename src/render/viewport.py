@@ -32,6 +32,7 @@ SAFETY = 3
 
 class Viewport(Listener):
 	_zoom_idx = 1
+	_camera_pos = (0, 0)
 
 	camera_orientation = Direction.NORTHWEST
 
@@ -47,7 +48,7 @@ class Viewport(Listener):
 		self.window_dims = window_dims
 		self.terrain_width, self.terrain_height = terrain.width, terrain.height
 		self.terrain_dims = (self.terrain_width, self.terrain_height)
-		self.camera_pos = terrain.center
+		self._camera_pos = terrain.center
 		self._recompute_tile_dimensions()
 		self._recompute_screen_dimensions()
 		self._recompute_camera()
@@ -71,6 +72,15 @@ class Viewport(Listener):
 		self.evt_mgr.sub(EVENT_CAMERA_ZOOM, self)
 		self.evt_mgr.sub(EVENT_CAMERA_ROTATE, self)
 		self.evt_mgr.sub(EVENT_MOUSE_CLICK_WORLD, self)
+
+	@property
+	def camera_pos(self):
+		return self._camera_pos
+
+	@camera_pos.setter
+	def camera_pos(self, value):
+		self._camera_pos = value
+		self._recompute_camera()
 
 	@property
 	def game_mgr(self):

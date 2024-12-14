@@ -17,6 +17,7 @@ from src.gui.superevent import superevent_from_json
 from src.gui.fps import FpsCounter
 from src.gui.rangebar import Rangebar
 from src.gui.actor_motives import ActorMotivesGui
+from src.gui.minimap import MiniMap
 
 flags = pygame.DOUBLEBUF
 
@@ -115,6 +116,12 @@ def main():
 	motives_gui = ActorMotivesGui(
 		get_motives=lambda: game.player_character.motives,
 		origin=(0, WINDOW_HEIGHT - 105),
+	)
+	minimap = MiniMap(
+		origin=(WINDOW_WIDTH - 400, WINDOW_HEIGHT - 200),
+		dimensions=(400, 200),
+		world=game.world,
+		viewport=game.renderer.vp,
 	)
 
 	while running:

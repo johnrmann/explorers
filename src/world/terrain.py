@@ -29,6 +29,9 @@ class Terrain(object):
 	_area: int
 	_water_area = 0
 
+	max_tile_height = 0
+	min_tile_height = 0
+
 	lats = []
 	longs = []
 
@@ -52,6 +55,7 @@ class Terrain(object):
 			[make_height_delta() for _ in range(w)] for _ in range(h)
 		]
 		self._calc_height_deltas()
+		self._calc_max_min_tile_heights()
 		self._calc_lat_longs()
 
 	def _calc_height_deltas(self):
@@ -63,6 +67,14 @@ class Terrain(object):
 					x2,y2 = adjs[i]
 					delta = self.map[y][x] - self.map[y2][x2]
 					self._height_deltas[y][x][i] = delta
+
+	def _calc_max_min_tile_heights(self):
+		self.max_tile_height = max(
+			max(row) for row in self.map
+		)
+		self.min_tile_height = min(
+			min(row) for row in self.map
+		)
 
 	def _calc_lat_longs(self):
 		w, h = self.dimensions
