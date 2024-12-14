@@ -60,6 +60,8 @@ class Render(object):
 	def _render_game_object(self, gobj, drawn_cells):
 		# First, render all terrain tiles below the gobj.
 		for p in gobj.cells_occupied(self.vp.camera_orientation):
+			if p in drawn_cells:
+				continue
 			self.render_terrain.render_tile(p)
 			drawn_cells.add(p)
 		x, y = gobj.pos
