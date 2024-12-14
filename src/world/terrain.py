@@ -125,9 +125,41 @@ class Terrain(object):
 		return Vector2(self._width // 2, self._height // 2)
 
 	def is_valid_coordinates(self, p):
-		x_valid = 0 <= p.x < self.width
-		y_valid = 0 <= p.y < self.height
+		"""
+		Returns true if p = (x, y) are valid cell coordinates.
+
+		Note the difference between a cell's coordinates and a cell's index.
+		Cell coordinates are looped about the x-axis, so a cell at (-1, 0) is
+		valid coordinates equal to (width - 1, 0), but an invalid index.
+
+		On the other hand, a cell's index is 1:1 with memory positions, so
+		(-1, 0) is an invalid index.
+		"""
+		_, y = p
+		return 0 <= y < self.height
+
+	def is_valid_index(self, p):
+		"""
+		Returns true if p = (x, y) are valid cell indices.
+
+		Note the difference between a cell's coordinates and a cell's index.
+		Cell coordinates are looped about the x-axis, so a cell at (-1, 0) is
+		valid coordinates equal to (width - 1, 0), but an invalid index.
+
+		On the other hand, a cell's index is 1:1 with memory positions, so
+		(-1, 0) is an invalid index.
+		"""
+		x, y = p
+		x_valid = 0 <= x < self.width
+		y_valid = 0 <= y < self.height
 		return x_valid and y_valid
+
+	def coordinates_to_index(self, p):
+		"""
+		Converts coordinates to indeces.
+		"""
+		x, y = p
+		return (x % self.width, y)
 
 	def is_cell_water(self, p):
 		"""Is the given cell position water?"""

@@ -62,6 +62,8 @@ class RenderTerrain(object):
 		x, y = tile_p
 		if not 0 <= y < self.terrain.height:
 			return None
+		if not 0 <= x < self.terrain.width:
+			return None
 		h = self.terrain.map[y][x]
 		bottom = self.tile_bottom(tile_p)
 		return height_offset_tile(bottom, h / 8, self.vp)

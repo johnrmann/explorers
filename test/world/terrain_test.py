@@ -58,6 +58,30 @@ class TerrainTest(unittest.TestCase):
 		terrain = Terrain(waterworld_heightmap, waterworld_watermap)
 		self.assertEqual(terrain.land_height_at((0, 0)), 0)
 
+	def test__is_valid_coordinates__valid(self):
+		terrain = Terrain(desert_heightmap)
+		self.assertTrue(terrain.is_valid_coordinates((2, 2)))
+
+	def test__is_valid_coordinates__invalid(self):
+		terrain = Terrain(desert_heightmap)
+		self.assertFalse(terrain.is_valid_coordinates((2, 5)))
+
+	def test__is_valid_index__valid(self):
+		terrain = Terrain(desert_heightmap)
+		self.assertTrue(terrain.is_valid_index((2, 2)))
+
+	def test__is_valid_index__invalid(self):
+		terrain = Terrain(desert_heightmap)
+		self.assertFalse(terrain.is_valid_index((5, 2)))
+
+	def test__coordinates_to_index__wrap_around(self):
+		terrain = Terrain(desert_heightmap)
+		self.assertEqual(terrain.coordinates_to_index((6, 2)), (1, 2))
+
+	def test__coordinates_to_index__no_wrap(self):
+		terrain = Terrain(desert_heightmap)
+		self.assertEqual(terrain.coordinates_to_index((2, 2)), (2, 2))
+
 	def test__sea_level__all_land(self):
 		terrain = Terrain(desert_heightmap, desert_watermap)
 		self.assertEqual(terrain.sea_level(), 1)
