@@ -1,5 +1,7 @@
 import pygame
 
+from argparse import ArgumentParser
+
 from src.gen.terrain_generator import TerrainGenerator
 from src.world.world import World
 from src.render.render import Render
@@ -16,12 +18,47 @@ from src.gui.fps import FpsCounter
 from src.gui.rangebar import Rangebar
 from src.gui.actor_motives import ActorMotivesGui
 
+flags = pygame.DOUBLEBUF
+
+arg_parser = ArgumentParser()
+arg_parser.add_argument(
+	'--fullscreen',
+	help='Run the game in fullscreen mode.',
+)
+arg_parser.add_argument(
+	'-sw','--screen-width',
+	help='The width of the game window.',
+)
+arg_parser.add_argument(
+	'-sh', '--screen-height',
+	help='The height of the game window.',
+)
+
+args = arg_parser.parse_args()
+
+WINDOW_WIDTH = None
+WINDOW_HEIGHT = None
+
 pygame.init()
 
-WINDOW_WIDTH = 1440
-WINDOW_HEIGHT = 900
+if args.fullscreen:
+	flags = flags | pygame.FULLSCREEN
+	if not args.screen_width and not args.screen_height:
+		info = pygame.display.Info()
+		WINDOW_WIDTH = info.current_w
+		WINDOW_HEIGHT = info.current_h
+	else:
+		WINDOW_WIDTH = int(args.screen_width)
+		WINDOW_HEIGHT = int(args.screen_height)
+else:
+	if args.screen_width and args.screen_height:
+		WINDOW_WIDTH = int(args.screen_width)
+		WINDOW_HEIGHT = int(args.screen_height)
+	else:
+		WINDOW_WIDTH = 1440
+		WINDOW_HEIGHT = 900
 
-window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
+window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), flags)
 pygame.display.set_caption("Explorers")
 
 def make_terrain():
