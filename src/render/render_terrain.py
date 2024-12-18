@@ -1,5 +1,6 @@
 import pygame
 import math
+import numpy
 
 from src.world.world import World
 from src.world.terrain import Terrain
@@ -103,31 +104,11 @@ class RenderTerrain(object):
 		screen_p = self.tile_top_screen_coords(cell_p)
 		zoom = self.vp.tile_width
 
-		left_wall = self.terrain.height_delta(
-			cell_p, self.vp.left_wall_direction
-		)
-		right_wall = self.terrain.height_delta(
-			cell_p, self.vp.right_wall_direction
-		)
 		ridges = self._ridge_draws[y][x][self.vp.camera_orientation]
 		tile_surface, tile_pos = self.tile_cache.tile_surface_and_position(
 			screen_p, zoom, ridges
 		)
 		self.window.blit(tile_surface, tile_surface.get_rect(topleft=tile_pos))
-
-		if left_wall:
-			left = self.tile_cache.left_wall_surface_and_position(
-				screen_p, zoom, left_wall
-			)
-			if left:
-				self.window.blit(left[0], left[0].get_rect(topleft=left[1]))
-
-		if right_wall:
-			right = self.tile_cache.right_wall_surface_and_position(
-				screen_p, zoom, right_wall
-			)
-			if right:
-				self.window.blit(right[0], right[0].get_rect(topleft=right[1]))
 
 	def tile_at_screen_pos(self, screen_p):
 		"""
