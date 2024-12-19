@@ -1,5 +1,8 @@
 import pygame
+
 from src.mgmt.event_manager import EventManager
+
+from src.gui.anchor import Anchor, origin_via_anchor
 
 class _GuiManager:
 	elements = []
@@ -54,20 +57,22 @@ class GuiElement:
 
 	relative_origin: tuple[int, int]
 	dimensions: tuple[int, int]
+	anchor: Anchor
 
 	def __init__(
 			self,
 			parent=None,
-			rect = None, origin=None, dimensions=None,
+			rect = None, origin=None, dimensions=None, anchor=None,
 			gui_mgr=None, evt_mgr=None
 	):
 		self.elements = []
+		self.anchor = anchor
 		if rect is not None:
 			origin, dimensions = rect
-		if origin is not None:
-			self.relative_origin = origin
 		if dimensions is not None:
 			self.dimensions = dimensions
+		if origin is not None:
+			self.relative_origin = origin
 		if gui_mgr is not None:
 			self.gui_mgr = gui_mgr
 		else:
@@ -96,10 +101,32 @@ class GuiElement:
 			self.gui_mgr.remove_element(self)
 
 	@property
+	def _parent_origin(self):
+		"""The origin of the parent element."""
+		if self.parent is not None:
+			return self.parent.origin
+		return (0, 0)
+
+	@property
+	def _parent_dimensions(self):
+		"""The dimensions of the parent element."""
+		if self.parent is not None:
+			return self.parent.dimensions
+		return self.gui_mgr.surface.get_size()
+
+	@property
 	def origin(self):
 		"""The absolute origin of the element."""
 		if self.relative_origin is None:
 			raise ValueError("No origin set.")
+		if self.anchor is not None:
+			return origin_via_anchor(
+				self.relative_origin,
+				self.dimensions,
+				self._parent_dimensions,
+				anchor=self.anchor,
+				parent_origin=self._parent_origin
+			)
 		rx, ry = self.relative_origin
 		if self.parent is not None:
 			px, py = self.parent.origin

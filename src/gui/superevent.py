@@ -2,6 +2,7 @@ import json
 
 from src.mgmt.event import Event
 
+from src.gui.anchor import Anchor
 from src.gui.gui import GuiElement
 from src.gui.constants import TITLE_HEIGHT
 from src.gui.primitives import Label, Panel, Button, TextBox, Image
@@ -33,9 +34,7 @@ class Superevent(GuiElement):
 	"""
 	def __init__(self, title="", image_path="", body="", dismiss_text=""):
 		w, h = SUPEREVENT_WIDTH, SUPEREVENT_HEIGHT
-		super().__init__(dimensions=(w, h))
-		screen_w, screen_h = self.gui_mgr.surface.get_size()
-		self.relative_origin = ((screen_w - w) // 2, (screen_h - h) // 2)
+		super().__init__(dimensions=(w, h), origin=(0, 0), anchor=Anchor.CENTER)
 		self.panel = Panel(
 			rect=((0,0), (w,h)),
 			parent=self,

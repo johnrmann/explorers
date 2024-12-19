@@ -24,10 +24,9 @@ class ActorMotivesGui(GuiElement):
 
 	def __init__(
 		self,
-		origin=None,
-		parent=None,
 		motives: ActorMotiveVector = None,
-		get_motives: Callable[[], ActorMotiveVector] = None
+		get_motives: Callable[[], ActorMotiveVector] = None,
+		**kwargs
 	):
 		if motives is None and get_motives is None:
 			raise ValueError("Need motives")
@@ -35,11 +34,8 @@ class ActorMotivesGui(GuiElement):
 			self._get_motives = get_motives
 		else:
 			self.motives = motives
-		if origin is None:
-			origin = (0, 0)
 		w, h = ACTOR_MOTIVES_WIDTH, ACTOR_MOTIVES_HEIGHT
-		self.relative_origin = origin
-		super().__init__(parent=parent)
+		super().__init__(dimensions=(w, h), **kwargs)
 		self.panel = Panel(
 			rect=((0,0), (w, h)),
 			parent=self,

@@ -12,6 +12,7 @@ from src.mgmt.singletons import init_game_manager, get_game_manager
 from src.mgmt.constants import TARGET_FPS
 from src.render.viewport import Viewport
 from src.ctrl.ctrl import Control
+from src.gui.anchor import Anchor
 from src.gui.mission_clock import MissionClock
 from src.gui.superevent import superevent_from_json
 from src.gui.fps import FpsCounter
@@ -115,11 +116,13 @@ def main():
 	fps = FpsCounter()
 	motives_gui = ActorMotivesGui(
 		get_motives=lambda: game.player_character.motives,
-		origin=(0, WINDOW_HEIGHT - 105),
+		origin=(0, 0),
+		anchor=Anchor.BOTTOM_LEFT,
 	)
 	minimap = MiniMap(
-		origin=(WINDOW_WIDTH - 400, WINDOW_HEIGHT - 200),
+		origin=(0, 0),
 		dimensions=(400, 200),
+		anchor=Anchor.BOTTOM_RIGHT,
 		world=game.world,
 		viewport=game.renderer.vp,
 	)
