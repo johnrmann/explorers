@@ -22,12 +22,6 @@ class VerticalLayout(GuiElement):
 		child.relative_origin = (ox, oy + self._height)
 		self._height += child.dimensions[1]
 
-	def process_event(self, event):
-		"""Returns true if the event was for this controller."""
-		for elem in self.elements:
-			if elem.process_event(event):
-				return True
-
 class HorizontalLayout(GuiElement):
 	"""
 	Automatically lays out its children left to right.
@@ -45,9 +39,3 @@ class HorizontalLayout(GuiElement):
 		ox, oy = child.relative_origin
 		child.relative_origin = (ox + self._width, oy)
 		self._width += child.dimensions[0]
-
-	def process_event(self, event):
-		"""Returns true if the event was for this controller."""
-		for elem in self.elements:
-			if elem.process_event(event):
-				return True

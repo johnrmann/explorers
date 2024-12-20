@@ -84,7 +84,7 @@ class LineGraph(GuiElement):
 		for p, q in zip(ps, qs):
 			pygame.draw.line(surface, color, p, q)
 
-	def draw(self, surface):
+	def _draw(self, surface):
 		self._draw_background(surface)
 		for points, color in zip(self.series, self.colors):
 			self._draw_points(surface, points, color)

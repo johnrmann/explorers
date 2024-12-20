@@ -1,5 +1,7 @@
 import pygame
 
+from typing import final
+
 from src.mgmt.event_manager import EventManager
 
 from src.gui.anchor import Anchor, origin_via_anchor
@@ -33,8 +35,10 @@ class _GuiManager:
 			elem.update(dt)
 
 	def draw(self, screen):
+		"""Draws all GUI elements on the screen."""
 		for elem in self.elements:
-			elem.draw(screen)
+			if not elem.hidden:
+				elem.draw(screen)
 
 _global_gui_manager = None
 
@@ -52,19 +56,23 @@ class GuiElement:
 	gui_mgr: _GuiManager
 	evt_mgr: EventManager
 
+	hidden = False
+
 	parent = None
 	elements = None
 
-	relative_origin: tuple[int, int]
-	dimensions: tuple[int, int]
+	relative_origin: tuple[int, int] = None
+	dimensions: tuple[int, int] = None
 	anchor: Anchor
 
 	def __init__(
 			self,
 			parent=None,
+			hidden=False,
 			rect = None, origin=None, dimensions=None, anchor=None,
 			gui_mgr=None, evt_mgr=None
 	):
+		self.hidden = hidden
 		self.elements = []
 		self.anchor = anchor
 		if rect is not None:
@@ -156,40 +164,34 @@ class GuiElement:
 
 	def process_event(self, event):
 		"""Returns true if the event was for this controller."""
+		if self.hidden:
+			return False
 		for child in self.elements:
-			if child.process_event(event):
+			if not child.hidden and child.process_event(event):
 				return True
+		return self.do_process_event(event)
+
+	def do_process_event(self, event):
+		"""Processes the event for this element."""
 		return False
 
 	def update(self, dt: float):
 		"""Updates the GUI element."""
 		pass
 
+	@final
 	def draw(self, screen):
-		"""Draws the element on the screen."""
+		"""
+		Draws this element and its children on the screen. Do not override -
+		all actual rendering should be done in the _draw method.
+		"""
+		if self.hidden:
+			return
+		self._draw(screen)
 		for elem in self.elements:
-			elem.draw(screen)
+			if not elem.hidden:
+				elem.draw(screen)
 
-class GuiPrimitive(GuiElement):
-	"""
-	To be extended by the various GUI controls to be shown on the screen.
-	"""
-
-	def __init__(self, rect=None, parent=None, evt_mgr=None):
-		if rect is None:
-			raise ValueError("Every GUI element must have a rect.")
-		origin, dimensions = rect
-		self.relative_origin = origin
-		self.dimensions = dimensions
-		super().__init__(parent=parent, evt_mgr=evt_mgr)
-
-	@property
-	def screen_dimensions(self):
-		"""The dimensions of the screen."""
-		return self.gui_mgr.surface.get_size()
-
-	@property
-	def pygame_rect(self):
-		ox, oy = self.origin
-		w, h = self.dimensions
-		return pygame.Rect(ox, oy, w, h)
+	def _draw(self, screen):
+		"""Draws the element on the screen."""
+		return

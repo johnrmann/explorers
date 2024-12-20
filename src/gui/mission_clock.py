@@ -48,9 +48,6 @@ class MissionClock(GuiElement):
 	def dimensions(self):
 		return(150, 30)
 
-	def process_event(self, event):
-		return self.button.process_event(event)
-
 	def on_click_clock_mode(self):
 		"""When we click the clock mode button, toggle between calendars."""
 		self._mode_idx = (self._mode_idx + 1) % len(self.function_map)
