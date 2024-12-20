@@ -110,6 +110,8 @@ class Atmosphere:
 	total = None
 	average = None
 
+	delta = None
+
 	planet_area = 1024 * 512
 
 	def __init__(
@@ -122,6 +124,11 @@ class Atmosphere:
 		self.total = {}
 		self.average = {}
 		self.planet_area = planet_area
+
+		self.delta = {
+			element: 0
+			for element in AtmosphereElement
+		}
 
 		if astronomy is not None:
 			self.astronomy = astronomy
@@ -161,6 +168,34 @@ class Atmosphere:
 			total_molar_mass += ELEMENT_MOLAR_MASS[key] * count
 		raw = total_molar_mass / self.planet_area
 		return raw / EARTH_ATMOSPHERE_DENSITY
+
+	def change_delta(self, element, count):
+		"""
+		Second derivative - change the amount the atmosphere is changing
+		at.
+		
+		New(Atmosphere[element]) = Atmosphere[element] + count
+		"""
+		self.delta[element] += count
+
+	def evolve(self, d_seconds=1):
+		"""
+		Mutates the atmosphere according to the delta.
+
+		This is used for simulating terraforming over time. One instance would
+		be the player planting trees, which would remove carbon from the
+		atmosphere.
+
+		Call this once per second (not frame!).
+		"""
+		for key, count in self.delta.items():
+			self.total[key] += count * d_seconds
+			if self.total[key] < 0:
+				self.total[key] = 0
+		self.average = {
+			key: subtotal / self.planet_area
+			for key, subtotal in self.total.items()
+		}
 
 	def albedo(self):
 		"""

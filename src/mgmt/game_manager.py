@@ -71,6 +71,10 @@ class GameManager(Listener):
 		"""
 		if dt <= 0:
 			raise ValueError("Time travel not allowed")
+		floor_new_utc = int(self.utc + dt)
+		floor_old_utc = int(self.utc)
+		if floor_new_utc != floor_old_utc:
+			self.world.evolve(floor_new_utc - floor_old_utc)
 		self.utc += dt
 		self.evt_mgr.tick(dt, self.utc)
 		for obj in self.game_objects:

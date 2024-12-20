@@ -25,6 +25,14 @@ class AtmosphereTest(unittest.TestCase):
 				AtmosphereElement.CARBON: 1,
 			}, 2)
 		)
+		self.basic = Atmosphere(
+			astronomy=Astronomy(),
+			average={
+				elem: 1000
+				for elem in AtmosphereElement
+			},
+			planet_area=1
+		)
 
 	def test__make_atmosphere_composiiton__earth(self):
 		result = make_atmosphere_composiiton(
@@ -96,6 +104,28 @@ class AtmosphereTest(unittest.TestCase):
 		don't want Venusian scenarios to be that much harder than Martian
 		ones."""
 		self.assertAlmostEqual(self.venus.tpr_surface(), 742.31, places=1)
+
+	def test__evolve__identity(self):
+		self.basic.evolve()
+		self.assertEqual(self.basic.average, {
+			elem: 1000
+			for elem in AtmosphereElement
+		})
+
+	def test__evolve__add(self):
+		self.basic.change_delta(AtmosphereElement.CARBON, 100)
+		self.basic.evolve()
+		self.assertEqual(self.basic.average[AtmosphereElement.CARBON], 1100)
+
+	def test__evolve__remove(self):
+		self.basic.change_delta(AtmosphereElement.CARBON, -100)
+		self.basic.evolve()
+		self.assertEqual(self.basic.average[AtmosphereElement.CARBON], 900)
+
+	def test__evolve__remove_cap_zero(self):
+		self.basic.change_delta(AtmosphereElement.CARBON, -2000)
+		self.basic.evolve()
+		self.assertEqual(self.basic.average[AtmosphereElement.CARBON], 0)
 
 if __name__ == '__main__':
 	unittest.main()

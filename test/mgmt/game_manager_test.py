@@ -46,11 +46,27 @@ class GameManagerTest(unittest.TestCase):
 		self.assertEqual(gm.selected_actors[1], actor1)
 		self.assertEqual(gm.selected_actors[2], actor3)
 
-	def test__rejects_time_travel(self):
+	def test__tick__rejects_time_travel(self):
 		"""Ensure that an error is thrown if we try to tick with a negative
 		dt."""
 		gm = GameManager(self.world, self.viewport)
 		self.assertRaises(ValueError, lambda: gm.tick(-1))
+
+	def test__tick__evolves_world(self):
+		"""Test that the world evolves one second at a time."""
+		gm = GameManager(self.world, self.viewport)
+		gm.world.evolve = MagicMock()
+		gm.tick(0.5)
+		gm.world.evolve.assert_not_called()
+		gm.tick(0.5)
+		gm.world.evolve.assert_called_once_with(1)
+
+	def test__tick__evolves_world_multiple_seconds(self):
+		"""Test that the world evolves multiple seconds at a time."""
+		gm = GameManager(self.world, self.viewport)
+		gm.world.evolve = MagicMock()
+		gm.tick(2)
+		gm.world.evolve.assert_called_once_with(2)
 
 if __name__ == "__main__":
 	unittest.main()

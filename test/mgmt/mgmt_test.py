@@ -3,6 +3,7 @@ import unittest
 from unittest.mock import MagicMock, call, patch
 
 from src.render.viewport import Viewport
+from src.world.world import World
 
 from src.mgmt.game_manager import GameManager
 from src.mgmt.constants import TARGET_FPS
@@ -22,7 +23,8 @@ class MgmtTest(unittest.TestCase):
 	def setUp(self, mock_get_game_manager):
 		self.viewport = MagicMock(spec=Viewport)
 		self.viewport.window_dims = (800, 600)
-		self.game_mgr = GameManager(None, self.viewport)
+		self.world = MagicMock(spec=World)
+		self.game_mgr = GameManager(self.world, self.viewport)
 		mock_get_game_manager.return_value = self.game_mgr
 
 	def test__launch(self):
