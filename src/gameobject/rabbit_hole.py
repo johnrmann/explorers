@@ -47,7 +47,6 @@ class EnterRabbitHoleEvent(Event):
 	data = None
 
 	def __init__(self, actor=None, rabbit_hole=None, data=None):
-		super().__init__(event_type='rabbit_hole.enter')
 		self.actor = actor
 		self.rabbit_hole = rabbit_hole
 		self.data = data
@@ -67,7 +66,6 @@ class ExitRabbitHoleEvent(Event):
 	"""
 
 	def __init__(self, actor=None, rabbit_hole=None):
-		super().__init__(event_type='rabbit_hole.exit')
 		self.actor = actor
 		self.rabbit_hole = rabbit_hole
 

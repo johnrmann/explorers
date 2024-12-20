@@ -20,8 +20,7 @@ from src.gameobject.actor import (
 from test.setups import make_basic_game_manager
 
 class MockEvent(Event):
-	def __init__(self):
-		super().__init__(event_type="mock.event")
+	pass
 
 class MockTarget:
 	def __init__(self, pos=None):

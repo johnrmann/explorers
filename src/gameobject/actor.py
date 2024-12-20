@@ -43,10 +43,10 @@ class Actor(GameObject, Listener):
 		# Speed is given in cells per second.
 		self.speed = speed
 		# Subscribe to events.
-		self.evt_mgr.sub("main.character.go", self)
-		self.evt_mgr.sub("main.character.action", self)
-		self.evt_mgr.sub("rabbit_hole.enter", self)
-		self.evt_mgr.sub("rabbit_hole.exit", self)
+		self.evt_mgr.sub("MoveActorEvent", self)
+		self.evt_mgr.sub("ActorDoActionEvent", self)
+		self.evt_mgr.sub("EnterRabbitHoleEvent", self)
+		self.evt_mgr.sub("ExitRabbitHoleEvent", self)
 
 	def update(self, event: Event):
 		if isinstance(event, MoveActorEvent) and event.actor == self:
@@ -54,9 +54,9 @@ class Actor(GameObject, Listener):
 		elif isinstance(event, ActorDoActionEvent) and event.actor == self:
 			self.set_destination(event.action.position)
 			self._action = event.action
-		elif event.event_type == 'rabbit_hole.enter' and event.actor == self:
+		elif event.event_type == 'EnterRabbitHoleEvent' and event.actor == self:
 			self.hidden = True
-		elif event.event_type == 'rabbit_hole.exit' and event.actor == self:
+		elif event.event_type == 'ExitRabbitHoleEvent' and event.actor == self:
 			self.hidden = False
 
 	@property
@@ -120,7 +120,7 @@ class MoveActorEvent(Event):
 			actor: Actor = None,
 			to_position: Vector2 = None
 	):
-		super().__init__(event_type="main.character.go")
+		super().__init__()
 		self.actor = actor
 		self.to_position = to_position
 
@@ -145,7 +145,7 @@ class ActorDoActionEvent(Event):
 			actor: Actor = None,
 			action: Action = None
 	):
-		super().__init__(event_type="main.character.action")
+		super().__init__()
 		self.actor = actor
 		self.action = action
 
@@ -165,7 +165,7 @@ class ActorDiedEvent(Event):
 	actor: Actor
 
 	def __init__(self, actor: Actor = None):
-		super().__init__(event_type="character.died")
+		super().__init__()
 		self.actor = actor
 
 	def __eq__(self, other):

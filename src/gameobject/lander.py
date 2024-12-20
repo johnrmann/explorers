@@ -47,8 +47,8 @@ class Lander(Interactable, RabbitHole, Listener):
 		)
 		self.next_use_for_actor = {}
 		self.next_use = 0
-		self.evt_mgr.sub('rabbit_hole.enter', self)
-		self.evt_mgr.sub('rabbit_hole.exit', self)
+		self.evt_mgr.sub('EnterRabbitHoleEvent', self)
+		self.evt_mgr.sub('ExitRabbitHoleEvent', self)
 
 	def update(self, event):
 		if isinstance(event, EnterRabbitHoleEvent):

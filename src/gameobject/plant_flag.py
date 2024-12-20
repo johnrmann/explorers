@@ -25,10 +25,10 @@ class PlantFlag(Interactable, Listener):
 			size=(1,1,0)
 		)
 		self._is_first = is_first
-		self.evt_mgr.sub("flag.planted", self)
+		self.evt_mgr.sub("FlagPlantedEvent", self)
 
 	def update(self, event):
-		if event.event_type == "flag.planted":
+		if event.event_type == "FlagPlantedEvent":
 			self._plant()
 
 	def image_path(self):
@@ -70,6 +70,4 @@ class FlagPlantedEvent(Event):
 	"""
 	An event to fire when the flag has been planted.
 	"""
-
-	def __init__(self):
-		super().__init__(event_type="flag.planted")
+	pass

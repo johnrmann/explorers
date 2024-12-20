@@ -112,7 +112,6 @@ class ShowSupereventEvent(Event):
 		])
 		if not has_file_interface and not has_superevent_interface:
 			raise ValueError("You must use one of the two interfaces.")
-		super().__init__(event_type="gui.superevent.show")
 		self.json_file = json_file
 		self.json_id = json_id
 		self.title = title

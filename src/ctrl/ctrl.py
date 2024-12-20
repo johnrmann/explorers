@@ -11,13 +11,9 @@ from src.ctrl.camera import (
 )
 from src.ctrl.clickmap import ClickMap
 from src.ctrl.event_id import (
-	EVENT_CAMERA_MOVE,
-	EVENT_CAMERA_ZOOM,
-	EVENT_CAMERA_ROTATE,
-	EVENT_MOUSE_CLICK_WORLD,
-	EVENT_MOUSE_CLICK_OBJECT,
 	CameraMoveEvent,
 	CameraZoomEvent,
+	CameraRotateEvent,
 )
 
 class Control:

@@ -4,9 +4,7 @@ class Event:
 	objects in the game.
 	"""
 
-	event_type: str
-
-	def __init__(self, event_type: str = None):
-		if event_type is None:
-			raise ValueError("Event type must be defined")
-		self.event_type = event_type
+	@property
+	def event_type(self):
+		"""Easy access to this class name."""
+		return self.__class__.__name__

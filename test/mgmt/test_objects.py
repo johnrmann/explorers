@@ -7,29 +7,22 @@ from src.mgmt.event import Event
 from src.gameobject.gameobject import GameObject
 
 class RocketLaunchEvent(Event):
-	def __init__(self):
-		super().__init__(event_type='rocket_launch')
-
 	def __eq__(self, other):
-		return self.event_type == other.event_type
+		return isinstance(other, self.__class__)
 
 class RocketCruiseEvent(Event):
 	def __init__(self, distance):
-		super().__init__(event_type='rocket_cruise')
 		self.distance = distance
 
 	def __eq__(self, other):
 		return (
-			other.event_type == self.event_type and
+			isinstance(other, self.__class__) and
 			other.distance == self.distance
 		)
 
 class RocketArriveEvent(Event):
-	def __init__(self):
-		super().__init__(event_type='rocket_arrive')
-
 	def __eq__(self, other):
-		return self.event_type == other.event_type
+		return isinstance(other, self.__class__)
 
 class Rocket(GameObject, Listener):
 	"""
@@ -43,14 +36,14 @@ class Rocket(GameObject, Listener):
 
 	def __init__(self, game_mgr=None):
 		super().__init__(game_mgr=game_mgr)
-		self.evt_mgr.sub('rocket_launch', self)
-		self.evt_mgr.sub('rocket_arrive', self)
+		self.evt_mgr.sub('RocketLaunchEvent', self)
+		self.evt_mgr.sub('RocketArriveEvent', self)
 
 	def update(self, event: Event):
 		event_type = event.event_type
-		if event_type == 'rocket_launch':
+		if event_type == 'RocketLaunchEvent':
 			self.in_transit = True
-		if event_type == 'rocket_arrive':
+		if event_type == 'RocketArriveEvent':
 			self.in_transit = False
 
 	def tick(self, dt, utc):
@@ -77,12 +70,12 @@ class Moon(GameObject, Listener):
 
 	def __init__(self, game_mgr=None):
 		super().__init__(game_mgr=game_mgr)
-		self.evt_mgr.sub('rocket_cruise', self)
+		self.evt_mgr.sub('RocketCruiseEvent', self)
 
 	def update(self, event: Event):
 		event_type = event.event_type
 		distance = event.distance
-		if event_type == 'rocket_cruise' and distance == 10:
+		if event_type == 'RocketCruiseEvent' and distance == 10:
 			self.evt_mgr.pub(RocketArriveEvent())
 
 class OmniListener(Listener):
@@ -91,6 +84,6 @@ class OmniListener(Listener):
 
 	def __init__(self, evt_mgr):
 		self.evt_mgr = evt_mgr
-		self.evt_mgr.sub('rocket_launch', self)
-		self.evt_mgr.sub('rocket_cruise', self)
-		self.evt_mgr.sub('rocket_arrive', self)
+		self.evt_mgr.sub('RocketLaunchEvent', self)
+		self.evt_mgr.sub('RocketCruiseEvent', self)
+		self.evt_mgr.sub('RocketArriveEvent', self)

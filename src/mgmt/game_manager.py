@@ -57,12 +57,12 @@ class GameManager(Listener):
 		self.ctrl = Control(self, on_quit=self.on_quit, clickmap=self.clickmap)
 
 	def _subscribe_to_events(self):
-		self.evt_mgr.sub("gui.superevent.show", self)
+		self.evt_mgr.sub("ShowSupereventEvent", self)
 
 	def update(self, event):
 		# TODO(jm) - this really should be in the gui manager instead of the
 		# game manager.
-		if event.event_type == "gui.superevent.show":
+		if event.event_type == 'ShowSupereventEvent':
 			event.make_superevent()
 
 	def tick(self, dt: float):

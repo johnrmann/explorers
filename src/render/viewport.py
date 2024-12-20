@@ -1,10 +1,9 @@
 import math
 
 from src.ctrl.event_id import (
-	EVENT_CAMERA_MOVE,
-	EVENT_CAMERA_ZOOM,
-	EVENT_CAMERA_ROTATE,
-	EVENT_MOUSE_CLICK_WORLD
+	CameraMoveEvent,
+	CameraZoomEvent,
+	CameraRotateEvent,
 )
 
 from src.math.direction import (
@@ -19,7 +18,6 @@ from src.math.direction import (
 )
 from src.math.vector2 import vector2_rotate_point
 from src.mgmt.listener import Listener
-from src.gameobject.actor import MoveActorEvent
 from src.rendermath.cell import cell_position_on_global_screen
 from src.rendermath.terrain import TERRAIN_STEPS_PER_CELL
 
@@ -68,10 +66,9 @@ class Viewport(Listener):
 		self.terrain_z = self.tile_z / TERRAIN_STEPS_PER_CELL
 
 	def _subscribe_to_events(self):
-		self.evt_mgr.sub(EVENT_CAMERA_MOVE, self)
-		self.evt_mgr.sub(EVENT_CAMERA_ZOOM, self)
-		self.evt_mgr.sub(EVENT_CAMERA_ROTATE, self)
-		self.evt_mgr.sub(EVENT_MOUSE_CLICK_WORLD, self)
+		self.evt_mgr.sub('CameraMoveEvent', self)
+		self.evt_mgr.sub('CameraZoomEvent', self)
+		self.evt_mgr.sub('CameraRotateEvent', self)
 
 	@property
 	def camera_pos(self):
@@ -95,11 +92,11 @@ class Viewport(Listener):
 		self._subscribe_to_events()
 
 	def update(self, event):
-		if event.event_type == EVENT_CAMERA_MOVE:
+		if isinstance(event, CameraMoveEvent):
 			self.move_camera(event.direction)
-		elif event.event_type == EVENT_CAMERA_ZOOM:
+		elif isinstance(event, CameraZoomEvent):
 			self.change_zoom(event.delta)
-		elif event.event_type == EVENT_CAMERA_ROTATE:
+		elif isinstance(event, CameraRotateEvent):
 			self.rotate_camera(event.delta)
 
 	def change_zoom(self, delta):
