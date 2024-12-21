@@ -45,6 +45,18 @@ class GameObject:
 		sx, sy, _ = self.size
 		return (x + (sx / 2), y + (sy / 2))
 
+	def on_init(self):
+		"""
+		Called when the object is added to the game manager.
+		"""
+		pass
+
+	def on_remove(self):
+		"""
+		Called when the object is removed from the game world.
+		"""
+		pass
+
 	def x_range(self):
 		"""
 		The x-range this object occupies.

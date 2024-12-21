@@ -115,4 +115,15 @@ class GameManager(Listener):
 		return new_character
 
 	def add_game_object(self, go: GameObject):
+		"""
+		Adds the given game object to the world.
+		"""
 		self.game_objects.add(go)
+		go.on_init()
+
+	def remove_game_object(self, go: GameObject):
+		"""
+		Removes the given game object from the world.
+		"""
+		self.game_objects.remove(go)
+		go.on_remove()

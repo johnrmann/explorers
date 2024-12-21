@@ -1,12 +1,12 @@
 import unittest
 
+from unittest.mock import MagicMock, Mock
+
 from src.world.terrain import Terrain
 from src.world.world import World
 from src.render.viewport import Viewport
 
 from src.mgmt.game_manager import GameManager
-
-from unittest.mock import MagicMock, call
 
 class GameManagerTest(unittest.TestCase):
 	def setUp(self):
@@ -67,6 +67,39 @@ class GameManagerTest(unittest.TestCase):
 		gm.world.evolve = MagicMock()
 		gm.tick(2)
 		gm.world.evolve.assert_called_once_with(2)
+
+	def test__add_game_object__calls_init(self):
+		"""Test that add_game_object calls the object's init method."""
+		gm = GameManager(self.world, self.viewport)
+		obj = MagicMock()
+		obj.on_init = Mock()
+		gm.add_game_object(obj)
+		obj.on_init.assert_called_once()
+
+	def test__add_game_object__adds_game_object(self):
+		"""Test that add_game_object adds the object to the game_objects set."""
+		gm = GameManager(self.world, self.viewport)
+		obj = MagicMock()
+		gm.add_game_object(obj)
+		self.assertIn(obj, gm.game_objects)
+
+	def test__remove_game_object__calls_remove(self):
+		"""Test that remove_game_object calls the object's remove method."""
+		gm = GameManager(self.world, self.viewport)
+		obj = MagicMock()
+		obj.on_remove = Mock()
+		gm.add_game_object(obj)
+		gm.remove_game_object(obj)
+		obj.on_remove.assert_called_once()
+
+	def test__remove_game_object__removes_game_object(self):
+		"""Test that remove_game_object removes the object from the game_objects
+		set."""
+		gm = GameManager(self.world, self.viewport)
+		obj = MagicMock()
+		gm.add_game_object(obj)
+		gm.remove_game_object(obj)
+		self.assertNotIn(obj, gm.game_objects)
 
 if __name__ == "__main__":
 	unittest.main()
