@@ -10,6 +10,12 @@ import math
 
 from enum import Enum
 
+from src.utility.habitability import (
+	temperature_habitability,
+	pressure_habitability,
+	HabitabilityFactor,
+)
+
 class AtmosphereElement(Enum):
 	OXYGEN = 0
 	NITROGEN = 1
@@ -235,3 +241,16 @@ class Atmosphere:
 		tpr_eff = self.tpr_effective()
 		gh = greenhouse_factor(self.average)
 		return tpr_eff * gh
+
+	def habitability(self):
+		"""
+		Returns a dictionary of the habitability factors of the atmosphere.
+		"""
+		return {
+			HabitabilityFactor.TEMPERATURE: temperature_habitability(
+				self.tpr_surface()
+			),
+			HabitabilityFactor.PRESSURE: pressure_habitability(
+				self.density()
+			),
+		}

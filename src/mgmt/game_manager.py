@@ -40,6 +40,7 @@ class GameManager(Listener):
 		self.utc = 0.0
 		self.game_objects = set()
 		self.world = world
+		self.world.game_mgr = self
 		self.vp = viewport
 		self.on_quit = on_quit
 		self.selected_actors = {}

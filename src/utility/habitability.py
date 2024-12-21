@@ -5,6 +5,20 @@ key factor in winning the game.
 
 import math
 
+from enum import Enum
+
+class HabitabilityFactor(Enum):
+	"""
+	Programmer-readable names for the factors that go into the habitability
+	index.
+	"""
+
+	TOTAL = 0
+
+	TEMPERATURE = 1
+	PRESSURE = 2
+	WATER = 3
+
 def habitability_index(*factors):
 	"""
 	The habitability index is defined as PRODUCT(sqrt(factors)), where each

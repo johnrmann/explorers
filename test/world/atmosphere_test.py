@@ -1,5 +1,7 @@
 import unittest
 
+from src.utility.habitability import HabitabilityFactor
+
 from src.world.atmosphere import (
 	Atmosphere, AtmosphereElement, EARTH_ATMOSPEHRE_AVG_COMPOSITION,
 	greenhouse_factor,
@@ -126,6 +128,15 @@ class AtmosphereTest(unittest.TestCase):
 		self.basic.change_delta(AtmosphereElement.CARBON, -2000)
 		self.basic.evolve()
 		self.assertEqual(self.basic.average[AtmosphereElement.CARBON], 0)
+
+	def test__habitability__earth(self):
+		hab = self.earth.habitability()
+		self.assertAlmostEqual(
+			hab[HabitabilityFactor.TEMPERATURE], 0.63625, places=4
+		)
+		self.assertAlmostEqual(
+			hab[HabitabilityFactor.PRESSURE], 1.0, places=4
+		)
 
 if __name__ == '__main__':
 	unittest.main()
