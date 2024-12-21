@@ -46,6 +46,6 @@ class Rangebar(GuiElement):
 			draw_w = f * w
 			pygame.draw.rect(screen, color, pygame.Rect(x, y, draw_w, h))
 
-	def _draw(self, screen):
+	def my_draw(self, screen):
 		self._draw_background(screen)
 		self._draw_layers(screen)

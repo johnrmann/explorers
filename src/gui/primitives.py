@@ -34,7 +34,7 @@ class Button(GuiElement):
 			h - (BUTTON_CHROME * 2)
 		)
 
-	def _draw(self, screen):
+	def my_draw(self, screen):
 		pygame.draw.rect(screen, (0, 255, 255), self.pygame_rect)
 		pygame.draw.rect(screen, (0, 0, 255), self._inner_pygame_rect)
 		font = pygame.font.Font(None, 24)
@@ -61,7 +61,7 @@ class Label(GuiElement):
 		super().__init__(**kwargs)
 		self.text = text
 
-	def _draw(self, screen):
+	def my_draw(self, screen):
 		font = pygame.font.Font(None, 24)
 		text_surface = font.render(self.text, True, (255, 255, 255))
 		text_rect = text_surface.get_rect(center=self.pygame_rect.center)
@@ -73,7 +73,7 @@ class Panel(GuiElement):
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
 
-	def _draw(self, screen):
+	def my_draw(self, screen):
 		pygame.draw.rect(screen, (0, 0, 255), self.pygame_rect)
 
 class TextBox(GuiElement):
@@ -85,7 +85,7 @@ class TextBox(GuiElement):
 		super().__init__(**kwargs)
 		self.text = text
 
-	def _draw(self, screen):
+	def my_draw(self, screen):
 		# Starting from the top of the pygame_rect, draw lines of text from
 		# _text such that they all fit in the bounding box.
 		font = pygame.font.Font(None, 24)
@@ -108,7 +108,7 @@ class Image(GuiElement):
 		else:
 			self.image_surface = image
 
-	def _draw(self, screen):
+	def my_draw(self, screen):
 		transformed_image = pygame.transform.scale(
 			self.image_surface,
 			self.dimensions

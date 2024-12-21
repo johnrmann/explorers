@@ -112,7 +112,7 @@ class GuiElementTest(unittest.TestCase):
 
 	def test__process_event__if_no_children2(self):
 		parent = Dummy(gui_mgr=self.gui_mgr)
-		parent.do_process_event = lambda _: True
+		parent.my_process_event = lambda _: True
 		self.assertTrue(parent.process_event(Mock()))
 
 	def test__process_event__calls_children(self):
@@ -141,6 +141,35 @@ class GuiElementTest(unittest.TestCase):
 		parent.process_event(Mock())
 		self.assertEqual(child1.process_event.call_count, 0)
 		self.assertEqual(child2.process_event.call_count, 0)
+
+	def test__update__updates_children(self):
+		parent = Dummy(gui_mgr=self.gui_mgr)
+		child = Dummy(gui_mgr=self.gui_mgr, parent=parent)
+		parent.my_update = Mock()
+		child.update = Mock()
+		parent.update(1)
+		self.assertEqual(parent.my_update.call_count, 1)
+		self.assertEqual(child.update.call_count, 1)
+
+	def test__update__skips_hidden_children(self):
+		parent = Dummy(gui_mgr=self.gui_mgr)
+		child1 = Dummy(gui_mgr=self.gui_mgr, parent=parent, hidden=True)
+		child1.update = Mock()
+		child2 = Dummy(gui_mgr=self.gui_mgr, parent=parent)
+		child2.update = Mock()
+		parent.update(1)
+		self.assertEqual(child1.update.call_count, 0)
+		self.assertEqual(child2.update.call_count, 1)
+
+	def test__update__skips_all_children_if_hidden(self):
+		parent = Dummy(gui_mgr=self.gui_mgr, hidden=True)
+		child1 = Dummy(gui_mgr=self.gui_mgr, parent=parent)
+		child1.update = Mock()
+		child2 = Dummy(gui_mgr=self.gui_mgr, parent=parent)
+		child2.update = Mock()
+		parent.update(1)
+		self.assertEqual(child1.update.call_count, 0)
+		self.assertEqual(child2.update.call_count, 0)
 
 if __name__ == '__main__':
 	unittest.main()

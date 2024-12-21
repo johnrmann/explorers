@@ -85,7 +85,7 @@ class ActorMotivesGui(GuiElement):
 				rect=((0, 0), (LABEL_WIDTH, SPACER_HEIGHT))
 			)
 
-	def update(self, dt: float):
+	def my_update(self, dt: float):
 		if self._get_motives:
 			self.motives = self._get_motives()
 		for mkey in ActorMotive:

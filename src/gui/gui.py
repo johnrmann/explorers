@@ -169,15 +169,25 @@ class GuiElement:
 		for child in self.elements:
 			if not child.hidden and child.process_event(event):
 				return True
-		return self.do_process_event(event)
+		return self.my_process_event(event)
 
-	def do_process_event(self, event):
+	def my_process_event(self, event):
 		"""Processes the event for this element."""
 		return False
 
+	@final
 	def update(self, dt: float):
 		"""Updates the GUI element."""
-		pass
+		if self.hidden:
+			return
+		self.my_update(dt)
+		for elem in self.elements:
+			if not elem.hidden:
+				elem.update(dt)
+
+	def my_update(self, dt: float):
+		"""Updates the GUI element."""
+		return
 
 	@final
 	def draw(self, screen):
@@ -187,11 +197,11 @@ class GuiElement:
 		"""
 		if self.hidden:
 			return
-		self._draw(screen)
+		self.my_draw(screen)
 		for elem in self.elements:
 			if not elem.hidden:
 				elem.draw(screen)
 
-	def _draw(self, screen):
+	def my_draw(self, screen):
 		"""Draws the element on the screen."""
 		return

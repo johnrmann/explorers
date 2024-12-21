@@ -59,7 +59,7 @@ class MiniMap(GuiElement):
 			width=1
 		)
 
-	def _draw(self, screen):
+	def my_draw(self, screen):
 		self._draw_surface = self._surface.copy()
 		self._draw_viewport()
 		screen.blit(self._draw_surface, self.pygame_rect)

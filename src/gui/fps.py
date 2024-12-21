@@ -14,7 +14,7 @@ class FpsCounter(GuiElement):
 		self.label = Label(rect=((0,0), (100,30)), parent=self.panel, text="00")
 		self.clock = pygame.time.Clock()
 
-	def update(self, dt):
+	def my_update(self, dt):
 		fps = self.clock.get_fps()
 		self.label.text = f"FPS: {int(fps)}"
 		self.clock.tick()
