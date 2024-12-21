@@ -18,7 +18,7 @@ from src.gui.superevent import superevent_from_json
 from src.gui.fps import FpsCounter
 from src.gui.rangebar import Rangebar
 from src.gui.actor_motives import ActorMotivesGui
-from src.gui.minimap import MiniMap
+from src.gui.playbar import Playbar
 
 flags = pygame.DOUBLEBUF
 
@@ -114,17 +114,8 @@ def main():
 
 	mission_clock = MissionClock()
 	fps = FpsCounter()
-	motives_gui = ActorMotivesGui(
-		get_motives=lambda: game.player_character.motives,
-		origin=(0, 0),
-		anchor=Anchor.BOTTOM_LEFT,
-	)
-	minimap = MiniMap(
-		origin=(0, 0),
-		dimensions=(400, 200),
-		anchor=Anchor.BOTTOM_RIGHT,
-		world=game.world,
-		viewport=game.renderer.vp,
+	playbar = Playbar(
+		game,
 	)
 
 	while running:

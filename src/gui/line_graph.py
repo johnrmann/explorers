@@ -63,13 +63,11 @@ class LineGraph(GuiElement):
 
 	def __init__(
 		self,
-		origin=None,
-		dimensions=None,
-		parent=None,
 		series=None,
 		colors=None,
+		**kwargs
 	):
-		super().__init__(origin=origin, dimensions=dimensions, parent=parent)
+		super().__init__(**kwargs)
 		self.series = series
 		self.colors = colors
 		self.background_color = (0, 0, 0)
