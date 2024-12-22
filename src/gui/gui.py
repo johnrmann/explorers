@@ -201,7 +201,15 @@ class GuiElement:
 		for elem in self.elements:
 			if not elem.hidden:
 				elem.draw(screen)
+		self.my_after_draw(screen)
 
 	def my_draw(self, screen):
 		"""Draws the element on the screen."""
+		return
+
+	def my_after_draw(self, screen):
+		"""
+		Called after drawing the element AND all of its children. Useful
+		for drawing things like window tints or scanlines.
+		"""
 		return

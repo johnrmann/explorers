@@ -8,6 +8,7 @@ from src.gui.anchor import Anchor
 from src.gui.minimap import MiniMap
 from src.gui.actor_motives import ActorMotivesGui
 from src.gui.line_graph import LineGraph
+from src.gui.scanline import Scanline
 
 class PlaybarMode(Enum):
 	"""
@@ -97,14 +98,20 @@ class Playbar(GuiElement):
 		return set([motives, minimap])
 
 	def _make_planet_mode(self):
+		scanline = Scanline(
+			origin=(0, 0),
+			parent=self,
+			start_color=(0, 255, 0, 0),
+			end_color=(0, 255, 0, 100),
+		)
 		line_graph = LineGraph(
 			origin=(0, 0),
 			dimensions=(300, 200),
-			parent=self,
+			parent=scanline,
 			series=[list([x**2 for x in range(10)])],
 			colors=[(255, 0, 0)],
 		)
-		return set([line_graph])
+		return set([scanline])
 
 	def _make_build_mode(self):
 		return set()
