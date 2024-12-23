@@ -1,12 +1,9 @@
 import pygame
 
-from functools import lru_cache
-
 from src.math.line import extrude_line_segment_y
-from src.math.vector2 import (
-	vector2_bounding_rect,
-	vector2_move_points_near_zero
-)
+
+from src.render.multisurface import MultiSurface
+
 from src.rendermath.terrain import terrain_step_z_for_tile_width
 from src.rendermath.tile import tile_polygon
 from src.render.viewport import ZOOMS
@@ -40,11 +37,10 @@ class TileSurfaceCache:
 	for faster rendering.
 	"""
 
-	tile_cache = {}
-
-	left_ridge_cache = {}
-	right_ridge_cache = {}
-	both_ridge_cache = {}
+	tile_multisurface: MultiSurface
+	left_ridge_multisurface: MultiSurface
+	right_ridge_multisurface: MultiSurface
+	both_ridge_multisurface: MultiSurface
 
 	_jut = None
 
@@ -54,8 +50,10 @@ class TileSurfaceCache:
 		if zooms is None:
 			zooms = ZOOMS
 		self.zooms = zooms
-		self._init_tile_cache()
-		self._init_ridge_caches()
+		self.tile_multisurface = self._make_tile_multisurface()
+		self.left_ridge_multisurface = self._make_tile_multisurface(left_ridge=True)
+		self.right_ridge_multisurface = self._make_tile_multisurface(right_ridge=True)
+		self.both_ridge_multisurface = self._make_tile_multisurface(left_ridge=True, right_ridge=True)
 		self._init_jut()
 
 	def _make_tile_and_surface(self, w):
@@ -73,34 +71,34 @@ class TileSurfaceCache:
 
 		return tile, surface
 
-	def _init_tile_cache(self):
-		for zoom in self.zooms:
-			_, surface = self._make_tile_and_surface(zoom)
-			self.tile_cache[zoom] = surface
-
-	def _init_ridge_caches(self):
-		for zoom in self.zooms:
-			tile, both = self._make_tile_and_surface(zoom)
-			_, left = self._make_tile_and_surface(zoom)
-			_, right = self._make_tile_and_surface(zoom)
+	def _make_tile_multisurface(self, left_ridge=False, right_ridge=False):
+		tilesurfs = [
+			self._make_tile_and_surface(zoom) + (zoom,)
+			for zoom in self.zooms
+		]
+		for tile, surface, zoom in tilesurfs:
 			tile_top, tile_right, _, tile_left = tile
-			pygame.draw.line(left, WALL_COLOR_1, tile_left, tile_top)
-			pygame.draw.line(both, WALL_COLOR_1, tile_left, tile_top)
-			pygame.draw.line(right, WALL_COLOR_1, tile_top, tile_right)
-			pygame.draw.line(both, WALL_COLOR_1, tile_top, tile_right)
-			self.left_ridge_cache[zoom] = left
-			self.right_ridge_cache[zoom] = right
-			self.both_ridge_cache[zoom] = both
+			if left_ridge:
+				pygame.draw.line(surface, WALL_COLOR_1, tile_left, tile_top)
+			if right_ridge:
+				pygame.draw.line(surface, WALL_COLOR_1, tile_top, tile_right)
+		zoomed_surfaces = {
+			zoom: surface
+			for _, surface, zoom in tilesurfs
+		}
+		return MultiSurface(
+			zoomed_surfaces=zoomed_surfaces,
+		)
 
 	def _init_jut(self):
 		self._jut = {
-			NO_RIDGES: self.tile_cache,
-			LEFT_RIDGE: self.left_ridge_cache,
-			RIGHT_RIDGE: self.right_ridge_cache,
-			BOTH_RIDGES: self.both_ridge_cache
+			NO_RIDGES: self.tile_multisurface,
+			LEFT_RIDGE: self.left_ridge_multisurface,
+			RIGHT_RIDGE: self.right_ridge_multisurface,
+			BOTH_RIDGES: self.both_ridge_multisurface
 		}
 
-	def tile_surface_and_position(self, screen_p, zoom, ridges=None):
+	def tile_surface_and_position(self, screen_p, zoom, ridges=None, light=None):
 		"""
 		Given a position on the screen that is the center of the tile we want
 		to draw and the zoom factor, return the tile surface and blit position
@@ -109,7 +107,8 @@ class TileSurfaceCache:
 		idx = int(zoom)
 		if ridges is None:
 			ridges = NO_RIDGES
-		surface = self._jut[ridges][idx]
+		sub_cache = self._jut[ridges]
+		surface = sub_cache.get(idx, light=light)
 		position = tile_screen_draw_position(screen_p, zoom)
 		return surface, position
 

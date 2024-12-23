@@ -8,6 +8,8 @@ DEFAULT_LIGHT_LEVEL = 1.0
 
 DEFAULT_ZOOM_FACTOR = 1.0
 
+LIGHT_LEVELS = [(0.3 + (0.1 * i)) for i in range(8)]
+
 class MultiSurface:
 	"""
 	Give this class a surface and it will...
@@ -31,6 +33,7 @@ class MultiSurface:
 	_light_levels: list[float]
 
 	_using_light: bool = False
+	_default_light: float = DEFAULT_LIGHT_LEVEL
 
 	def __init__(
 			self,
@@ -39,7 +42,7 @@ class MultiSurface:
 			# Interface 2
 			zoomed_surfaces=None,
 			# Optional
-			lights=None,
+			lights=LIGHT_LEVELS,
 			alpha_color=None
 	):
 		"""
@@ -54,6 +57,7 @@ class MultiSurface:
 			lights = [DEFAULT_LIGHT_LEVEL]
 		else:
 			self._using_light = True
+			self._default_light = lights[-1]
 
 		if surface is not None and zoom_factors is not None:
 			self._init_from_surface(surface, zoom_factors, lights, alpha_color)
@@ -96,7 +100,7 @@ class MultiSurface:
 		Get the surface for the given zoom and light level.
 		"""
 		if not self._using_light or light is None:
-			return self._cache[zoom][DEFAULT_LIGHT_LEVEL]
+			return self._cache[zoom][self._default_light]
 		closest_light = min(
 			self._light_levels,
 			key=lambda x: abs(x - light)

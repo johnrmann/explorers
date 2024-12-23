@@ -1,11 +1,13 @@
 import pygame
 
+from src.math.map_range import map_range
+
 from src.rendermath.order import cells_in_draw_order
 from src.rendermath.draw_graph import DrawGraph
 
 from src.world.world import World
 
-from src.render.multisurface import MultiSurface
+from src.render.multisurface import MultiSurface, LIGHT_LEVELS
 from src.render.viewport import Viewport
 from src.render.render_terrain import RenderTerrain
 from src.render.render_gameobject import render_gameobject
@@ -36,7 +38,8 @@ class Render(object):
 			multisurface = MultiSurface(
 				surface,
 				alpha_color=(255, 255, 255, 255),
-				zoom_factors=[1.0]
+				zoom_factors=[1.0],
+				lights=LIGHT_LEVELS
 			)
 			self.images[path] = multisurface
 
@@ -57,12 +60,12 @@ class Render(object):
 				return go
 		return None
 
-	def _render_game_object(self, gobj, drawn_cells):
+	def _render_game_object(self, gobj, drawn_cells, light=None):
 		# First, render all terrain tiles below the gobj.
 		for p in gobj.cells_occupied(self.vp.camera_orientation):
 			if p in drawn_cells:
 				continue
-			self.render_terrain.render_tile(p)
+			self.render_terrain.render_tile(p, light=light)
 			drawn_cells.add(p)
 		x, y = gobj.pos
 		h = self.world.terrain.map[y][x]
@@ -73,6 +76,7 @@ class Render(object):
 			go=gobj,
 			height=h,
 			image_map=self.images,
+			light=light
 		)
 	
 	def render(self):
@@ -99,13 +103,20 @@ class Render(object):
 			x = ox + dx
 			y = oy + dy
 			p = (x, y)
+			if not 0 <= x < self.vp.terrain_width:
+				continue
+			if not 0 <= y < self.vp.terrain_height:
+				continue
 			if p in drawn:
 				continue
-			self.render_terrain.render_tile(p)
+			lat_long = self.world.terrain.lat_long(p)
+			bness = self.world.horology.brightness(self.game_mgr.utc, lat_long)
+			bness2 = map_range(bness, (0, 1), (0.3, 1))
+			self.render_terrain.render_tile(p, light=bness2)
 			drawn.add(p)
 			if p in gobj_cells:
 				go = gobj_cells[p]
 				to_draw = draw_graph.get_draws(go)
 				for draw_gobj in to_draw:
-					self._render_game_object(draw_gobj, drawn)
+					self._render_game_object(draw_gobj, drawn, light=bness2)
 					draw_graph.mark_drawn(draw_gobj)

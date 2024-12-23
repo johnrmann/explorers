@@ -16,6 +16,7 @@ def render_gameobject(
 	go: GameObject=None,
 	height = 0,
 	image_map = None,
+	light = None
 ):
 	# Easy out if the gameobject is hidden
 	if go.hidden:
@@ -30,7 +31,7 @@ def render_gameobject(
 	# Now, move up by height to find the terrain start point.
 	tile = height_offset_tile(cell_polygon, height / 8, vp)
 	if go.image_path() in image_map:
-		img = image_map[go.image_path()].get()
+		img = image_map[go.image_path()].get(light=light)
 		alpha = image_map[go.image_path()].get_alpha()
 		origin, img_dims = fit_img_rect_on_tile_base(img.get_size(), tile)
 		window.blit(

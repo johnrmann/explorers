@@ -6,7 +6,6 @@ from src.world.world import World
 from src.world.terrain import Terrain
 from src.render.viewport import ZOOMS, Viewport
 from src.render.utils import *
-from src.math.map_range import map_range
 from src.math.direction import *
 from src.rendermath.tile import tile_polygon, is_point_in_tile, is_tile_in_screen
 from src.rendermath.order import offset_tile_by_draw_order_vector
@@ -91,22 +90,19 @@ class RenderTerrain(object):
 		right = self.terrain.height_delta(cell_p, self.vp.right_ridge_direction)
 		return (left, right)
 
-	def render_tile(self, cell_p):
+	def render_tile(self, cell_p, light=1):
 		x, y = cell_p
 		if x < 0 or y < 0:
 			return
 		if x >= self.vp.terrain_width or y >= self.vp.terrain_height:
 			return
-		lat_long = self.terrain.lat_long(cell_p)
-		bness = self.world.horology.brightness(self.game_mgr.utc, lat_long)
-		bness2 = map_range(bness, (0, 1), (0.2, 1))
 
 		screen_p = self.tile_top_screen_coords(cell_p)
 		zoom = self.vp.tile_width
 
 		ridges = self._ridge_draws[y][x][self.vp.camera_orientation]
 		tile_surface, tile_pos = self.tile_cache.tile_surface_and_position(
-			screen_p, zoom, ridges
+			screen_p, zoom, ridges, light
 		)
 		self.window.blit(tile_surface, tile_surface.get_rect(topleft=tile_pos))
 

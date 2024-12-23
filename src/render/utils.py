@@ -35,11 +35,13 @@ def scale_color(color, k):
 	else:
 		raise ValueError("Color must be a 3-tuple or 4-tuple.")
 
-def alpha_mask_from_surface(surface, fill_color=(255, 255, 255, 255)):
+def alpha_mask_from_surface(surface, fill_color=None):
 	"""
 	Returns a copy of the given surface such that all non-transparent pixels
 	are the given color (default opaque white).
 	"""
+	if fill_color is None:
+		fill_color = (255, 255, 255, 255)
 	if len(fill_color) != 4:
 		raise ValueError("Fill color must be a 4-tuple.")
 	if fill_color[3] != 255:
