@@ -81,30 +81,10 @@ class Horology(object):
 	equinox (easy for calculations!).
 	"""
 
-	minutes_in_day: int
-	days_in_year: int
-	tilt_deg: float
+	ticks_in_cycle = 0
 
-	def __init__(
-		self,
-		minutes_in_day = EARTH_DAY_LENGTH,
-		days_in_year = EARTH_YEAR_LENGTH,
-		tilt_deg = None,
-		tilt_rad = None,
-	):
-		if tilt_deg is not None and tilt_rad is not None:
-			raise AttributeError(CONTRA_ARG_MSG)
-		elif tilt_rad is not None:
-			self.tilt_deg = math.degrees(tilt_rad)
-		elif tilt_deg is not None:
-			self.tilt_deg = tilt_deg
-		else:
-			self.tilt_deg = EARTH_TILT
-		self.minutes_in_day = minutes_in_day
-		self.days_in_year = days_in_year
-		# Computed properties.
-		self.tilt_rad = math.radians(self.tilt_deg)
-		self.minutes_in_year = self.minutes_in_day * self.days_in_year
+	def __init__(self, ticks_in_cycle = EARTH_YEAR_LENGTH):
+		self.ticks_in_cycle = ticks_in_cycle
 
 	@lru_cache(maxsize=5)
 	def utc_to_planet_calendar(self, utc: float):
@@ -112,21 +92,10 @@ class Horology(object):
 		Converts UTC time to a date in the planet's calendar,
 		as a (minute, day, year) tuple.
 		"""
-		minute = utc % self.minutes_in_day
-		day = (utc // self.minutes_in_day) % self.days_in_year
-		year = utc // self.minutes_in_year
-		return (minute, day, year)
+		tick = utc % self.ticks_in_cycle
+		year = utc // self.ticks_in_cycle
+		return (tick, year)
 
-	@lru_cache(maxsize=5)
-	def utc_to_planet_time_fracs(self, utc: float):
-		"""
-		Returns a tuple of fractions (0-0.999, 0-0.999) representing
-		how far along we are in the (day, year). Very useful for sun
-		angle calculations.
-		"""
-		minute, day, _ = self.utc_to_planet_calendar(utc)
-		return (minute / self.minutes_in_day, day / self.days_in_year)
-	
 	def local_time_at_longitude(self, utc: float, longitude: float) -> float:
 		"""
 		Returns a fraction between 0 and 0.99999... of the "local time"
@@ -134,34 +103,26 @@ class Horology(object):
 		(where longitude is a fraction, where 0 is on the prime meridian and
 		+/-1 is on the international dateline).
 		"""
-		frac_day, _ = self.utc_to_planet_time_fracs(utc)
+		frac_day = (utc % self.ticks_in_cycle) / self.ticks_in_cycle
 		adj_day = frac_day + (longitude / 2)
 		if adj_day < 0:
 			return 1 + adj_day
 		return adj_day
 
-	def _brightness(self, local_time: float, f_year: float, lat: float):
-		solar_noon_offset = 0.5 * math.sin(f_year * 2 * math.pi)
-		solar_noon_offset *= math.sin(self.tilt_rad)
-		solar_noon_offset *= lat
-
-		adj_time = (local_time - solar_noon_offset) % 1.0
-		day_night_factor = math.cos(adj_time * 2 * math.pi)
-		seasonal_factor = math.cos(f_year * 2 * math.pi) * math.sin(self.tilt_rad) * lat
-
-		return max(0, min(1, 0.5 + (0.5 * (day_night_factor + seasonal_factor))))
-
 	def brightness(self, utc: float, lat_long):
 		"""
 		Calculates how bright it is at the given UTC and planet coordinates.
 		"""
-		lat, long = lat_long
-		_, f_year = self.utc_to_planet_time_fracs(utc)
+		_, long = lat_long
 		local = self.local_time_at_longitude(utc, long)
-		return self._brightness(local, f_year, lat)
+		if local <= 0.25 or local >= 0.75:
+			return 1
+		if 0.70 <= local <= 0.75:
+			return 0.5
+		if 0.25 <= local <= 0.30:
+			return 0.5
+		return 0
 
 CENTURIA = Horology(
-	minutes_in_day=100,
-	days_in_year=12,
-	tilt_deg=0,
+	ticks_in_cycle=100,
 )
