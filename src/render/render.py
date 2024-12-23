@@ -111,12 +111,11 @@ class Render(object):
 				continue
 			lat_long = self.world.terrain.lat_long(p)
 			bness = self.world.horology.brightness(self.game_mgr.utc, lat_long)
-			bness2 = map_range(bness, (0, 1), (0.3, 1))
-			self.render_terrain.render_tile(p, light=bness2)
+			self.render_terrain.render_tile(p, light=bness)
 			drawn.add(p)
 			if p in gobj_cells:
 				go = gobj_cells[p]
 				to_draw = draw_graph.get_draws(go)
 				for draw_gobj in to_draw:
-					self._render_game_object(draw_gobj, drawn, light=bness2)
+					self._render_game_object(draw_gobj, drawn, light=bness)
 					draw_graph.mark_drawn(draw_gobj)

@@ -90,7 +90,7 @@ class RenderTerrain(object):
 		right = self.terrain.height_delta(cell_p, self.vp.right_ridge_direction)
 		return (left, right)
 
-	def render_tile(self, cell_p, light=1):
+	def render_tile(self, cell_p, light=7):
 		x, y = cell_p
 		if x < 0 or y < 0:
 			return

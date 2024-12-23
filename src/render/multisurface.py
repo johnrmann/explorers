@@ -8,7 +8,13 @@ DEFAULT_LIGHT_LEVEL = 1.0
 
 DEFAULT_ZOOM_FACTOR = 1.0
 
-LIGHT_LEVELS = [(0.3 + (0.1 * i)) for i in range(8)]
+NUM_LIGHT_LEVELS = 8
+LIGHT_LEVELS = [
+	0.3 + (0.1 * i) for i in range(NUM_LIGHT_LEVELS - 1)
+] + [1.0]
+
+MIN_LIGHT_LEVEL_IDX = 0
+MAX_LIGHT_LEVEL_IDX = NUM_LIGHT_LEVELS - 1
 
 class MultiSurface:
 	"""
@@ -79,8 +85,8 @@ class MultiSurface:
 			self._cache[zoom] = {}
 			mask = alpha_mask_from_surface(zoomed, alpha_color)
 			self._alpha_cache[zoom] = mask
-			for light in lights:
-				self._cache[zoom][light] = relight_surface(zoomed, light)
+			for idx, light in enumerate(lights):
+				self._cache[zoom][idx] = relight_surface(zoomed, light)
 
 	def _init_from_zoomed_surfaces(self, zoomed_surfaces, lights, alpha_color):
 		"""
@@ -92,20 +98,28 @@ class MultiSurface:
 			self._cache[zoom] = {}
 			mask = alpha_mask_from_surface(surface, alpha_color)
 			self._alpha_cache[zoom] = mask
-			for light in lights:
-				self._cache[zoom][light] = relight_surface(surface, light)
+			for idx, light in enumerate(lights):
+				self._cache[zoom][idx] = relight_surface(surface, light)
 
 	def get(self, zoom=DEFAULT_ZOOM_FACTOR, light=None):
 		"""
-		Get the surface for the given zoom and light level.
+		Get the surface for the given zoom and light index.
 		"""
 		if not self._using_light or light is None:
 			return self._cache[zoom][self._default_light]
-		closest_light = min(
-			self._light_levels,
-			key=lambda x: abs(x - light)
+		return self._cache[zoom][light]
+
+	def get_by_light_level(self, zoom=DEFAULT_ZOOM_FACTOR, light_level=1.0):
+		"""
+		This is an alternate implementation of .get() where the light level
+		value is known but the index key is not. Try to avoid this as it's
+		much slower!
+		"""
+		closest_idx = min(
+			range(len(self._light_levels)),
+			key=lambda i: abs(self._light_levels[i] - light_level)
 		)
-		return self._cache[zoom][closest_light]
+		return self._cache[zoom][closest_idx]
 
 	def get_alpha(self, zoom=DEFAULT_ZOOM_FACTOR):
 		"""

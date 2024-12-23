@@ -36,8 +36,8 @@ class TestMultiSurface(unittest.TestCase):
 			alpha_color=alpha_color
 		)
 
-		self.assertEqual(ms.get(1.0, 0.5), 'relit_resized_surface_1.0_0.5')
-		self.assertEqual(ms.get(1.0, 1.0), 'relit_resized_surface_1.0_1.0')
+		self.assertEqual(ms.get(1.0, 0), 'relit_resized_surface_1.0_0.5')
+		self.assertEqual(ms.get(1.0, 1), 'relit_resized_surface_1.0_1.0')
 		self.assertEqual(ms.get_alpha(1.0), 'alpha_resized_surface_1.0_white')
 
 	def test__init__from_zoomed_surfaces(self):
@@ -51,8 +51,8 @@ class TestMultiSurface(unittest.TestCase):
 			alpha_color=alpha_color
 		)
 
-		self.assertEqual(ms.get(1.0, 0.5), 'relit_zoomed_surface_1_0.5')
-		self.assertEqual(ms.get(1.0, 1.0), 'relit_zoomed_surface_1_1.0')
+		self.assertEqual(ms.get(1.0, 0), 'relit_zoomed_surface_1_0.5')
+		self.assertEqual(ms.get(1.0, 1), 'relit_zoomed_surface_1_1.0')
 		self.assertEqual(ms.get_alpha(1.0), 'alpha_zoomed_surface_1_white')
 
 	def test__init__invalid_args(self):
@@ -70,15 +70,15 @@ class TestMultiSurface(unittest.TestCase):
 			zoomed_surfaces={1.0: 'zoomed_surface_1'},
 			lights=[0.5, 1.0]
 		)
-		self.assertEqual(ms.get(1.0, 0.5), 'relit_zoomed_surface_1_0.5')
-		self.assertEqual(ms.get(1.0, 1.0), 'relit_zoomed_surface_1_1.0')
+		self.assertEqual(ms.get(1.0, 0), 'relit_zoomed_surface_1_0.5')
+		self.assertEqual(ms.get(1.0, 1), 'relit_zoomed_surface_1_1.0')
 
 	def test__get__no_light(self):
 		ms = MultiSurface(
 			zoomed_surfaces={1.0: 'zoomed_surface_1'},
 			lights=[0.5, 1.0]
 		)
-		self.assertEqual(ms.get(zoom=1.0), 'relit_zoomed_surface_1_1.0')
+		self.assertEqual(ms.get(1.0), 'relit_zoomed_surface_1_1.0')
 
 	def test__get__no_zoom(self):
 		ms = MultiSurface(
@@ -87,13 +87,35 @@ class TestMultiSurface(unittest.TestCase):
 		)
 		self.assertEqual(ms.get(), 'relit_zoomed_surface_1_1.0')
 
-	def test__get__nearest_light(self):
+	def test__get_by_light_level(self):
 		ms = MultiSurface(
 			zoomed_surfaces={1.0: 'zoomed_surface_1'},
 			lights=[0.5, 1.0]
 		)
-		self.assertEqual(ms.get(1.0, 0.7), 'relit_zoomed_surface_1_0.5')
-		self.assertEqual(ms.get(1.0, 0.8), 'relit_zoomed_surface_1_1.0')
+		self.assertEqual(ms.get_by_light_level(1.0, 0.5), 'relit_zoomed_surface_1_0.5')
+		self.assertEqual(ms.get_by_light_level(1.0, 1.0), 'relit_zoomed_surface_1_1.0')
+
+	def test__get_by_light_level__no_light(self):
+		ms = MultiSurface(
+			zoomed_surfaces={1.0: 'zoomed_surface_1'},
+			lights=[0.5, 1.0]
+		)
+		self.assertEqual(ms.get_by_light_level(zoom=1.0), 'relit_zoomed_surface_1_1.0')
+
+	def test__get_by_light_level__no_zoom(self):
+		ms = MultiSurface(
+			zoomed_surfaces={1.0: 'zoomed_surface_1'},
+			lights=[0.5, 1.0]
+		)
+		self.assertEqual(ms.get_by_light_level(), 'relit_zoomed_surface_1_1.0')
+
+	def test__get_by_light_level__nearest_light(self):
+		ms = MultiSurface(
+			zoomed_surfaces={1.0: 'zoomed_surface_1'},
+			lights=[0.5, 1.0]
+		)
+		self.assertEqual(ms.get_by_light_level(1.0, 0.7), 'relit_zoomed_surface_1_0.5')
+		self.assertEqual(ms.get_by_light_level(1.0, 0.8), 'relit_zoomed_surface_1_1.0')
 
 	def test__get_alpha(self):
 		ms = MultiSurface(

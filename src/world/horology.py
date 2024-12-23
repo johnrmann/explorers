@@ -116,11 +116,11 @@ class Horology(object):
 		_, long = lat_long
 		local = self.local_time_at_longitude(utc, long)
 		if local <= 0.25 or local >= 0.75:
-			return 1
+			return 7
 		if 0.70 <= local <= 0.75:
-			return 0.5
+			return 3
 		if 0.25 <= local <= 0.30:
-			return 0.5
+			return 4
 		return 0
 
 CENTURIA = Horology(
