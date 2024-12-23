@@ -115,6 +115,7 @@ class Atmosphere:
 
 	total = None
 	average = None
+	composition = None
 
 	delta = None
 
@@ -129,6 +130,7 @@ class Atmosphere:
 	):
 		self.total = {}
 		self.average = {}
+		self.composition = {}
 		self.planet_area = planet_area
 
 		self.delta = {
@@ -156,6 +158,27 @@ class Atmosphere:
 				for key, count in self.average.items()
 			}
 
+		self._recalculate_composition()
+
+	def _recalculate_composition(self):
+		moles_total = self.moles_total()
+		if moles_total == 0:
+			self.composition = {
+				key: 0
+				for key in self.total.keys()
+			}
+		else:
+			self.composition = {
+				key: count / moles_total
+				for key, count in self.total.items()
+			}
+
+	def moles_total(self):
+		"""
+		Returns the total number of moles of stuff in the atmosphere.
+		"""
+		return sum(self.total.values())
+
 	def moles_avg(self):
 		"""
 		Returns the number of moles found in the atmosphere per square.
@@ -165,14 +188,20 @@ class Atmosphere:
 			moles += count
 		return moles / self.planet_area
 
-	def density(self):
+	def total_molar_mass(self):
 		"""
-		Returns the density of the atmosphere as a multiple of Earth's.
+		Returns the total molecular mass of the atmosphere.
 		"""
 		total_molar_mass = 0
 		for key, count in self.total.items():
 			total_molar_mass += ELEMENT_MOLAR_MASS[key] * count
-		raw = total_molar_mass / self.planet_area
+		return total_molar_mass
+
+	def density(self):
+		"""
+		Returns the density of the atmosphere as a multiple of Earth's.
+		"""
+		raw = self.total_molar_mass() / self.planet_area
 		return raw / EARTH_ATMOSPHERE_DENSITY
 
 	def change_delta(self, element, count):
@@ -202,6 +231,7 @@ class Atmosphere:
 			key: subtotal / self.planet_area
 			for key, subtotal in self.total.items()
 		}
+		self._recalculate_composition()
 
 	def albedo(self):
 		"""
