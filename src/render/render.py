@@ -99,6 +99,9 @@ class Render(object):
 		ox, oy = self.vp.get_draw_origin()
 		drawn = set()
 
+		brightness_for_longs = [None] * self.vp.terrain_width
+		horology = self.world.horology
+
 		for dx, dy in self.draw_order:
 			x = ox + dx
 			y = oy + dy
@@ -107,8 +110,13 @@ class Render(object):
 				continue
 			if p in drawn:
 				continue
-			lat_long = self.world.terrain.lat_long(p)
-			bness = self.world.horology.brightness(self.game_mgr.utc, lat_long)
+			mod_x = x % self.vp.terrain_width
+			long = self.world.terrain.longs[mod_x]
+			if brightness_for_longs[mod_x] is None:
+				brightness_for_longs[mod_x] = horology.brightness(
+					self.game_mgr.utc, long
+				)
+			bness = brightness_for_longs[mod_x]
 			self.render_terrain.render_tile(p, light=bness)
 			drawn.add(p)
 			if p in gobj_cells:

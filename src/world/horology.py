@@ -109,18 +109,21 @@ class Horology(object):
 			return 1 + adj_day
 		return adj_day
 
-	def brightness(self, utc: float, lat_long):
+	def brightness(self, utc: float, long: float):
 		"""
 		Calculates how bright it is at the given UTC and planet coordinates.
 		"""
-		_, long = lat_long
 		local = self.local_time_at_longitude(utc, long)
-		if local <= 0.25 or local >= 0.75:
+		if local <= 0.20 or local >= 0.80:
 			return 7
-		if 0.70 <= local <= 0.75:
-			return 3
-		if 0.25 <= local <= 0.30:
-			return 4
+		elif 0.70 <= local <= 0.80:
+			d = (0.80 - local) / 0.10
+			d *= 7
+			return round(7 - d)
+		elif 0.20 <= local <= 0.30:
+			d = (0.30 - local) / 0.10
+			d *= 7
+			return round(d)
 		return 0
 
 CENTURIA = Horology(
