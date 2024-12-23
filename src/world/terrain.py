@@ -87,7 +87,7 @@ class Terrain(object):
 		that lat is y-axis and long is x-axis.
 		"""
 		x, y = p
-		return (self.lats[y], self.longs[x])
+		return (self.lats[y], self.longs[x % self.width])
 
 	@property
 	def dimensions(self):

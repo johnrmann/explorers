@@ -75,32 +75,23 @@ class RenderTerrain(object):
 	def tile_top_screen_coords(self, tile_p):
 		bottom_screen_p = self.tile_bottom_screen_coords(tile_p)
 		x, y = tile_p
-		h = self.terrain.map[y][x]
+		h = self.terrain.map[y][x % self.terrain.width]
 		dy = h * self.vp.terrain_z
 		bsp_x, bsp_y = bottom_screen_p
 		return (bsp_x, bsp_y - dy)
 
-	def wall_heights(self, cell_p):
-		left = self.terrain.height_delta(cell_p, self.vp.left_wall_direction)
-		right = self.terrain.height_delta(cell_p, self.vp.right_wall_direction)
-		return (left, right)
-
-	def ridge_heights(self, cell_p):
-		left = self.terrain.height_delta(cell_p, self.vp.left_ridge_direction)
-		right = self.terrain.height_delta(cell_p, self.vp.right_ridge_direction)
-		return (left, right)
-
 	def render_tile(self, cell_p, light=7):
 		x, y = cell_p
-		if x < 0 or y < 0:
+		if y < 0:
 			return
-		if x >= self.vp.terrain_width or y >= self.vp.terrain_height:
+		if y >= self.vp.terrain_height:
 			return
 
 		screen_p = self.tile_top_screen_coords(cell_p)
 		zoom = self.vp.tile_width
+		cam_ori = self.vp.camera_orientation
 
-		ridges = self._ridge_draws[y][x][self.vp.camera_orientation]
+		ridges = self._ridge_draws[y][x % self.terrain.width][cam_ori]
 		tile_surface, tile_pos = self.tile_cache.tile_surface_and_position(
 			screen_p, zoom, ridges, light
 		)

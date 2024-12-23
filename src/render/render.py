@@ -103,8 +103,6 @@ class Render(object):
 			x = ox + dx
 			y = oy + dy
 			p = (x, y)
-			if not 0 <= x < self.vp.terrain_width:
-				continue
 			if not 0 <= y < self.vp.terrain_height:
 				continue
 			if p in drawn:
