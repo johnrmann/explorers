@@ -31,6 +31,8 @@ SAFETY = 3
 class Viewport(Listener):
 	_zoom_idx = 1
 	_camera_pos = (0, 0)
+	_camera_screen_pos = (0, 0)
+	_camera_screen_transform = (0, 0)
 
 	camera_orientation = Direction.NORTHWEST
 
@@ -54,6 +56,10 @@ class Viewport(Listener):
 	def _recompute_camera(self):
 		self._camera_screen_pos = self.global_tile_to_screen_coords(
 			self.camera_pos
+		)
+		self._camera_screen_transform = (
+			(self.window_dims[0] // 2) - self._camera_screen_pos[0],
+			(self.window_dims[1] // 2) - self._camera_screen_pos[1]
 		)
 
 	def _recompute_tile_dimensions(self):
@@ -164,12 +170,11 @@ class Viewport(Listener):
 		"""
 		Converts tile coordinates to screen coordinates.
 		"""
-		win_width, win_height = self.window_dims
-		cx_screen, cy_screen = self._camera_screen_pos
+		tx, ty = self._camera_screen_transform
 		x2,y2 = self.global_tile_to_screen_coords(p_tile)
 		return (
-			x2 + (win_width // 2) - cx_screen,
-			y2 + (win_height // 2) - cy_screen,
+			x2 + tx,
+			y2 + ty,
 		)
 
 	def global_tile_to_screen_coords(self, cell_pos):
