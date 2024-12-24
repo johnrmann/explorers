@@ -102,22 +102,28 @@ class Render(object):
 		brightness_for_longs = [None] * self.vp.terrain_width
 		horology = self.world.horology
 
+		# Cache frequently accessed attributes and methods
+		render_tile = self.render_terrain.render_tile
+		get_brightness = horology.brightness
+		game_mgr_utc = self.game_mgr.utc
+		terrain_longs = self.world.terrain.longs
+		terrain_width = self.vp.terrain_width
+		terrain_height = self.vp.terrain_height
+
 		for dx, dy in self.draw_order:
 			x = ox + dx
 			y = oy + dy
 			p = (x, y)
-			if not 0 <= y < self.vp.terrain_height:
+			if not 0 <= y < terrain_height:
 				continue
 			if p in drawn:
 				continue
-			mod_x = x % self.vp.terrain_width
-			long = self.world.terrain.longs[mod_x]
+			mod_x = x % terrain_width
+			long = terrain_longs[mod_x]
 			if brightness_for_longs[mod_x] is None:
-				brightness_for_longs[mod_x] = horology.brightness(
-					self.game_mgr.utc, long
-				)
+				brightness_for_longs[mod_x] = get_brightness(game_mgr_utc, long)
 			bness = brightness_for_longs[mod_x]
-			self.render_terrain.render_tile(p, light=bness)
+			render_tile(p, light=bness)
 			drawn.add(p)
 			if p in gobj_cells:
 				go = gobj_cells[p]
