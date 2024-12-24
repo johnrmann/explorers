@@ -2,6 +2,8 @@ import unittest
 
 from unittest.mock import MagicMock, Mock
 
+from src.gameobject.lander import Lander
+
 from src.world.terrain import Terrain
 from src.world.world import World
 from src.render.viewport import Viewport
@@ -100,6 +102,34 @@ class GameManagerTest(unittest.TestCase):
 		gm.add_game_object(obj)
 		gm.remove_game_object(obj)
 		self.assertNotIn(obj, gm.game_objects)
+
+	def test__new_colony(self):
+		"""Test that new_colony creates a new colony."""
+		gm = GameManager(self.world, self.viewport)
+		self.assertEqual(len(gm.colonies), 0)
+		gm.new_colony(
+			position=(0,0),
+			owner=1,
+			is_first=True
+		)
+		self.assertEqual(len(gm.colonies), 1)
+
+	def test__new_colony__adds_structures(self):
+		"""Test that new_colony adds structures to the world."""
+		gm = GameManager(self.world, self.viewport)
+		lander = Lander(
+			pos=(0, 0),
+			game_mgr=gm,
+		)
+		lander.owner = 1
+		gm.add_game_object(lander)
+		colony = gm.new_colony(
+			position=(0,0),
+			owner=1,
+			is_first=True
+		)
+		self.assertEqual(len(colony.structures), 1)
+		self.assertIn(lander, colony.structures)
 
 if __name__ == "__main__":
 	unittest.main()

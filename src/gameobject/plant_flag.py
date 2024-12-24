@@ -55,7 +55,7 @@ class PlantFlag(Interactable, Listener):
 			offset=(0,-1),
 			display_label="Plant Flag",
 			expected_value=None,
-			event=FlagPlantedEvent()
+			event=FlagPlantedEvent(owner=self.owner, is_first=self._is_first, position=self.pos),
 		)
 
 	def actions(self, actor: Actor):
@@ -70,4 +70,9 @@ class FlagPlantedEvent(Event):
 	"""
 	An event to fire when the flag has been planted.
 	"""
-	pass
+
+	def __init__(self, owner: int = 0, is_first: bool = False, position=None):
+		super().__init__()
+		self.owner = owner
+		self.is_first = is_first
+		self.position = position

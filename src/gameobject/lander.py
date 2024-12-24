@@ -8,7 +8,7 @@ from src.gameobject.action import Action
 from src.gameobject.actor import Actor
 from src.gameobject.actor_motives import ActorMotive
 from src.gameobject.constants import FILL_OXYGEN, FILL_ENERGY, FILL_HUNGER
-from src.gameobject.interactable import Interactable
+from src.gameobject.structure import Structure
 from src.gameobject.rabbit_hole import (
 	RabbitHole, EnterRabbitHoleEvent, ExitRabbitHoleEvent
 )
@@ -22,7 +22,7 @@ FILL_RATE = 25
 LANDER_COOLDOWN = 10
 LANDER_PER_ACTOR_COOLDOWN = LANDER_COOLDOWN * 2
 
-class Lander(Interactable, RabbitHole, Listener):
+class Lander(Structure, RabbitHole, Listener):
 	"""
 	At the start of the game, each player starts with a lander that can be
 	used as a basic home base.
@@ -35,7 +35,7 @@ class Lander(Interactable, RabbitHole, Listener):
 	def __init__(self, game_mgr=None, pos=None):
 		if pos is None:
 			pos = (0,0)
-		Interactable.__init__(
+		Structure.__init__(
 			self,
 			game_mgr=game_mgr,
 			pos=pos,

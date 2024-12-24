@@ -19,6 +19,7 @@ from src.gui.fps import FpsCounter
 from src.gui.rangebar import Rangebar
 from src.gui.actor_motives import ActorMotivesGui
 from src.gui.playbar import Playbar
+from src.gui.colony_name import ColonyName
 
 flags = pygame.DOUBLEBUF
 
@@ -117,6 +118,7 @@ def main():
 	playbar = Playbar(
 		game,
 	)
+	cname = ColonyName()
 
 	while running:
 		dt = clock.tick(TARGET_FPS) / 1000

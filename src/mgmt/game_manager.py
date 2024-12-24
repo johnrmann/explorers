@@ -1,6 +1,8 @@
 from src.gameobject.gameobject import GameObject
 from src.gameobject.actor import Actor
+from src.gameobject.structure import Structure
 from src.world.world import World
+from src.colony.colony import Colony
 from src.gui.gui import _GuiManager, init_gui_manager
 from src.ctrl.ctrl import Control
 from src.ctrl.clickmap import ClickMap
@@ -21,11 +23,14 @@ class GameManager(Listener):
 	clickmap: ClickMap
 
 	game_objects: set[GameObject]
+	colonies: set[Colony]
 	utc: float
 	world: World
 	vp = None
 
 	selected_actors: dict[int, Actor] = None
+
+	is_single_player = True
 
 	def __init__(
 			self,
@@ -39,6 +44,7 @@ class GameManager(Listener):
 		self.screen = screen
 		self.utc = 0.0
 		self.game_objects = set()
+		self.colonies = []
 		self.world = world
 		self.world.game_mgr = self
 		self.vp = viewport
@@ -59,12 +65,21 @@ class GameManager(Listener):
 
 	def _subscribe_to_events(self):
 		self.evt_mgr.sub("ShowSupereventEvent", self)
+		self.evt_mgr.sub("FlagPlantedEvent", self)
 
 	def update(self, event):
 		# TODO(jm) - this really should be in the gui manager instead of the
 		# game manager.
 		if event.event_type == 'ShowSupereventEvent':
 			event.make_superevent()
+		# TODO(jm) - move this to world?
+		if event.event_type == 'FlagPlantedEvent':
+			print('Planting flag')
+			self.new_colony(
+				position=event.position,
+				owner=event.owner,
+				is_first=event.is_first
+			)
 
 	def tick(self, dt: float):
 		"""
@@ -128,3 +143,24 @@ class GameManager(Listener):
 		"""
 		self.game_objects.remove(go)
 		go.on_remove()
+
+	def new_colony(self, position=None, owner=None, is_first=False):
+		"""
+		Establish a new colony at the given position for the given owner, and
+		add any player-owned structures already in it to the colony.
+		"""
+		colony = Colony(
+			owner=owner,
+			position=position,
+			is_first=is_first,
+			game_mgr=self
+		)
+		self.colonies.append(colony)
+		for gobj in self.game_objects:
+			if (
+				gobj.owner == owner and
+				isinstance(gobj, Structure) and
+				colony.is_structure_inside(gobj)
+			):
+				colony.add_structure(gobj)
+		return colony
