@@ -1,12 +1,19 @@
+from enum import Enum
+
+from src.utility.calendar import (
+	utc_float_to_utc_string,
+	utc_float_to_mission_string,
+	DEFAULT_EPOCH
+)
+
 from src.gui.gui import GuiElement
 from src.gui.primitives import Label, Panel, Button
 
 DIMENSIONS = (150, 30)
 
-DEFAULT_FUNCTION_MAP = [
-	("UTC", lambda _: "2469-08-20"),
-	("MT", lambda _: "001-001")
-]
+class MissionClockMode(Enum):
+	EARTH_CALENDAR = 0
+	MISSION_CALENDAR = 1
 
 class MissionClock(GuiElement):
 	"""
@@ -15,25 +22,25 @@ class MissionClock(GuiElement):
 	click to toggle between calendars (Mission Time and UTC).
 	"""
 
-	_mode_idx: int = 0
+	_mode: MissionClockMode = MissionClockMode.EARTH_CALENDAR
 
-	def __init__(self, entries=None):
-		super().__init__()
-		if entries is None:
-			entries = DEFAULT_FUNCTION_MAP
-		self.function_map = entries
+	_utc_per_earth_day: float = 1
+
+	def __init__(self, **kwargs):
+		super().__init__(**kwargs)
 		self.button = Button(
 			rect=((0, 0), (50, 30)),
-			text=entries[0][0],
+			text='UTC',
 			callback=self.on_click_clock_mode,
 			parent=self
 		)
 		self.panel = Panel(rect=((50, 0), (100, 30)), parent=self)
 		self.label = Label(
 			rect=((0, 0), (100, 30)),
-			text=self.get_label_text(0),
+			text='0000-00-00',
 			parent=self.panel,
 		)
+		self._update_label(0)
 
 	def __del__(self):
 		del self.button
@@ -46,19 +53,31 @@ class MissionClock(GuiElement):
 
 	@property
 	def dimensions(self):
-		return(150, 30)
+		return DIMENSIONS
 
 	def on_click_clock_mode(self):
 		"""When we click the clock mode button, toggle between calendars."""
-		self._mode_idx = (self._mode_idx + 1) % len(self.function_map)
-		self.button.text = self.get_button_text(0)
+		if self._mode == MissionClockMode.EARTH_CALENDAR:
+			self._mode = MissionClockMode.MISSION_CALENDAR
+			self.button.text = 'MT'
+		else:
+			self._mode = MissionClockMode.EARTH_CALENDAR
+			self.button.text = 'UTC'
+		self._update_label(self.gui_mgr.game_mgr.utc)
 
-	def get_button_text(self, _: float):
-		"""The text on the button is the ID of the calendar."""
-		key, _ = self.function_map[self._mode_idx]
-		return key
+	def my_update(self, dt):
+		return self._update_label(self.gui_mgr.game_mgr.utc)
 
-	def get_label_text(self, dt):
-		"""The text on the label is the current date."""
-		_, func = self.function_map[self._mode_idx]
-		return func(dt)
+	def _update_label(self, utc):
+		if self._mode == MissionClockMode.EARTH_CALENDAR:
+			self.label.text = utc_float_to_utc_string(
+				utc,
+				utc_per_day=self._utc_per_earth_day,
+				epoch=DEFAULT_EPOCH,
+			)
+		else:
+			self.label.text = utc_float_to_mission_string(
+				utc,
+				utc_per_day=self._utc_per_earth_day,
+				days_per_year=360,
+			)
