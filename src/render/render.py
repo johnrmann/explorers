@@ -22,6 +22,8 @@ IMG_PATHS = [
 class Render(object):
 	_last_zoom = 0
 
+	_brightnesses = None
+
 	def __init__(self, window, world: World, vp: Viewport, game_mgr=None):
 		self.game_mgr = game_mgr
 		self.window = window
@@ -30,6 +32,7 @@ class Render(object):
 		self.render_terrain = RenderTerrain(window, world, vp, self.game_mgr)
 		self._load_images()
 		self._calc_draw_order()
+		self._calc_brightnesses()
 	
 	def _load_images(self):
 		self.images = {}
@@ -51,6 +54,13 @@ class Render(object):
 			self.vp.tiles_wide,
 			2 * self.vp.tiles_tall
 		))
+
+	def _calc_brightnesses(self):
+		self._brightnesses = {}
+		for idx, long in enumerate(self.world.terrain.longs):
+			self._brightnesses[idx] = self.world.horology.brightness(
+				0, long
+			)
 
 	def game_object_at(self, p):
 		for go in self.game_mgr.game_objects:
@@ -78,7 +88,7 @@ class Render(object):
 			image_map=self.images,
 			light=light
 		)
-	
+
 	def render(self):
 		if self.vp.tile_width != self._last_zoom:
 			self._calc_draw_order()
@@ -99,16 +109,14 @@ class Render(object):
 		ox, oy = self.vp.get_draw_origin()
 		drawn = set()
 
-		brightness_for_longs = [None] * self.vp.terrain_width
-		horology = self.world.horology
-
 		# Cache frequently accessed attributes and methods
+		horology = self.world.horology
 		render_tile = self.render_terrain.render_tile
-		get_brightness = horology.brightness
 		game_mgr_utc = self.game_mgr.utc
-		terrain_longs = self.world.terrain.longs
 		terrain_width = self.vp.terrain_width
 		terrain_height = self.vp.terrain_height
+		cycle_frac = game_mgr_utc / horology.ticks_in_cycle
+		time_offset = int(((cycle_frac) % 1) * terrain_width)
 
 		for dx, dy in self.draw_order:
 			x = ox + dx
@@ -118,11 +126,8 @@ class Render(object):
 				continue
 			if p in drawn:
 				continue
-			mod_x = x % terrain_width
-			long = terrain_longs[mod_x]
-			if brightness_for_longs[mod_x] is None:
-				brightness_for_longs[mod_x] = get_brightness(game_mgr_utc, long)
-			bness = brightness_for_longs[mod_x]
+			bness_x = (x + time_offset) % terrain_width
+			bness = self._brightnesses[bness_x]
 			render_tile(p, light=bness)
 			drawn.add(p)
 			if p in gobj_cells:
