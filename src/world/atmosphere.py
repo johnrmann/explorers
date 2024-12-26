@@ -338,6 +338,9 @@ class AtmosphereChangeEvent(Event):
 	def __init__(self, delta):
 		self.delta = delta
 
+	def __eq__(self, other):
+		return compare_atmosphere_dicts(self.delta, other.delta)
+
 	def __str__(self):
 		return f'AtmosphereChangeEvent({self.delta})'
 
@@ -352,5 +355,23 @@ class AtmosphereChangeDeltaEvent(Event):
 	def __init__(self, delta):
 		self.delta = delta
 
+	def __eq__(self, other):
+		return compare_atmosphere_dicts(self.delta, other.delta)
+
 	def __str__(self):
 		return f'AtmosphereChangeDeltaEvent({self.delta})'
+
+def compare_atmosphere_dicts(a, b):
+	"""
+	Compares two atmosphere dictionaries to see if they are "close enough".
+	"""
+	if a == b:
+		return True
+	a_keys = set(a.keys())
+	b_keys = set(b.keys())
+	if a_keys != b_keys:
+		return False
+	for key in a_keys:
+		if a[key] != b[key]:
+			return False
+	return True

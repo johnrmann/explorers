@@ -17,6 +17,7 @@ IMG_PATHS = [
 	'assets/img/lander.png',
 	'assets/img/sprite/click-here.png',
 	'assets/img/sprite/flag.png',
+	'assets/img/sprite/palm-tree.png',
 ]
 
 class Render(object):
