@@ -6,9 +6,11 @@ Further Reading:
 	- https://atmos.washington.edu/academics/classes/2001Q4/211/notes_greenhouse.html
 """
 
-import math
-
 from enum import Enum
+
+from src.mgmt.listener import Listener
+from src.mgmt.event import Event
+from src.mgmt.event_manager import EventManager
 
 from src.utility.habitability import (
 	temperature_habitability,
@@ -102,7 +104,7 @@ def greenhouse_factor(weights):
 # This one is based on multiples of Earth's solar radiation.
 BOLTZMANN = (2.416 / 4) * 10**10
 
-class Atmosphere:
+class Atmosphere(Listener):
 	"""
 	The atmosphere of a planet is modeled by distributing many "units" of
 	particles across the whole surface area of the planet. This will allow us
@@ -112,6 +114,8 @@ class Atmosphere:
 	removed from the atmosphere will be proportional to the number of trees
 	that the player planted.
 	"""
+
+	_evt_mgr = None
 
 	total = None
 	average = None
@@ -126,12 +130,14 @@ class Atmosphere:
 			total=None,
 			average=None,
 			astronomy=None,
-			planet_area=(1024 * 512)
+			planet_area=(1024 * 512),
+			evt_mgr: EventManager=None
 	):
 		self.total = {}
 		self.average = {}
 		self.composition = {}
 		self.planet_area = planet_area
+		self._evt_mgr = evt_mgr
 
 		self.delta = {
 			element: 0
@@ -159,6 +165,8 @@ class Atmosphere:
 			}
 
 		self._recalculate_composition()
+		if evt_mgr is not None:
+			self._subscribe_to_events()
 
 	def _recalculate_composition(self):
 		moles_total = self.moles_total()
@@ -172,6 +180,33 @@ class Atmosphere:
 				key: count / moles_total
 				for key, count in self.total.items()
 			}
+
+	def _subscribe_to_events(self):
+		self._evt_mgr.sub(AtmosphereChangeEvent, self)
+		self._evt_mgr.sub(AtmosphereChangeDeltaEvent, self)
+
+	@property
+	def evt_mgr(self):
+		"""
+		The event manager for this atmosphere. Don't recommend reading,
+		only writing (once).
+		"""
+		return self._evt_mgr
+
+	@evt_mgr.setter
+	def evt_mgr(self, value):
+		if self._evt_mgr is not None:
+			raise ValueError("Write-once property.")
+		self._evt_mgr = value
+		self._subscribe_to_events()
+
+	def update(self, event):
+		if isinstance(event, AtmosphereChangeEvent):
+			for elem, count in event.delta.items():
+				self.change_total(elem, count)
+		elif isinstance(event, AtmosphereChangeDeltaEvent):
+			for elem, count in event.delta.items():
+				self.change_delta(elem, count)
 
 	def moles_total(self):
 		"""
@@ -203,6 +238,14 @@ class Atmosphere:
 		"""
 		raw = self.total_molar_mass() / self.planet_area
 		return raw / EARTH_ATMOSPHERE_DENSITY
+
+	def change_total(self, element, count):
+		"""
+		First derivative - change the amount of atmosphere element.
+		"""
+		self.total[element] += count
+		self.average[element] = self.total[element] / self.planet_area
+		self._recalculate_composition()
 
 	def change_delta(self, element, count):
 		"""
@@ -284,3 +327,30 @@ class Atmosphere:
 				self.density()
 			),
 		}
+
+class AtmosphereChangeEvent(Event):
+	"""
+	An event that signals a change in the atmosphere of a planet.
+	"""
+
+	delta: dict[AtmosphereElement, int]
+
+	def __init__(self, delta):
+		self.delta = delta
+
+	def __str__(self):
+		return f'AtmosphereChangeEvent({self.delta})'
+
+class AtmosphereChangeDeltaEvent(Event):
+	"""
+	An event that signals a change in the rate of change of the atmosphere of
+	a planet.
+	"""
+
+	delta: dict[AtmosphereElement, int]
+
+	def __init__(self, delta):
+		self.delta = delta
+
+	def __str__(self):
+		return f'AtmosphereChangeDeltaEvent({self.delta})'

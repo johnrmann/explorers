@@ -1,11 +1,15 @@
 import unittest
 
+from src.mgmt.event_manager import EventManager
+
 from src.utility.habitability import HabitabilityFactor
 
 from src.world.atmosphere import (
 	Atmosphere, AtmosphereElement, EARTH_ATMOSPEHRE_AVG_COMPOSITION,
 	greenhouse_factor,
 	make_atmosphere_composiiton,
+	AtmosphereChangeEvent,
+	AtmosphereChangeDeltaEvent,
 )
 from src.world.astronomy import Astronomy
 
@@ -73,6 +77,15 @@ class AtmosphereTest(unittest.TestCase):
 		with self.assertRaises(ValueError):
 			Atmosphere(average=EARTH_ATMOSPEHRE_AVG_COMPOSITION)
 
+	def test__init__with_evt_mgr(self):
+		evt_mgr = EventManager()
+		atm = Atmosphere(
+			average=EARTH_ATMOSPEHRE_AVG_COMPOSITION,
+			astronomy=Astronomy(),
+			evt_mgr=evt_mgr
+		)
+		self.assertEqual(atm.evt_mgr, evt_mgr)
+
 	def test__moles_avg__earth(self):
 		self.assertEqual(self.earth.moles_avg(), 1000)
 
@@ -136,6 +149,73 @@ class AtmosphereTest(unittest.TestCase):
 		)
 		self.assertAlmostEqual(
 			hab[HabitabilityFactor.PRESSURE], 1.0, places=4
+		)
+
+	def test__set_evt_mgr(self):
+		"""Test that setting the event manager sets it on the atmosphere."""
+		evt_mgr = EventManager()
+		self.earth.evt_mgr = evt_mgr
+		self.assertIs(self.earth.evt_mgr, evt_mgr)
+
+	def test__set_evt_mgr__final(self):
+		"""Test that over-writing the event manager doesnt work."""
+		evt_mgr = EventManager()
+		self.earth.evt_mgr = evt_mgr
+		with self.assertRaises(ValueError):
+			self.earth.evt_mgr = evt_mgr
+
+	def test__changes_atmosphere_total_via_event(self):
+		evt_mgr = EventManager()
+		self.earth.evt_mgr = evt_mgr
+		old_carbon = self.earth.total[AtmosphereElement.CARBON]
+		evt_mgr.pub(AtmosphereChangeEvent({
+			AtmosphereElement.CARBON: 100
+		}))
+		evt_mgr.tick(0, 0)
+		new_carbon = self.earth.total[AtmosphereElement.CARBON]
+		self.assertEqual(new_carbon, old_carbon + 100)
+
+	def test__changes_atmosphere_delta_via_event(self):
+		evt_mgr = EventManager()
+		self.earth.evt_mgr = evt_mgr
+		evt_mgr.pub(AtmosphereChangeDeltaEvent({
+			AtmosphereElement.CARBON: 100
+		}))
+		evt_mgr.tick(0, 0)
+		new_carbon_delta = self.earth.delta[AtmosphereElement.CARBON]
+		self.assertEqual(new_carbon_delta, 100)
+
+	def test__changes_atmosphere_delta_via_event__evolves(self):
+		evt_mgr = EventManager()
+		self.earth.evt_mgr = evt_mgr
+		old_carbon = self.earth.total[AtmosphereElement.CARBON]
+		evt_mgr.pub(AtmosphereChangeDeltaEvent({
+			AtmosphereElement.CARBON: 100
+		}))
+		evt_mgr.tick(0, 0)
+		self.earth.evolve()
+		new_carbon = self.earth.total[AtmosphereElement.CARBON]
+		self.assertEqual(new_carbon, old_carbon + 100)
+		self.earth.evolve()
+		new_carbon = self.earth.total[AtmosphereElement.CARBON]
+		self.assertEqual(new_carbon, old_carbon + 200)
+
+	def test__atmosphere_change_event__str(self):
+		evt = AtmosphereChangeEvent({
+			AtmosphereElement.CARBON: 100
+		})
+		self.assertEqual(
+			str(evt),
+			"AtmosphereChangeEvent({<AtmosphereElement.CARBON: 2>: 100})"
+		)
+
+	def test__atmosphere_change_delta_event__str(self):
+		evt = AtmosphereChangeDeltaEvent({
+			AtmosphereElement.CARBON: 100
+		})
+		self.assertEqual(
+			str(evt),
+			"AtmosphereChangeDeltaEvent({<AtmosphereElement.CARBON: 2>: 100})"
 		)
 
 if __name__ == '__main__':

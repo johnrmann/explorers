@@ -20,6 +20,8 @@ class EventManager:
 		"""
 		Subscribe a listener to an event.
 		"""
+		if not isinstance(event_type, str):
+			event_type = event_type.__name__
 		if event_type not in self.listeners:
 			self.listeners[event_type] = set()
 		if listener not in self.all_listeners:
