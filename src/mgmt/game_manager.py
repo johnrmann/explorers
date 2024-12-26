@@ -1,15 +1,25 @@
+import random
+
 from src.gameobject.gameobject import GameObject
 from src.gameobject.actor import Actor
 from src.gameobject.structure import Structure
+from src.gui.superevent import ShowSupereventEvent
 from src.world.world import World
 from src.colony.colony import Colony
 from src.gui.gui import _GuiManager, init_gui_manager
 from src.ctrl.ctrl import Control
 from src.ctrl.clickmap import ClickMap
 from src.render.render import Render
+from src.utility.calendar import next_christmas
 
 from src.mgmt.event_manager import EventManager
 from src.mgmt.listener import Listener
+
+def christmas_event(score):
+	return random.choice([
+		"first_christmas-good",
+		"first_christmas-bad",
+	])
 
 class GameManager(Listener):
 	"""
@@ -22,9 +32,14 @@ class GameManager(Listener):
 	renderer: Render
 	clickmap: ClickMap
 
+	# UTC is used to keep track of the current time in the game world. Epoch
+	# is used as a mostly cosmetic offset for the game clock, although it does
+	# have some minor gameplay effects (holidays).
+	utc: float
+	epoch: float
+
 	game_objects: set[GameObject]
 	colonies: set[Colony]
-	utc: float
 	world: World
 	vp = None
 
@@ -43,6 +58,7 @@ class GameManager(Listener):
 	):
 		self.screen = screen
 		self.utc = 0.0
+		self.epoch = (360 * 2468) + (11 * 30)
 		self.game_objects = set()
 		self.colonies = []
 		self.world = world
@@ -52,6 +68,7 @@ class GameManager(Listener):
 		self.selected_actors = {}
 		self._init_managers(evt_mgr, no_gui)
 		self._subscribe_to_events()
+		self._make_holiday_queue()
 
 	def _init_managers(self, evt_mgr, no_gui):
 		if evt_mgr is not None:
@@ -67,6 +84,19 @@ class GameManager(Listener):
 		self.evt_mgr.sub("ShowSupereventEvent", self)
 		self.evt_mgr.sub("FlagPlantedEvent", self)
 
+	def _make_holiday_queue(self):
+		"""
+		Holidays are used as "gut checks" - they show the player flavor text
+		about how they're doing. They're implemented as a float -> function
+		dictionary, where the float is the UTC time at which the holiday
+		occurs, and the function takes in a game score and outputs which
+		event ID to signal.
+		"""
+		christmas = next_christmas(0, epoch=self.epoch)
+		self._holiday_queue = {
+			christmas: christmas_event,
+		}
+
 	def update(self, event):
 		# TODO(jm) - this really should be in the gui manager instead of the
 		# game manager.
@@ -74,7 +104,6 @@ class GameManager(Listener):
 			event.make_superevent()
 		# TODO(jm) - move this to world?
 		if event.event_type == 'FlagPlantedEvent':
-			print('Planting flag')
 			self.new_colony(
 				position=event.position,
 				owner=event.owner,
@@ -91,10 +120,22 @@ class GameManager(Listener):
 		floor_old_utc = int(self.utc)
 		if floor_new_utc != floor_old_utc:
 			self.world.evolve(floor_new_utc - floor_old_utc)
+			self._check_for_holidays(int(self.utc + dt))
 		self.utc += dt
 		self.evt_mgr.tick(dt, self.utc)
 		for obj in self.game_objects:
 			obj.tick(dt, self.utc)
+
+	def _check_for_holidays(self, new_utc):
+		if new_utc in self._holiday_queue:
+			holiday = self._holiday_queue[new_utc]
+			score = 0
+			self.evt_mgr.pub(
+				ShowSupereventEvent(
+					json_file="assets/json/events/holiday.json",
+					json_id=holiday(score)
+				)
+			)
 
 	def prepare_render(self):
 		"""

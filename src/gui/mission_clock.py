@@ -25,6 +25,7 @@ class MissionClock(GuiElement):
 	_mode: MissionClockMode = MissionClockMode.EARTH_CALENDAR
 
 	_utc_per_earth_day: float = 1
+	_epoch: float = 0
 
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
@@ -40,6 +41,7 @@ class MissionClock(GuiElement):
 			text='0000-00-00',
 			parent=self.panel,
 		)
+		self._epoch = self.gui_mgr.game_mgr.epoch
 		self._update_label(0)
 
 	def __del__(self):
@@ -73,7 +75,7 @@ class MissionClock(GuiElement):
 			self.label.text = utc_float_to_utc_string(
 				utc,
 				utc_per_day=self._utc_per_earth_day,
-				epoch=DEFAULT_EPOCH,
+				epoch=self._epoch,
 			)
 		else:
 			self.label.text = utc_float_to_mission_string(

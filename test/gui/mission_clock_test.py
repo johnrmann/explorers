@@ -18,6 +18,7 @@ class TestMissionClock(unittest.TestCase):
 		self.game_mgr = MagicMock(spec=GameManager)
 		self.game_mgr.evt_mgr = MagicMock(spec=EventManager)
 		self.game_mgr.utc = 0
+		self.game_mgr.epoch = (2350 * 360)
 		init_gui_manager(self.game_mgr)
 		self.mission_clock = MissionClock()
 
