@@ -58,5 +58,16 @@ class GameObjectTest(unittest.TestCase):
 		point = self.widget.draw_point(None)
 		self.assertEqual(point, (3, 3))
 
+	def test__occupies_cell__true(self):
+		self.assertTrue(self.widget.occupies_cell((1,1)))
+		self.assertTrue(self.widget.occupies_cell((2,2)))
+
+	def test__occupies_cell__false(self):
+		self.assertFalse(self.widget.occupies_cell((0,0)))
+		self.assertFalse(self.widget.occupies_cell((0,1)))
+		self.assertFalse(self.widget.occupies_cell((1,0)))
+		self.assertFalse(self.widget.occupies_cell((3,4)))
+		self.assertFalse(self.widget.occupies_cell((3,3)))
+
 if __name__ == '__main__':
 	unittest.main()

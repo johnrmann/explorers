@@ -84,7 +84,11 @@ class Actor(GameObject, Listener):
 		self._action = None
 		from src.path.astar import astar
 		world = self.game_mgr.world
-		astar_path = astar(world, self.pos, dest)
+		astar_path = astar(
+			self.pos, dest, world.terrain, self.game_mgr.is_cell_occupied
+		)
+		if len(astar_path) == 0:
+			return
 		self._path_runner.path = astar_path
 
 	def _finished_path(self):

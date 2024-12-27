@@ -90,6 +90,16 @@ class GameObject:
 		ys = self.y_range()
 		return spatial_cart_prod(xs, ys, view_sort)
 
+	def occupies_cell(self, position):
+		"""
+		Returns True if the given position is occupied by this object.
+		"""
+		min_x, min_y = self.pos
+		max_x = min_x + self.size[0]
+		max_y = min_y + self.size[1]
+		x, y = position
+		return min_x <= x < max_x and min_y <= y < max_y
+
 	def draw_point(self, camera_direction):
 		"""
 		Returns the point the object occupies that's closest to the camera.

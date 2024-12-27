@@ -36,12 +36,12 @@ class PathRunner:
 		self._position = position
 		self.path = path
 		self._on_done = on_done
-	
+
 	def _clearPath(self):
 		self._path = []
 		self._k = 0
 		self._idx = -1
-	
+
 	@property
 	def position(self):
 		"""
@@ -51,14 +51,14 @@ class PathRunner:
 			return self._position
 		else:
 			return self._path[self._idx]
-	
+
 	@property
 	def is_moving(self):
 		"""
 		A path runner is moving if it has a path.
 		"""
 		return self._path is not None and len(self._path) > 1
-	
+
 	def _delta(self) -> Vector2:
 		if not self.is_moving:
 			return Vector2(0,0)
@@ -88,7 +88,7 @@ class PathRunner:
 			return delta_to_direction(delta)
 		else:
 			return self._direction
-	
+
 	@property
 	def draw_position(self) -> Vector2:
 		"""
@@ -124,7 +124,7 @@ class PathRunner:
 			last, prev_last = value[-1], value[-2]
 			dir_delta = last - prev_last
 			self._direction = delta_to_direction(dir_delta)
-	
+
 	def tick(self, dk: float):
 		"""
 		Evolves this object by `dk` in game time.

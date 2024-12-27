@@ -205,3 +205,12 @@ class GameManager(Listener):
 			):
 				colony.add_structure(gobj)
 		return colony
+
+	def is_cell_occupied(self, position):
+		"""
+		Returns True if the given position is occupied by a game object.
+		"""
+		for go in self.game_objects:
+			if go.occupies_cell(position):
+				return True
+		return False
