@@ -35,6 +35,20 @@ OPPOSITES = {
 	Direction.NORTHWEST: Direction.SOUTHEAST,
 }
 
+CARDINAL_DIRECTIONS = set([
+	Direction.NORTH,
+	Direction.EAST,
+	Direction.SOUTH,
+	Direction.WEST
+])
+
+DIAGONAL_DIRECTIONS = set([
+	Direction.NORTHWEST,
+	Direction.NORTHEAST,
+	Direction.SOUTHEAST,
+	Direction.SOUTHWEST
+])
+
 DIRECTIONS_CLOCKWISE_ORDER = [
 	Direction.NORTH,
 	Direction.NORTHEAST,

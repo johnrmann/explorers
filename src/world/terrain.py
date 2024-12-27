@@ -23,11 +23,13 @@ class Terrain(object):
 
 	map: list[list[int]]
 	water: list[list[int]]
+	ice: list[list[int]]
 
 	_width: int
 	_height: int
 	_area: int
 	_water_area = 0
+	_ice_area = 0
 
 	max_tile_height = 0
 	min_tile_height = 0
@@ -35,7 +37,7 @@ class Terrain(object):
 	lats = []
 	longs = []
 
-	def __init__(self, heightmap: list[list[int]], watermap=None):
+	def __init__(self, heightmap: list[list[int]], watermap=None, icemap=None):
 		self.map = heightmap
 		w = len(self.map[0])
 		h = len(self.map)
@@ -50,6 +52,15 @@ class Terrain(object):
 			self._water_area = sum(
 				sum(cell > 0 for cell in row)
 				for row in watermap
+			)
+		if icemap is None:
+			self.ice = [[0] * w for _ in range(h)]
+			self._ice_area = 0
+		else:
+			self.ice = icemap
+			self._ice_area = sum(
+				sum(cell > 0 for cell in row)
+				for row in icemap
 			)
 		self._height_deltas = [
 			[make_height_delta() for _ in range(w)] for _ in range(h)
@@ -112,7 +123,7 @@ class Terrain(object):
 	@property
 	def land_area(self):
 		"""The area of the terrain that is land."""
-		return self._area - self._water_area
+		return self._area - self._water_area - self._ice_area
 
 	@property
 	def water_area(self):
@@ -161,10 +172,30 @@ class Terrain(object):
 		x, y = p
 		return (x % self.width, y)
 
+	def is_cell_land(self, p):
+		"""Is the given cell position land?"""
+		return not self.is_cell_water(p) and not self.is_cell_ice(p)
+
 	def is_cell_water(self, p):
 		"""Is the given cell position water?"""
 		x, y = p
-		return self.water[y][x] > 0
+		return self.water[y][x % self.width] > 0
+
+	def is_cell_ice(self, p):
+		"""Is the given cell position ice?"""
+		x, y = p
+		return self.ice[y][x % self.width] > 0
+
+	def is_cell_ice_edge(self, p):
+		"""Is the given cell position an edge of an ice cap?"""
+		x, y = p
+		if not self.is_cell_ice(p):
+			return False
+		for direction in CARDINAL_DIRECTIONS:
+			dy, dx = direction_to_delta(direction)
+			if not self.is_cell_ice((x + dx, y + dy)):
+				return True
+		return False
 
 	def land_height_at(self, p):
 		"""Returns the height at the given cell position, ignoring water."""
@@ -174,7 +205,7 @@ class Terrain(object):
 	def height_at(self, p):
 		"""Returns the height at the given cell position, including water."""
 		x, y = p
-		return self.map[y][x] + self.water[y][x]
+		return self.map[y][x] + self.water[y][x] + self.ice[y][x]
 
 	def height_delta(self, p, direction: Direction):
 		x, y = p
@@ -200,3 +231,46 @@ class Terrain(object):
 				max_count = count
 				height = i
 		return height
+
+	def _choose_cell_to_put_melted_ice(self, p):
+		"""
+		The cell to put melted ice is the cell adjacent to `p` with the lowest
+		height.
+		"""
+		x, y = p
+		ret_x, ret_y = -1, -1
+		min_h = None
+		for direction in CARDINAL_DIRECTIONS:
+			dy, dx = direction_to_delta(direction)
+			x2, y2 = x + dx, y + dy
+			if not self.is_valid_coordinates((x2, y2)):
+				continue
+			if not min_h or self.height_at((x2, y2)) < min_h:
+				min_h = self.height_at((x2, y2))
+				ret_x, ret_y = x2, y2
+		return ret_x, ret_y
+
+	def melt_ice_cell(self, p):
+		"""
+		Melts one unit of ice at p and returns the new position of where the
+		melt went. If there is no ice at p, or if the ice at p is not at the
+		edge, then nothing happens and None is returned.
+		"""
+		if not self.is_cell_ice(p):
+			return None
+		if not self.is_cell_ice_edge(p):
+			return None
+		x, y = p
+		if self.ice[y][x] == 1:
+			self.ice[y][x] = 0
+			self._ice_area -= 1
+			self.water[y][x] = 1
+			self._water_area += 1
+			return p
+		else:
+			x2, y2 = self._choose_cell_to_put_melted_ice(p)
+			self.ice[y][x] -= 1
+			if self.water[y2][x2] == 0:
+				self._water_area += 1
+			self.water[y2][x2] += 1
+			return x2, y2

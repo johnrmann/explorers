@@ -39,6 +39,23 @@ surrounded_watermap = [
 	[1, 1, 1, 1, 1, 1],
 ]
 
+mars_heightmap = desert_heightmap
+mars_icemap_shallow = [
+	[1] * 5,
+	[1] * 5,
+	[0] * 5,
+	[1] * 5,
+	[1] * 5,
+]
+
+mars_icemap_deep = [
+	[2] * 5,
+	[0] * 5,
+	[0] * 5,
+	[0] * 5,
+	[2] * 5,
+]
+
 class TerrainTest(unittest.TestCase):
 	def test__init__no_water(self):
 		terrain = Terrain(desert_heightmap)
@@ -57,6 +74,26 @@ class TerrainTest(unittest.TestCase):
 	def test__land_height_at__no_water(self):
 		terrain = Terrain(waterworld_heightmap, waterworld_watermap)
 		self.assertEqual(terrain.land_height_at((0, 0)), 0)
+
+	def test__land_area__simple(self):
+		terrain = Terrain(desert_heightmap)
+		self.assertEqual(terrain.land_area, 25)
+
+	def test__land_area__excluding_water(self):
+		terrain = Terrain(waterworld_heightmap, waterworld_watermap)
+		self.assertEqual(terrain.land_area, 1)
+
+	def test__land_area__excluding_ice(self):
+		terrain = Terrain(mars_heightmap, icemap=mars_icemap_shallow)
+		self.assertEqual(terrain.land_area, 5)
+
+	def test__water_area__simple(self):
+		terrain = Terrain(desert_heightmap)
+		self.assertEqual(terrain.water_area, 0)
+
+	def test__water_area__excluding_land(self):
+		terrain = Terrain(waterworld_heightmap, waterworld_watermap)
+		self.assertEqual(terrain.water_area, 24)
 
 	def test__is_valid_coordinates__valid(self):
 		terrain = Terrain(desert_heightmap)
@@ -93,6 +130,68 @@ class TerrainTest(unittest.TestCase):
 	def test__sea_level__real_map(self):
 		terrain = Terrain(surrounded_heightmap, surrounded_watermap)
 		self.assertEqual(terrain.sea_level(), 1)
+
+	def test__is_cell_land__land(self):
+		terrain = Terrain(desert_heightmap)
+		self.assertTrue(terrain.is_cell_land((2, 2)))
+
+	def test__is_cell_land__water(self):
+		terrain = Terrain(waterworld_heightmap, waterworld_watermap)
+		self.assertFalse(terrain.is_cell_land((1, 1)))
+
+	def test__is_cell_water__land(self):
+		terrain = Terrain(desert_heightmap)
+		self.assertFalse(terrain.is_cell_water((2, 2)))
+
+	def test__is_cell_water__water(self):
+		terrain = Terrain(waterworld_heightmap, waterworld_watermap)
+		self.assertTrue(terrain.is_cell_water((1, 1)))
+
+	def test__is_cell_ice__land(self):
+		terrain = Terrain(mars_heightmap, icemap=mars_icemap_shallow)
+		self.assertFalse(terrain.is_cell_ice((2, 2)))
+
+	def test__is_cell_ice__ice(self):
+		terrain = Terrain(mars_heightmap, icemap=mars_icemap_shallow)
+		self.assertTrue(terrain.is_cell_ice((2, 3)))
+
+	def test__is_cell_ice_edge__land(self):
+		terrain = Terrain(mars_heightmap, icemap=mars_icemap_shallow)
+		self.assertFalse(terrain.is_cell_ice_edge((2, 2)))
+
+	def test__is_cell_ice_edge__interior(self):
+		terrain = Terrain(mars_heightmap, icemap=mars_icemap_shallow)
+		self.assertFalse(terrain.is_cell_ice_edge((0, 0)))
+
+	def test__is_cell_ice_edge__edge(self):
+		terrain = Terrain(mars_heightmap, icemap=mars_icemap_shallow)
+		self.assertTrue(terrain.is_cell_ice_edge((0, 1)))
+
+	def test__melt_ice_cell__land(self):
+		terrain = Terrain(mars_heightmap, icemap=mars_icemap_shallow)
+		melted = terrain.melt_ice_cell((2, 2))
+		self.assertEqual(melted, None)
+
+	def test__melt_ice_cell__interior(self):
+		terrain = Terrain(mars_heightmap, icemap=mars_icemap_shallow)
+		self.assertEqual(terrain.ice[2][2], 0)
+		melted = terrain.melt_ice_cell((0, 0))
+		self.assertEqual(melted, None)
+
+	def test__melt_ice_cell__shallow(self):
+		terrain = Terrain(mars_heightmap, icemap=mars_icemap_shallow)
+		self.assertEqual(terrain.ice[1][0], 1)
+		melted = terrain.melt_ice_cell((0, 1))
+		self.assertEqual(melted, (0, 1))
+		self.assertEqual(terrain.ice[1][0], 0)
+		self.assertEqual(terrain.water[1][0], 1)
+
+	def test__melt_ice_cell__deep(self):
+		terrain = Terrain(mars_heightmap, icemap=mars_icemap_deep)
+		melted = terrain.melt_ice_cell((0, 0))
+		self.assertEqual(melted, (0, 1))
+		self.assertEqual(terrain.ice[0][0], 1)
+		self.assertEqual(terrain.water[1][0], 1)
 
 if __name__ == '__main__':
 	unittest.main()
