@@ -315,6 +315,50 @@ class Atmosphere(Listener):
 		gh = greenhouse_factor(self.average)
 		return tpr_eff * gh
 
+	def tpr_daily_flux(self):
+		"""
+		Returns `n` where the planet's temperature varies between
+		`self.tpr_surface() - n` and `self.tpr_surface() + n`.
+
+		TODO(jm) - figure out a physics basis for this.
+		"""
+		return 10.0
+
+	def tpr_latitude_flux(self):
+		"""
+		Returns `n` where the planet's temperature varies between
+		`self.tpr_surface() - n` at the poles and `self.tpr_surface() + n`
+		at the equator.
+		"""
+		return 15.0
+
+	def delta_tpr_daily(self, time):
+		"""
+		Returns the temperature delta relative to the average temperature
+		of the planet at the given time, where 0=noon and 0.5=midnight.
+		"""
+		if time > 0.5:
+			return self.delta_tpr_daily(1 - time)
+		time = 1 - (time * 4)
+		return time * self.tpr_daily_flux()
+
+	def delta_tpr_latitude(self, latitude):
+		"""
+		Returns the temperature at a given latitude where 0 is the equator and
+		-1 is the south pole and 1 is the north pole.
+		"""
+		abs_lat = abs(latitude)
+		dist_middle = (2 * abs_lat) - 1
+		return -(dist_middle * self.tpr_latitude_flux())
+
+	def tpr_at(self, time, latitude):
+		"""
+		Returns the temperature at a given time and latitude.
+		"""
+		delta_daily = self.delta_tpr_daily(time)
+		delta_lat = self.delta_tpr_latitude(latitude)
+		return self.tpr_surface() + delta_daily + delta_lat
+
 	def habitability(self):
 		"""
 		Returns a dictionary of the habitability factors of the atmosphere.

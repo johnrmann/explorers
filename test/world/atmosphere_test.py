@@ -151,6 +151,27 @@ class AtmosphereTest(unittest.TestCase):
 			hab[HabitabilityFactor.PRESSURE], 1.0, places=4
 		)
 
+	def test__delta_tpr_daily(self):
+		self.assertEqual(self.earth.delta_tpr_daily(0), 10)
+		self.assertEqual(self.earth.delta_tpr_daily(0.25), 0)
+		self.assertEqual(self.earth.delta_tpr_daily(0.5), -10)
+		self.assertEqual(self.earth.delta_tpr_daily(0.75), 0)
+
+	def test__delta_tpr_latitude(self):
+		self.assertEqual(self.earth.delta_tpr_latitude(-1), -15)
+		self.assertEqual(self.earth.delta_tpr_latitude(-0.5), 0)
+		self.assertEqual(self.earth.delta_tpr_latitude(0), 15)
+		self.assertEqual(self.earth.delta_tpr_latitude(0.5), 0)
+		self.assertEqual(self.earth.delta_tpr_latitude(1), -15)
+
+	def test__tpr_at__midnight_poles(self):
+		self.earth.tpr_surface = lambda: 288
+		self.assertEqual(self.earth.tpr_at(0.5, 1), 288 - 15 - 10)
+
+	def test__tpr_at__noon_equator(self):
+		self.earth.tpr_surface = lambda: 288
+		self.assertEqual(self.earth.tpr_at(0, 0), 288 + 15 + 10)
+
 	def test__set_evt_mgr(self):
 		"""Test that setting the event manager sets it on the atmosphere."""
 		evt_mgr = EventManager()
