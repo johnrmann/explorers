@@ -193,5 +193,121 @@ class TerrainTest(unittest.TestCase):
 		self.assertEqual(terrain.ice[0][0], 1)
 		self.assertEqual(terrain.water[1][0], 1)
 
+class BalanceWaterTest(unittest.TestCase):
+	def test__is_puddle_valley_at_cell__flat(self):
+		terrain = Terrain(waterworld_heightmap, waterworld_watermap)
+		# Sanity check
+		self.assertTrue(terrain.is_cell_water((0, 0)))
+		# Actual tests
+		self.assertFalse(terrain.is_puddle_valley_at_cell((0, 0)))
+
+	def test__is_puddle_valley_at_cell__land(self):
+		terrain = Terrain(waterworld_heightmap, waterworld_watermap)
+		self.assertFalse(terrain.is_puddle_valley_at_cell((2, 2)))
+
+	def test__is_puddle_valley_at_cell__true(self):
+		puddle_valley = [
+			[2, 2, 2, 2, 2],
+			[2, 2, 2, 2, 2],
+			[2, 2, 1, 2, 2],
+			[2, 2, 2, 2, 2],
+			[2, 2, 2, 2, 2],
+		]
+		terrain = Terrain(desert_heightmap, puddle_valley)
+		self.assertTrue(terrain.is_puddle_valley_at_cell((2, 2)))
+
+	def test__is_puddle_hill_at_cell__flat(self):
+		terrain = Terrain(waterworld_heightmap, waterworld_watermap)
+		# Sanity check
+		self.assertTrue(terrain.is_cell_water((0, 0)))
+		# Actual tests
+		self.assertFalse(terrain.is_puddle_hill_at_cell((0, 0)))
+
+	def test__is_puddle_hill_at_cell__land(self):
+		terrain = Terrain(waterworld_heightmap, waterworld_watermap)
+		self.assertFalse(terrain.is_puddle_hill_at_cell((2, 2)))
+
+	def test__is_puddle_hill_at_cell__true(self):
+		puddle_hill = [
+			[2, 2, 2, 2, 2],
+			[2, 2, 2, 2, 2],
+			[2, 2, 3, 2, 2],
+			[2, 2, 2, 2, 2],
+			[2, 2, 2, 2, 2],
+		]
+		terrain = Terrain(desert_heightmap, puddle_hill)
+		self.assertTrue(terrain.is_puddle_hill_at_cell((2, 2)))
+
+	def test__is_water_cell_balanced__land(self):
+		terrain = Terrain(desert_heightmap, desert_watermap)
+		self.assertTrue(terrain.is_water_cell_balanced((2, 2)))
+
+	def test__is_water_cell_balanced__ocean(self):
+		terrain = Terrain(waterworld_heightmap, waterworld_watermap)
+		self.assertTrue(terrain.is_water_cell_balanced((1, 1)))
+
+	def test__is_water_cell_balanced__column(self):
+		column_with_water = [
+			[0, 0, 0, 0, 0],
+			[0, 0, 1, 0, 0],
+			[0, 1, 9, 1, 0],
+			[0, 0, 1, 0, 0],
+			[0, 0, 0, 0, 0],
+		]
+		terrain = Terrain(desert_heightmap, column_with_water)
+		self.assertFalse(terrain.is_water_cell_balanced((2, 2)))
+
+	def test__balance_water__balanced_null(self):
+		terrain = Terrain(desert_heightmap, desert_watermap)
+		terrain.balance_water()
+		self.assertEqual(terrain.water, desert_watermap)
+
+	def test__balance_water__balanced(self):
+		terrain = Terrain(waterworld_heightmap, waterworld_watermap)
+		terrain.balance_water()
+		self.assertEqual(terrain.water, waterworld_watermap)
+
+	def test__balance_water__unbalanced_simple(self):
+		terrain = Terrain(desert_heightmap, desert_watermap)
+		terrain.water[2][2] = 2
+		terrain.balance_water()
+		self.assertEqual(terrain.water[2][2], 0)
+		self.assertEqual(terrain.water[1][2], 1)
+		self.assertEqual(terrain.water[2][3], 1)
+
+	def test__balance_water__column(self):
+		terrain = Terrain(desert_heightmap, desert_watermap)
+		terrain.water[2][2] = 5
+		terrain.balance_water()
+		self.assertEqual(terrain.water[2][2], 1)
+		self.assertEqual(terrain.water[2][3], 1)
+		self.assertEqual(terrain.water[2][1], 1)
+		self.assertEqual(terrain.water[1][2], 1)
+		self.assertEqual(terrain.water[3][2], 1)
+
+	def test__balance_water__cup(self):
+		cup_map_land = [
+			[5, 5, 5, 5, 5],
+			[5, 1, 1, 1, 5],
+			[5, 1, 1, 1, 5],
+			[5, 1, 1, 1, 5],
+			[5, 5, 5, 5, 5],
+		]
+		cup_map_water = [
+			[0, 0, 00, 0, 0],
+			[0, 0, 00, 0, 0],
+			[0, 0, 27, 0, 0],
+			[0, 0, 00, 0, 0],
+			[0, 0, 00, 0, 0],
+		]
+		terrain = Terrain(cup_map_land, watermap=cup_map_water)
+		terrain.balance_water()
+		self.assertEqual(terrain.water[2][2], 23)
+		for _ in range(10):
+			terrain.balance_water()
+		for y in range(1, 4):
+			for x in range(1, 4):
+				self.assertEqual(terrain.water[y][x], 3)
+
 if __name__ == '__main__':
 	unittest.main()

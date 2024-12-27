@@ -1,3 +1,4 @@
+from collections import defaultdict
 from src.math.adj import adj_cells
 from src.math.direction import *
 from src.math.vector2 import Vector2
@@ -48,7 +49,7 @@ class Terrain(object):
 			self.water = [[0] * w for _ in range(h)]
 			self._water_area = 0
 		else:
-			self.water = watermap
+			self.water = [row[:] for row in watermap]
 			self._water_area = sum(
 				sum(cell > 0 for cell in row)
 				for row in watermap
@@ -274,3 +275,126 @@ class Terrain(object):
 				self._water_area += 1
 			self.water[y2][x2] += 1
 			return x2, y2
+
+	def is_water_cell_balanced(self, p):
+		"""
+		Return True if the water cell at the given position is balanced.
+		"""
+		x, y = p
+
+		# Trivial case: no water to balance.
+		if self.water[y][x] == 0:
+			return True
+
+		curr_height = self.height_at(p)
+		adj = adj_cells(self.dimensions, p)
+
+		# Another trivial case: this height is the same as all the neighbors.
+		same_heights = map(
+			lambda p2: self.height_at(p2) == curr_height,
+			adj
+		)
+		if all(same_heights):
+			return True
+
+		# The trickiest case is the "puddle" case - if this tile is one above
+		# its surroundings, then it's a puddle and we can consider it balanced.
+		# If it's two or more above, then it's not balanced.
+		much_higher = map(
+			lambda p2: self.height_at(p2) - curr_height > 1,
+			adj
+		)
+		if any(much_higher):
+			return False
+
+		# Water cell is not balanced.
+		return False
+
+	def is_puddle_valley_at_cell(self, p):
+		"""
+		This method returns true if the given cell is a puddle valley.
+		"""
+		if not self.is_cell_water(p):
+			return False
+		h = self.height_at(p)
+		adj = adj_cells(self.dimensions, p)
+		water_adj = filter(self.is_cell_water, adj)
+		higher_water_adj = map(
+			lambda p2: self.height_at(p2) == h + 1,
+			water_adj
+		)
+		if all(higher_water_adj):
+			return True
+		return False
+
+	def is_puddle_hill_at_cell(self, p):
+		"""
+		This method returns true if the given cell is a puddle hill.
+		"""
+		if not self.is_cell_water(p):
+			return False
+		h = self.height_at(p)
+		adj = adj_cells(self.dimensions, p)
+		water_adj = filter(self.is_cell_water, adj)
+		lower_water_adj = map(
+			lambda p2: self.height_at(p2) == h - 1,
+			water_adj
+		)
+		if all(lower_water_adj):
+			return True
+		return False
+
+	def _postbalance_water(self):
+		"""
+		Puddle hill/valleys are artifacts of the water balancing algorithm.
+		It's possible for a water cell surrounded by water to be a "puddle
+		hill" or "puddle valley", where the difference in height between it and
+		its surroundings is one.
+
+		We want to cancel out as many of them as possible to get a flat
+		ocean.
+		"""
+		puddle_hills = set()
+		puddle_valleys = set()
+		for y in range(self.height):
+			for x in range(self.width):
+				p = (x, y)
+				if self.is_cell_water(p):
+					if self.is_puddle_valley_at_cell(p):
+						puddle_valleys.add(p)
+					elif self.is_puddle_hill_at_cell(p):
+						puddle_hills.add(p)
+		for valley_p, hill_p in zip(puddle_valleys, puddle_hills):
+			vx, vy = valley_p
+			hx, hy = hill_p
+			self.water[vy][vx] += 1
+			self.water[hy][hx] -= 1
+
+	def balance_water(self):
+		"""
+		Distributes water from higher cells to lower adjacent cells to balance
+		the water levels.
+		"""
+		for y in range(self.height):
+			for x in range(self.width):
+				if not self.is_cell_water((x, y)):
+					continue
+				# print("Water at ({}, {})".format(x, y))
+				current_height = self.height_at((x, y))
+				adj = adj_cells(self.dimensions, (x, y))
+				lower_adj = []
+				for x2, y2 in adj:
+					adj_height = self.height_at((x2, y2))
+					diff = current_height - adj_height
+					if diff >= 2:
+						lower_adj.append(((x2, y2), adj_height))
+				if lower_adj and self.water[y][x] > 0:
+					# Distribute water to lower neighbors
+					lower_adj.sort(key=lambda p: p[1])
+					for p2, _ in lower_adj:
+						x2, y2 = p2
+						if self.is_water_cell_balanced((x, y)):
+							break
+						self.water[y][x] -= 1
+						self.water[y2][x2] += 1
+		self._postbalance_water()
