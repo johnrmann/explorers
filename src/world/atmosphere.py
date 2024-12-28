@@ -267,6 +267,8 @@ class Atmosphere(Listener):
 		Call this once per second (not frame!).
 		"""
 		for key, count in self.delta.items():
+			if key not in self.total:
+				self.total[key] = 0
 			self.total[key] += count * d_seconds
 			if self.total[key] < 0:
 				self.total[key] = 0

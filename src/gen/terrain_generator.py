@@ -16,7 +16,11 @@ LANDING_SIDE_LENGTH = 32
 SCALE = 20
 
 class TerrainGenerator(object):
-	def __init__(self, width = TERRAIN_X, height = TERRAIN_Y):
+	def __init__(self, width = None, height = None):
+		if width is None:
+			width = TERRAIN_X
+		if height is None:
+			height = TERRAIN_Y
 		self.terrain = np.zeros((height, width))
 		self._voronoi()
 	

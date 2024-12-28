@@ -111,7 +111,7 @@ def _make_proto_earth():
 	}
 	return make_atmosphere_composiiton(p_composition, pressure)
 
-def _generate_atmosphere_composition(atmosphere_type):
+def generate_atmosphere_composition(atmosphere_type):
 	"""
 	Generates an atmosphere according to the given type.
 	"""
@@ -134,7 +134,7 @@ def generate_atmosphere(atmosphere_type, astronomy = None):
 	"""
 	if astronomy is None:
 		astronomy = Astronomy()
-	comp = _generate_atmosphere_composition(atmosphere_type)
+	comp = generate_atmosphere_composition(atmosphere_type)
 	return Atmosphere(
 		planet_area = 1,
 		average = comp,

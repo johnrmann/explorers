@@ -2,23 +2,11 @@ import pygame
 
 from argparse import ArgumentParser
 
-from src.gen.terrain_generator import TerrainGenerator
+from src.gen.gen import make_game
 from src.utility.calendar import utc_tuple_to_utc_float
-from src.world.world import World
-from src.render.render import Render
-from src.math.vector2 import Vector2
-from src.gameobject.lander import Lander
-from src.gameobject.plant_flag import PlantFlag
-from src.mgmt.singletons import init_game_manager, get_game_manager
 from src.mgmt.constants import TARGET_FPS
-from src.render.viewport import Viewport
-from src.ctrl.ctrl import Control
-from src.gui.anchor import Anchor
 from src.gui.mission_clock import MissionClock
-from src.gui.superevent import superevent_from_json
 from src.gui.fps import FpsCounter
-from src.gui.rangebar import Rangebar
-from src.gui.actor_motives import ActorMotivesGui
 from src.gui.playbar import Playbar
 from src.gui.colony_name import ColonyName
 
@@ -84,58 +72,18 @@ epoch = utc_tuple_to_utc_float(epoch_tuple)
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), flags)
 pygame.display.set_caption("Explorers")
 
-def make_terrain():
-	"""Create the world's terrain."""
-	tg = TerrainGenerator()
-	terrain = tg.make()
-	return terrain
-
-def make_world():
-	"""Create the game world."""
-	terrain = make_terrain()
-	world = World(terrain)
-	return world
-
-def make_lander(world: World):
-	"""Create the lander the player character arrives in."""
-	lander_pos = world.terrain.center + Vector2(-5, -12)
-	lander = Lander(pos=lander_pos)
-	lander.owner = 1
-	get_game_manager().add_game_object(lander)
-
-def make_plant_flag(world: World):
-	"""Create the flag the player plants."""
-	flag_pos = world.terrain.center + Vector2(0, 10)
-	flag = PlantFlag(pos=flag_pos, is_first=True)
-	flag.owner = 1
-	get_game_manager().add_game_object(flag)
-
-def make_game(on_quit):
-	"""Initialize the game manager."""
-	world = make_world()
-	vp = Viewport((WINDOW_WIDTH, WINDOW_HEIGHT), world.terrain)
-	game_mgr = init_game_manager(
-		world,
-		vp,
-		on_quit=on_quit,
-		screen=window,
-		epoch=epoch
-	)
-	vp.game_mgr = game_mgr
-	game_mgr.new_player_character(world.terrain.center)
-	game_mgr.new_player_character(world.terrain.center + Vector2(2, 0))
-	game_mgr.new_player_character(world.terrain.center + Vector2(-2, 0))
-	make_lander(world)
-	make_plant_flag(world)
-	return game_mgr
-
 def main():
 	running = True
 	def on_quit():
 		nonlocal running
 		running = False
 
-	game = make_game(on_quit)
+	game = make_game(
+		on_quit=on_quit,
+		screen=window,
+		window_dimensions=(WINDOW_WIDTH, WINDOW_HEIGHT),
+		epoch=epoch
+	)
 	clock = pygame.time.Clock()
 	game.prepare_render()
 
