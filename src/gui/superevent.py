@@ -61,6 +61,10 @@ class Superevent(GuiElement):
 			callback=self.remove_me
 		)
 
+	def remove_me(self):
+		self.gui_mgr.game_mgr.paused = False
+		super().remove_me()
+
 def superevent_from_json(file: str, event_key: str):
 	"""
 	Given a file and key, creates a superevent from a JSON file.

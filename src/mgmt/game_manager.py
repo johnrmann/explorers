@@ -38,6 +38,9 @@ class GameManager(Listener):
 	utc: float
 	epoch: float
 
+	# Whether time is paused or not.
+	paused: bool = False
+
 	game_objects: set[GameObject]
 	colonies: set[Colony]
 	world: World
@@ -102,6 +105,7 @@ class GameManager(Listener):
 		# game manager.
 		if event.event_type == 'ShowSupereventEvent':
 			event.make_superevent()
+			self.paused = True
 		# TODO(jm) - move this to world?
 		if event.event_type == 'FlagPlantedEvent':
 			self.new_colony(
@@ -116,6 +120,8 @@ class GameManager(Listener):
 		"""
 		if dt <= 0:
 			raise ValueError("Time travel not allowed")
+		if self.paused:
+			return
 		floor_new_utc = int(self.utc + dt)
 		floor_old_utc = int(self.utc)
 		if floor_new_utc != floor_old_utc:

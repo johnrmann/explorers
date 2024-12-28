@@ -48,6 +48,31 @@ class GameManagerTest(unittest.TestCase):
 		self.assertEqual(gm.selected_actors[1], actor1)
 		self.assertEqual(gm.selected_actors[2], actor3)
 
+	def test__tick__noop_when_paused(self):
+		"""
+		Ensure that pausing the game does not render events or tick objects.
+		"""
+		gm = GameManager(self.world, self.viewport)
+		p1 = gm.new_player_character((0, 0))
+		p2 = gm.new_player_character((1, 1))
+		p1.tick = MagicMock()
+		p2.tick = MagicMock()
+		gm.paused = True
+		gm.tick(1)
+		p1.tick.assert_not_called()
+		p2.tick.assert_not_called()
+
+	def test__tick__ticks_objects(self):
+		"""Ensure that game objects are ticked."""
+		gm = GameManager(self.world, self.viewport)
+		p1 = gm.new_player_character((0, 0))
+		p2 = gm.new_player_character((1, 1))
+		p1.tick = MagicMock()
+		p2.tick = MagicMock()
+		gm.tick(1)
+		p1.tick.assert_called_once()
+		p2.tick.assert_called_once()
+
 	def test__tick__rejects_time_travel(self):
 		"""Ensure that an error is thrown if we try to tick with a negative
 		dt."""
