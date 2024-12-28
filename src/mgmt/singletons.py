@@ -5,12 +5,24 @@ from src.render.render import Render
 
 _global_game_manager: GameManager = None
 
-def init_game_manager(world: World, vp: Viewport, on_quit=None, screen=None):
+def init_game_manager(
+		world: World,
+		vp: Viewport,
+		on_quit=None,
+		screen=None,
+		epoch=None
+):
 	"""Initializes the game manager singleton."""
 	global _global_game_manager
 	if _global_game_manager is not None:
 		raise ValueError("Game manager already initialized.")
-	_global_game_manager = GameManager(world, vp, on_quit=on_quit, screen=screen)
+	_global_game_manager = GameManager(
+		world,
+		vp,
+		on_quit=on_quit,
+		screen=screen,
+		epoch=epoch
+	)
 	return _global_game_manager
 
 def get_game_manager():

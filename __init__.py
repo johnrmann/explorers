@@ -3,6 +3,7 @@ import pygame
 from argparse import ArgumentParser
 
 from src.gen.terrain_generator import TerrainGenerator
+from src.utility.calendar import utc_tuple_to_utc_float
 from src.world.world import World
 from src.render.render import Render
 from src.math.vector2 import Vector2
@@ -36,6 +37,18 @@ arg_parser.add_argument(
 	'-sh', '--screen-height',
 	help='The height of the game window.',
 )
+arg_parser.add_argument(
+	'--epoch-year',
+	help='What year to start the game calendar at.'
+)
+arg_parser.add_argument(
+	'--epoch-month',
+	help='What month to start the game calendar at.'
+)
+arg_parser.add_argument(
+	'--epoch-day',
+	help='What day to start the game calendar at.'
+)
 
 args = arg_parser.parse_args()
 
@@ -60,6 +73,13 @@ else:
 	else:
 		WINDOW_WIDTH = 1440
 		WINDOW_HEIGHT = 900
+
+epoch_tuple = (
+	int(args.epoch_year or 2350),
+	int(args.epoch_month or 1),
+	int(args.epoch_day or 1)
+)
+epoch = utc_tuple_to_utc_float(epoch_tuple)
 
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), flags)
 pygame.display.set_caption("Explorers")
@@ -94,7 +114,13 @@ def make_game(on_quit):
 	"""Initialize the game manager."""
 	world = make_world()
 	vp = Viewport((WINDOW_WIDTH, WINDOW_HEIGHT), world.terrain)
-	game_mgr = init_game_manager(world, vp, on_quit=on_quit, screen=window)
+	game_mgr = init_game_manager(
+		world,
+		vp,
+		on_quit=on_quit,
+		screen=window,
+		epoch=epoch
+	)
 	vp.game_mgr = game_mgr
 	game_mgr.new_player_character(world.terrain.center)
 	game_mgr.new_player_character(world.terrain.center + Vector2(2, 0))

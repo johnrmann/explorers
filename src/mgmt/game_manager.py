@@ -54,6 +54,7 @@ class GameManager(Listener):
 			self,
 			world: World,
 			viewport,
+			epoch=0,
 			on_quit=None,
 			evt_mgr=None,
 			screen=None,
@@ -61,7 +62,7 @@ class GameManager(Listener):
 	):
 		self.screen = screen
 		self.utc = 0.0
-		self.epoch = (360 * 2468) + (11 * 30)
+		self.epoch = epoch
 		self.game_objects = set()
 		self.colonies = []
 		self.world = world
