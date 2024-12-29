@@ -13,9 +13,23 @@
 		},
 		"bad": {
 			"title": "First Christmas far from home",
-			"body": "With the death of {ASTRONAUT} still fresh in memory, the first Christmas on {PLANET} is a solemn occasion, and some astronauts are harboring doubts that they’ll be alive to celebrate the next one.",
-			"dismiss": "Until then, we’ll have to muddle through somehow.",
+			"body": "With the death of {ASTRONAUT} still fresh in memory, the first Christmas on {PLANET} is a solemn occasion, and some astronauts are harboring doubts that they'll be alive to celebrate the next one.",
+			"dismiss": "Until then, we'll have to muddle through somehow.",
 			"image": "assets/img/painting/first-christmas-bad.png"
+		}
+	},
+	"y3k": {
+		"good": {
+			"title": "The next millenium",
+			"image": "assets/img/painting/y3k-good.png",
+			"body": "One thousand years ago, humanity had barely taken its first steps into space. Now, we're colonizing a new world. Where will we be in another thousand years?",
+			"dismiss": "The future is now!"
+		},
+		"bad": {
+			"title": "The year 3000",
+			"image": "assets/img/painting/y3k-bad.png",
+			"body": "Those who still observe the old Earth calendar marked the arrival of the year 3000 today. But with the current state of {PLANET}, it's hard to find much to celebrate.",
+			"dismiss": "Here's to another lousy millenium."
 		}
 	}
 }

@@ -10,7 +10,7 @@ from src.gui.gui import _GuiManager, init_gui_manager
 from src.ctrl.ctrl import Control
 from src.ctrl.clickmap import ClickMap
 from src.render.render import Render
-from src.utility.calendar import next_christmas
+from src.utility.calendar import next_christmas, utc_tuple_to_utc_float
 
 from src.mgmt.event_manager import EventManager
 from src.mgmt.listener import Listener
@@ -19,6 +19,12 @@ def christmas_event(score):
 	return random.choice([
 		"first_christmas-good",
 		"first_christmas-bad",
+	])
+
+def y3k_event(score):
+	return random.choice([
+		"y3k-good",
+		"y3k-bad",
 	])
 
 class GameManager(Listener):
@@ -99,8 +105,10 @@ class GameManager(Listener):
 		event ID to signal.
 		"""
 		christmas = next_christmas(0, epoch=self.epoch)
+		y3k = utc_tuple_to_utc_float((3000, 1, 1), epoch=self.epoch)
 		self._holiday_queue = {
 			christmas: christmas_event,
+			y3k: y3k_event,
 		}
 
 	def update(self, event):
