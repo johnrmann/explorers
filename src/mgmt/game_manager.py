@@ -29,7 +29,7 @@ class GameManager(Listener):
 	evt_mgr: EventManager
 	gui_mgr: _GuiManager
 	ctrl: Control
-	renderer: Render
+	renderer: Render = None
 	clickmap: ClickMap
 
 	# UTC is used to keep track of the current time in the game world. Epoch
@@ -73,6 +73,8 @@ class GameManager(Listener):
 		self._init_managers(evt_mgr, no_gui)
 		self._subscribe_to_events()
 		self._make_holiday_queue()
+		if screen:
+			self.prepare_render()
 
 	def _init_managers(self, evt_mgr, no_gui):
 		if evt_mgr is not None:

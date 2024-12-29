@@ -38,7 +38,7 @@ void voronoi_visit(
 	}
 	bitmatrix_set_bit_at(visited, y, x, 1);
 	int set_value = x_looped_find_closest(position, voronois, label, w) + 1;
-	int_matrix_set_at(matrix, x, y, set_value);
+	int_matrix_set_at(matrix, y, x, set_value);
 	if (set_value != label) {
 		return;
 	}
@@ -88,7 +88,7 @@ void fill_voronoi(IntMatrix *matrix, int num_points) {
 
 	for (int y = 0; y < matrix->height; y++) {
 		for (int x = 0; x < matrix->width; x++) {
-			int_matrix_set_at(matrix, x, y, 1);
+			int_matrix_set_at(matrix, y, x, 1);
 		}
 	}
 
@@ -113,7 +113,7 @@ void norm_voronoi(IntMatrix *matrix) {
 	int h = matrix->height;
 	for (int y = 0; y < h; y++) {
 		for (int x = 0; x < w; x++) {
-			int_matrix_delta_at(matrix, x, y, -1);
+			int_matrix_delta_at(matrix, y, x, -1);
 		}
 	}
 }

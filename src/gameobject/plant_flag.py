@@ -22,7 +22,7 @@ class PlantFlag(Interactable, Listener):
 		super().__init__(
 			game_mgr=game_mgr,
 			pos=pos,
-			size=(1,1,0)
+			size=(1,1)
 		)
 		self._is_first = is_first
 		self.evt_mgr.sub("FlagPlantedEvent", self)

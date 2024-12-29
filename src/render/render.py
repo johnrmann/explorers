@@ -4,6 +4,8 @@ from src.math.map_range import map_range
 
 from src.rendermath.order import cells_in_draw_order
 from src.rendermath.draw_graph import DrawGraph
+from src.rendermath.fit_rect import object_height_from_img_dims
+from src.rendermath.box import Box
 
 from src.world.world import World
 
@@ -20,7 +22,7 @@ IMG_PATHS = [
 	'assets/img/sprite/palm-tree.png',
 ]
 
-class Render(object):
+class Render:
 	_last_zoom = 0
 
 	_brightnesses = None
@@ -34,9 +36,10 @@ class Render(object):
 		self._load_images()
 		self._calc_draw_order()
 		self._calc_brightnesses()
-	
+
 	def _load_images(self):
 		self.images = {}
+		self.image_z_factors = {}
 		for path in IMG_PATHS:
 			surface = pygame.image.load(path).convert_alpha()
 			multisurface = MultiSurface(
@@ -46,6 +49,8 @@ class Render(object):
 				lights=LIGHT_LEVELS
 			)
 			self.images[path] = multisurface
+			img_dims = object_height_from_img_dims(surface.get_size())
+			self.image_z_factors[path] = img_dims
 
 	def _calc_draw_order(self):
 		self._last_zoom = self.vp.tile_width
@@ -90,6 +95,27 @@ class Render(object):
 			light=light
 		)
 
+	def bounding_box_for_gameobject(self, go):
+		"""
+		Use the game object's position and size to compute its bounding box
+		on the screen.
+
+		If the game object's size is 2D, use its image as the basis for its
+		height. Otherwise, use the third element of its size tuple.
+
+		If the game object's size is 2D and there is no image, just use zero
+		for height.
+		"""
+		pos = go.pos3
+		w, d, h = go.size
+		if h == None:
+			img_path = go.image_path()
+			if img_path in self.image_z_factors:
+				h = self.image_z_factors[img_path] * w
+			else:
+				h = 0
+		return Box(p=pos, size=(w, d, h))
+
 	def render(self):
 		if self.vp.tile_width != self._last_zoom:
 			self._calc_draw_order()
@@ -97,7 +123,7 @@ class Render(object):
 		self.window.fill((0,0,200))
 
 		pre_go_draw_graph = {
-			go: go.bounding_box()
+			go: self.bounding_box_for_gameobject(go)
 			for go in self.game_mgr.game_objects
 		}
 		draw_graph = DrawGraph(key_vals=pre_go_draw_graph)

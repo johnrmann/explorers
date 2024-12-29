@@ -1,8 +1,7 @@
+
 from src.math.direction import Direction
 from src.math.cart_prod import spatial_cart_prod
 from src.math.vector2 import Vector2
-
-from src.rendermath.box import Box
 
 from src.gameobject.constants import NO_OWNER
 
@@ -12,8 +11,10 @@ class GameObject:
 	invisible tiles that can be interacted with.
 	"""
 
-	evt_mgr = None
 	_pos = (0, 0)
+
+	evt_mgr = None
+	game_mgr = None
 	hidden: bool = False
 
 	owner: int = NO_OWNER
@@ -26,6 +27,8 @@ class GameObject:
 			pos = (0, 0)
 		if size is None:
 			size = (1, 1, 1)
+		elif len(size) == 2:
+			size = (size[0], size[1], None)
 		if game_mgr is None:
 			from src.mgmt.singletons import get_game_manager
 			game_mgr = get_game_manager()
@@ -37,7 +40,19 @@ class GameObject:
 
 	@property
 	def pos(self):
+		"""
+		Returns the 2D position of the object.
+		"""
 		return self._pos
+
+	@property
+	def pos3(self):
+		"""
+		Returns the 3D position of the object, with the z-coordinate being the
+		height of the terrain at that position.
+		"""
+		x, y = self.pos
+		return (x, y, self.game_mgr.world.terrain.height_at(self.pos))
 
 	@property
 	def draw_position(self) -> Vector2:
@@ -72,14 +87,6 @@ class GameObject:
 		_, y = self.pos
 		_, h, _ = self.size
 		return range(y, y + h)
-
-	def bounding_box(self):
-		"""
-		Returns the bounding box that this game object occupies.
-		"""
-		x, y = self.pos
-		z = self.game_mgr.world.terrain.height_at(self.pos) // 8 # TODO(jm)
-		return Box(p=(x, y, z), size=self.size)
 
 	def cells_occupied(self, view_sort = Direction.NORTHWEST):
 		"""
@@ -116,7 +123,7 @@ class GameObject:
 			return (x, y)
 		return (x + w, y + h)
 
-	def image_path(self):
+	def image_path(self) -> str:
 		"""
 		Override this to specify an image to render.
 		"""

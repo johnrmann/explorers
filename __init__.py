@@ -85,7 +85,6 @@ def main():
 		epoch=epoch
 	)
 	clock = pygame.time.Clock()
-	game.prepare_render()
 
 	mission_clock = MissionClock()
 	fps = FpsCounter()

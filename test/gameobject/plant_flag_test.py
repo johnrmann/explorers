@@ -24,7 +24,7 @@ class PlantFlagTest(unittest.TestCase):
 
 	def test__init__attributes(self):
 		self.assertEqual(self.plant_flag.pos, (5, 5))
-		self.assertEqual(self.plant_flag.size, (1, 1, 0))
+		self.assertEqual(self.plant_flag.size, (1, 1, None))
 		self.assertEqual(self.plant_flag.game_mgr, self.game_mgr)
 
 	def test__update__flag_planted_event(self):

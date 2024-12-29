@@ -26,17 +26,24 @@ class GameObjectTest(unittest.TestCase):
 		game_mgr = MagicMock(spec=GameManager)
 		game_mgr.evt_mgr = evt_mgr
 		game_mgr.world = mock_world
+		self.game_mgr = game_mgr
 		self.widget = _Widget(game_mgr=game_mgr, pos=(1,1), size=(2,2,2))
 
 	def test__pos__correct(self):
 		self.assertEqual(self.widget.pos, (1,1))
 
-	def test__size__correct(self):
-		self.assertEqual(self.widget.size, (2,2,2))
+	def test__pos3__injects_terrain_height(self):
+		self.game_mgr.world.terrain.height_at.return_value = 5
+		self.assertEqual(self.widget.pos3, (1,1,5))
 
-	def test__bounding_box__correct(self):
-		bbox = self.widget.bounding_box()
-		self.assertEqual(bbox.p, (1,1,0))
+	def test__size__correct_2d(self):
+		widget = _Widget(
+			game_mgr=self.game_mgr, pos=(1,1), size=(2,2)
+		)
+		self.assertEqual(widget.size, (2,2,None))
+
+	def test__size__correct_3d(self):
+		self.assertEqual(self.widget.size, (2,2,2))
 
 	def test__draw_point__northwest(self):
 		point = self.widget.draw_point(Direction.NORTHWEST)

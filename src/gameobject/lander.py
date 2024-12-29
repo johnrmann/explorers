@@ -39,7 +39,7 @@ class Lander(Structure, RabbitHole, Listener):
 			self,
 			game_mgr=game_mgr,
 			pos=pos,
-			size=(11,11,22)
+			size=(11,11)
 		)
 		RabbitHole.__init__(
 			self,

@@ -32,14 +32,13 @@ class Actor(GameObject, Listener):
 			name = "Default"
 		if not pos:
 			pos = Vector2(0,0)
-		super().__init__(game_mgr=game_mgr, pos=pos, owner=owner)
+		super().__init__(game_mgr=game_mgr, pos=pos, owner=owner, size=(1,1))
 		self._path_runner = PathRunner(
 			position=pos,
 			on_done=self._finished_path
 		)
 		self.name = name
 		self.motives = ActorMotiveVector(maxs=100)
-		self.size = (1,1,5)
 		# Speed is given in cells per second.
 		self.speed = speed
 		# Subscribe to events.
