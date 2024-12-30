@@ -33,5 +33,17 @@ class TerrainGeneratorTest(unittest.TestCase):
 		self.assertEqual(terrain.ice_area, 0)
 		self.assertEqual(terrain.water_area, 0)
 
+
+	def test__make__ocean_no_ice(self):
+		tgen = TerrainGenerator(64, 32, avg_cell_area=4)
+		tgen.set_landmasses()
+		tgen.set_ocean()
+		terrain = tgen.make()
+		self.assertLess(terrain.land_area, 64 * 32)
+		self.assertEqual(terrain.ice_area, 0)
+		self.assertLess(terrain.water_area, 64 * 32)
+		self.assertEqual(terrain.land_area + terrain.water_area, 64 * 32)
+
+
 if __name__ == "__main__":
 	unittest.main()
