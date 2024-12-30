@@ -1,8 +1,6 @@
-import math
 import unittest
 
-from src.math.voronoi import *
-from src.math.distance import *
+from src.math.voronoi import make_voronoi
 
 class VoronoiTest(unittest.TestCase):
 	def test__make_voronoi(self):

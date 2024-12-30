@@ -1,11 +1,7 @@
-import ctypes
+import numpy as np
+from scipy.spatial import cKDTree, Voronoi
 
-lib = ctypes.CDLL("./bin/compiled.so")
-
-lib.make_voronoi.argtypes = (ctypes.c_int, ctypes.c_int, ctypes.c_int)
-lib.make_voronoi.restype = ctypes.POINTER(ctypes.POINTER(ctypes.c_int))
-
-lib.free_voronoi.argtypes = (ctypes.POINTER(ctypes.POINTER(ctypes.c_int)), ctypes.c_int)
+from src.math.random import random_2d_integers_numpy
 
 def make_voronoi(dimensions, density):
 	"""
@@ -13,15 +9,30 @@ def make_voronoi(dimensions, density):
 	looped, as is the case on a planet. The density is the average area of the
 	voronoi regions. (width * height) / density points will be created.
 	"""
+
 	width, height = dimensions
-	c_matrix = lib.make_voronoi(width, height, density)
+	num_points = width * height // density
 
-	# Convert to python lists.
-	result = []
+	rand_points = random_2d_integers_numpy(num_points, width, height)
+	wrapped_points = np.vstack([
+		rand_points,
+		rand_points + [width, 0],
+		rand_points - [width, 0],
+	])
+
+	y_indices, x_indices = np.indices((height, width))
+	cell_coords = np.column_stack(
+		(x_indices.ravel(), y_indices.ravel())
+	)
+
+	tree  = cKDTree(wrapped_points)
+	_, regions = tree.query(cell_coords)
+	regions = regions % num_points
+	matrix = regions.reshape((height, width))
+
+	py_matrix = [[0] * width for _ in range(height)]
 	for y in range(height):
-		row = [c_matrix[y][x] for x in range(width)]
-		result.append(row)
+		for x in range(width):
+			py_matrix[y][x] = matrix[y, x]
 
-	lib.free_voronoi(c_matrix, height)
-
-	return result
+	return py_matrix
