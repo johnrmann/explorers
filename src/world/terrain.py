@@ -132,6 +132,11 @@ class Terrain(object):
 		return self._water_area
 
 	@property
+	def ice_area(self):
+		"""The area of the terrain that is ice."""
+		return self._ice_area
+
+	@property
 	def center(self):
 		"""The intersection of the prime meridian and equator."""
 		return Vector2(self._width // 2, self._height // 2)

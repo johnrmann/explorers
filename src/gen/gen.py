@@ -20,6 +20,8 @@ def make_terrain(
 		height = None
 ):
 	tgen = TerrainGenerator(width=width, height=height)
+	tgen.set_ice_caps()
+	tgen.set_landmasses()
 	return tgen.make()
 
 def make_world(

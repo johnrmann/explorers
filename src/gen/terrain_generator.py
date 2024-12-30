@@ -1,66 +1,146 @@
 import numpy as np
-import noise
 import random
 
-from ..world.terrain import Terrain
+from collections import defaultdict
+
+from src.world.terrain import Terrain
 from src.math.voronoi import make_voronoi
 from src.math.adj import select_adj_degree, bool_adj_from_labels
 from src.math.smooth import smooth_matrix
 
 TERRAIN_X = 256
 TERRAIN_Y = TERRAIN_X // 2
-TERRAIN_Z = TERRAIN_Y // 2
+TERRAIN_Z = 256
 
 LANDING_SIDE_LENGTH = 32
 
 SCALE = 20
 
-class TerrainGenerator(object):
-	def __init__(self, width = None, height = None):
+SEABED_HEIGHT = 2
+LAND_HEIGHT = 10
+
+class TerrainGenerator:
+	"""
+	Generate terrain with voronoi cells.
+	"""
+
+	def __init__(self, width = None, height = None, avg_cell_area = 64):
 		if width is None:
 			width = TERRAIN_X
 		if height is None:
 			height = TERRAIN_Y
-		self.terrain = np.zeros((height, width))
-		self._voronoi()
-	
-	def _voronoi(self, avg_area = 64):
-		h = len(self.terrain)
-		w = len(self.terrain[0])
-		n_points = (w * h) // avg_area
-		voronoi = make_voronoi((w,h), avg_area)
-		v_adj = bool_adj_from_labels(voronoi, n_points)
 
-		remaining = set(range(n_points))
-		while len(remaining) != 0:
-			p = random.choice(list(remaining))
-			remaining.remove(p)
-			to_set_land = select_adj_degree(v_adj, p, degree=2)
+		self.width = width
+		self.height = height
+		self.dimensions = (width, height)
+
+		self.land_map = np.zeros((height, width))
+		self.water_map = np.zeros((height, width))
+		self.ice_map = np.zeros((height, width))
+
+		self._make_voronoi(avg_area=avg_cell_area)
+
+
+	def _make_voronoi(self, avg_area = 64):
+		n_points = (self.width * self.height) // avg_area
+		self.voronoi = make_voronoi(self.dimensions, avg_area)
+		self.voronoi_adj = bool_adj_from_labels(self.voronoi, n_points)
+		self.voronoi_remaining = set(range(n_points))
+		self.land_heights = defaultdict(int)
+		self.water_heights = defaultdict(int)
+		self.ice_heights = defaultdict(int)
+
+
+	def set_ice_caps(
+			self,
+			cells_tall = 2,
+			ice_thickness = 10,
+			cell_buffer = 1
+	):
+		"""
+		Create ice caps at the far north and far south of the map.
+
+		`ice_thickness` is how thick to make the ice, in addition to the sea
+		bed.
+
+		`cells_tall` is how many cells tall the ice caps should be. Setting
+		`cell_buffer` to a nonzero number ensures that there will always be
+		sea bed or ocean between the ice caps and the land.
+		"""
+
+		buffer_radius = cells_tall + cell_buffer
+		v_adj = self.voronoi_adj
+
+		to_ice = set()
+		to_buffer = set()
+		for label in (self.voronoi[0] + self.voronoi[-1]):
+			if label not in self.voronoi_remaining:
+				continue
+			to_ice |= select_adj_degree(v_adj, label, degree=cells_tall)
+			to_buffer |= select_adj_degree(v_adj, label, degree=buffer_radius)
+
+		to_buffer -= to_ice
+
+		for ice_label in to_ice:
+			self.ice_heights[ice_label] = ice_thickness
+			self.land_heights[ice_label] = SEABED_HEIGHT
+		for buffer_label in to_buffer:
+			self.land_heights[buffer_label] = SEABED_HEIGHT
+
+		self.voronoi_remaining -= to_ice | to_buffer
+
+
+	def set_landmasses(
+			self,
+			cell_radius = 3,
+			land_thickness = 10,
+			cell_buffer = 2
+	):
+		"""
+		Sets the landmass strategy.
+
+		Use `cell_radius` to use a radius strategy to set landmasses. In this
+		case, we will choose a cell at random, and then choose all cells
+		adjacent to that cell, then repeat and repeat until we run out of
+		radius.
+
+		`cell_buffer` will ensure the minimum distance between landmasses.
+		"""
+
+		cell_radius -= 1
+		buffer_radius = cell_radius + cell_buffer
+		v_adj = self.voronoi_adj
+		while self.voronoi_remaining:
+			label = random.choice(list(self.voronoi_remaining))
+			self.voronoi_remaining.remove(label)
+			to_set_land = select_adj_degree(v_adj, label, degree=cell_radius)
 			for land_label in to_set_land:
-				self._set_height(voronoi, land_label, 10)
-			to_set_sea = select_adj_degree(v_adj, p, degree=4) - to_set_land
+				self.land_heights[land_label] = land_thickness
+			to_set_sea = select_adj_degree(v_adj, label, degree=buffer_radius)
+			to_set_sea -= to_set_land
 			for sea_label in to_set_sea:
-				self._set_height(voronoi, sea_label, 2)
-			remaining -= to_set_sea | to_set_land
-		
-		self.terrain = smooth_matrix(self.terrain)
-	
-	def _set_height(self, voronoi, label, h):
-		for y in range(len(self.terrain)):
-			for x in range(len(self.terrain[0])):
-				if voronoi[y][x] == label:
-					self.terrain[y][x] = h
-	
-	def make_landing_area(self):
-		width = len(self.terrain[0])
-		height = len(self.terrain)
-		y = height // 2
-		x = width // 2
-		s = LANDING_SIDE_LENGTH // 2
-		z = self.terrain[y][x]
-		for dx in range(x-s,x+s):
-			for dy in range(y-s,y+s):
-				self.terrain[dy][dx] = z
+				self.land_heights[sea_label] = SEABED_HEIGHT
+			self.voronoi_remaining -= to_set_sea | to_set_land
+
+
+	def _apply_height_maps(self):
+		for y in range(self.height):
+			for x in range(self.width):
+				label = self.voronoi[y][x]
+				self.land_map[y][x] = self.land_heights[label]
+				self.water_map[y][x] = self.water_heights[label]
+				self.ice_map[y][x] = self.ice_heights[label]
+		self.land_map = smooth_matrix(self.land_map)
+
 	
 	def make(self):
-		return Terrain(self.terrain)
+		"""
+		Create the terrain object.
+		"""
+
+		self._apply_height_maps()
+		return Terrain(
+			self.land_map,
+			watermap=self.water_map,
+			icemap=self.ice_map
+		)
