@@ -30,10 +30,13 @@ class Playbar(GuiElement):
 	_mode_to_elements = None
 	_panel = None
 
-	def __init__(self, game, **kwargs):
+	_change_mode_callback = None
+
+	def __init__(self, game, change_mode_callback=None, **kwargs):
 		self.game = game
 		self.world = game.world
 		self.viewport = game.renderer.vp
+		self._change_mode_callback = change_mode_callback
 		super().__init__(
 			origin=(0, 0),
 			dimensions=(self.viewport.window_dims[0], 200),
@@ -76,6 +79,8 @@ class Playbar(GuiElement):
 			elem.hidden = True
 		self._mode = new_mode
 		self._unhide_current_mode()
+		if self._change_mode_callback:
+			self._change_mode_callback(new_mode)
 
 	def _make_character_mode(self):
 		"""

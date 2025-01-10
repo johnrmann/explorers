@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock
 import pygame
 from src.gui.playbar import Playbar, PlaybarMode
 from src.gui.primitives import Panel
@@ -12,7 +12,11 @@ class TestPlaybar(unittest.TestCase):
 		self.game_mock.world.terrain = MagicMock()
 		self.game_mock.world.terrain.dimensions = (64, 64)
 		self.game_mock.renderer.vp.window_dims = (800, 600)
-		self.playbar = Playbar(self.game_mock)
+		self.change_mode_callback = Mock()
+		self.playbar = Playbar(
+			self.game_mock,
+			change_mode_callback=self.change_mode_callback
+		)
 
 	def test__init__initial_mode_is_character(self):
 		self.assertEqual(self.playbar.mode, PlaybarMode.CHARACTER)
@@ -23,6 +27,10 @@ class TestPlaybar(unittest.TestCase):
 	def test__mode_setter__changes_mode(self):
 		self.playbar.mode = PlaybarMode.PLANET
 		self.assertEqual(self.playbar.mode, PlaybarMode.PLANET)
+
+	def test__mode_setter__calls_callback(self):
+		self.playbar.mode = PlaybarMode.PLANET
+		self.change_mode_callback.assert_called_once_with(PlaybarMode.PLANET)
 
 	def test__mode_setter__hides_previous_mode_elements(self):
 		self.playbar.mode = PlaybarMode.PLANET
@@ -48,6 +56,11 @@ class TestPlaybar(unittest.TestCase):
 		event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_F5)
 		result = self.playbar.process_event(event)
 		self.assertFalse(result)
+
+	def test__process_event__calls_callback(self):
+		event = pygame.event.Event(pygame.KEYDOWN, key=pygame.K_F2)
+		self.playbar.process_event(event)
+		self.change_mode_callback.assert_called_once_with(PlaybarMode.PLANET)
 
 if __name__ == '__main__':
 	unittest.main()
