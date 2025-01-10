@@ -24,6 +24,7 @@ class TerrainGenerator:
 	Generate terrain with voronoi cells.
 	"""
 
+	_ice_caps = False
 	_ice_cap_span = 0
 	_ice_cap_thickness = 0
 	_ice_cap_buffer = 0
@@ -32,6 +33,7 @@ class TerrainGenerator:
 	_landmass_thickness = 0
 	_landmass_buffer = 0
 
+	_ocean = False
 	_sea_level = 0
 
 	def __init__(self, width = None, height = None, avg_cell_area = 64):
@@ -79,11 +81,15 @@ class TerrainGenerator:
 		sea bed or ocean between the ice caps and the land.
 		"""
 
+		self._ice_caps = True
 		self._ice_cap_buffer = cells_tall + cell_buffer
 		self._ice_cap_span = cells_tall
 		self._ice_cap_thickness = ice_thickness
 
 	def _make_ice_caps(self):
+		if not self._ice_caps:
+			return
+
 		ice_thickness = self._ice_cap_thickness
 		cells_tall = self._ice_cap_span
 		buffer_radius = self._ice_cap_buffer
@@ -94,8 +100,10 @@ class TerrainGenerator:
 		for label in (self.voronoi[0] + self.voronoi[-1]):
 			if label not in self.voronoi_remaining:
 				continue
+			to_ice.add(label)
 			to_ice |= select_adj_degree(v_adj, label, degree=cells_tall)
 			to_buffer |= select_adj_degree(v_adj, label, degree=buffer_radius)
+			self.voronoi_remaining.remove(label)
 
 		to_buffer -= to_ice
 
@@ -111,7 +119,7 @@ class TerrainGenerator:
 
 	def set_landmasses(
 			self,
-			cell_radius = 3,
+			cell_radius = 5,
 			land_thickness = 10,
 			cell_buffer = 2
 	):
@@ -141,27 +149,38 @@ class TerrainGenerator:
 			label = random.choice(list(self.voronoi_remaining))
 			self.voronoi_remaining.remove(label)
 			to_set_land = select_adj_degree(v_adj, label, degree=cell_radius)
+			to_set_land &= self.voronoi_remaining
+			to_set_land.add(label)
 			for land_label in to_set_land:
 				self.land_heights[land_label] = land_thickness
 			to_set_sea = select_adj_degree(v_adj, label, degree=buffer_radius)
 			to_set_sea -= to_set_land
+			to_set_sea &= self.voronoi_remaining
 			for sea_label in to_set_sea:
 				self.land_heights[sea_label] = SEABED_HEIGHT
 				self.water_cells.add(sea_label)
 			self.voronoi_remaining -= to_set_sea | to_set_land
 
 
-	def set_ocean(self, sea_level = 8):
+	def set_ocean(self, sea_level = 6):
 		"""
 		Make the ocean. `sea_level` is the height of the ocean.
 		"""
 
+		self._ocean = True
 		self._sea_level = sea_level
 
 
 	def _make_ocean(self):
-		for label in self.water_cells:
-			self.water_heights[label] = self._sea_level
+		if not self._ocean:
+			return
+		for y in range(self.height):
+			for x in range(self.width):
+				label = self.voronoi[y][x]
+				if label in self.water_cells:
+					self.water_map[y][x] = self._sea_level - self.land_map[y][x]
+				else:
+					self.water_map[y][x] = 0
 
 
 	def _apply_height_maps(self):
@@ -169,7 +188,6 @@ class TerrainGenerator:
 			for x in range(self.width):
 				label = self.voronoi[y][x]
 				self.land_map[y][x] = self.land_heights[label]
-				self.water_map[y][x] = self.water_heights[label]
 				self.ice_map[y][x] = self.ice_heights[label]
 		self.land_map = smooth_matrix(self.land_map)
 
@@ -181,8 +199,8 @@ class TerrainGenerator:
 
 		self._make_ice_caps()
 		self._make_landmasses()
-		self._make_ocean()
 		self._apply_height_maps()
+		self._make_ocean()
 		return Terrain(
 			self.land_map,
 			watermap=self.water_map,

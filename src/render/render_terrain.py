@@ -11,7 +11,7 @@ from src.rendermath.tile import tile_polygon, is_point_in_tile, is_tile_in_scree
 from src.rendermath.order import offset_tile_by_draw_order_vector
 from src.rendermath.geometry import is_point_in_screen
 from src.math.vector2 import Vector2
-from src.render.render_tile import TileSurfaceCache
+from src.render.render_tile import TileSurfaceCache, TileColors
 
 HIGHLIGHT_COLOR = (0, 250, 0)
 
@@ -30,6 +30,20 @@ class RenderTerrain(object):
 		self.window = window
 		self.vp = vp
 		self.tile_cache = TileSurfaceCache()
+		self.water_cache = TileSurfaceCache(
+			colors=TileColors(
+				top_color=(0, 0, 200),
+				left_color=(0, 0, 150),
+				right_color=(0, 0, 100)
+			)
+		)
+		self.ice_cache = TileSurfaceCache(
+			colors=TileColors(
+				top_color=(200, 200, 200),
+				left_color=(150, 150, 150),
+				right_color=(100, 100, 100)
+			)
+		)
 		self.terrain = world.terrain
 		self._calc_ridges()
 
@@ -72,13 +86,21 @@ class RenderTerrain(object):
 		tile_screen = self.vp.tile_to_screen_coords(tile_p)
 		return tile_screen
 
-	def tile_top_screen_coords(self, tile_p):
+	def cell_top_screen_coords(self, tile_p):
 		bottom_screen_p = self.tile_bottom_screen_coords(tile_p)
 		x, y = tile_p
-		h = self.terrain.map[y][x % self.terrain.width]
-		dy = h * self.vp.terrain_z
+		land_h = self.terrain.map[y][x % self.terrain.width]
+		ice_h = self.terrain.ice[y][x % self.terrain.width]
+		water_h = self.terrain.water[y][x % self.terrain.width]
+		land_h *= self.vp.terrain_z
+		ice_h *= self.vp.terrain_z
+		water_h *= self.vp.terrain_z
 		bsp_x, bsp_y = bottom_screen_p
-		return (bsp_x, bsp_y - dy)
+		bsp_y -= land_h
+		land_coords = (bsp_x, bsp_y)
+		ice_coords = None if ice_h == 0 else (bsp_x, bsp_y - ice_h)
+		water_coords = None if water_h == 0 else (bsp_x, bsp_y - water_h)
+		return land_coords, water_coords, ice_coords
 
 	def render_tile(self, cell_p, light=7):
 		x, y = cell_p
@@ -87,15 +109,27 @@ class RenderTerrain(object):
 		if y >= self.vp.terrain_height:
 			return
 
-		screen_p = self.tile_top_screen_coords(cell_p)
+		land_p, water_p, ice_p = self.cell_top_screen_coords(cell_p)
 		zoom = self.vp.tile_width
 		cam_ori = self.vp.camera_orientation
 
 		ridges = self._ridge_draws[y][x % self.terrain.width][cam_ori]
 		tile_surface, tile_pos = self.tile_cache.tile_surface_and_position(
-			screen_p, zoom, ridges, light
+			land_p, zoom, ridges, light
 		)
 		self.window.blit(tile_surface, tile_surface.get_rect(topleft=tile_pos))
+
+		if water_p:
+			water_surface, water_pos = self.water_cache.tile_surface_and_position(
+				water_p, zoom, ridges, light
+			)
+			self.window.blit(water_surface, water_surface.get_rect(topleft=water_pos))
+
+		if ice_p:
+			ice_surface, ice_pos = self.ice_cache.tile_surface_and_position(
+				ice_p, zoom, ridges, light
+			)
+			self.window.blit(ice_surface, ice_surface.get_rect(topleft=ice_pos))
 
 	def tile_at_screen_pos(self, screen_p):
 		"""

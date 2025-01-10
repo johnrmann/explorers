@@ -77,7 +77,9 @@ class Terrain(object):
 				adjs = adj_cells(self.dimensions, p)
 				for i in range(len(adjs)):
 					x2,y2 = adjs[i]
-					delta = self.map[y][x] - self.map[y2][x2]
+					h1 = self.height_at(p)
+					h2 = self.height_at((x2, y2))
+					delta = h1 - h2
 					self._height_deltas[y][x][i] = delta
 
 	def _calc_max_min_tile_heights(self):

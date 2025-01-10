@@ -18,7 +18,7 @@ def tile_z_for_width(tile_w):
 	w2 = (tile_w/2)**2
 	h = tile_height_for_width(tile_w)
 	h2 = (h/2)**2
-	return math.sqrt(w2 + h2)
+	return (math.sqrt(w2 + h2))
 
 def tile_polygon(p, tile_dims, n=1):
 	"""

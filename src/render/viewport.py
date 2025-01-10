@@ -19,12 +19,13 @@ from src.math.direction import (
 from src.math.vector2 import vector2_rotate_point
 from src.mgmt.listener import Listener
 from src.rendermath.cell import cell_position_on_global_screen
+from src.rendermath.tile import tile_z_for_width
 from src.rendermath.terrain import TERRAIN_STEPS_PER_CELL
 
 TILE_WIDTH = 48
 TILE_HEIGHT = TILE_WIDTH // 2
 
-ZOOMS = [TILE_WIDTH / 4, TILE_WIDTH / 2, TILE_WIDTH, TILE_WIDTH * 2]
+ZOOMS = [TILE_WIDTH // 4, TILE_WIDTH // 2, TILE_WIDTH, TILE_WIDTH * 2]
 
 SAFETY = 3
 
@@ -65,9 +66,7 @@ class Viewport(Listener):
 	def _recompute_tile_dimensions(self):
 		self.tile_width = ZOOMS[self._zoom_idx]
 		self.tile_height = self.tile_width // 2
-		tw2 = (self.tile_width // 2)**2
-		th2 = (self.tile_height // 2)**2
-		self.tile_z = math.sqrt(tw2 + th2)
+		self.tile_z = tile_z_for_width(self.tile_width)
 		self.tile_dimensions = (self.tile_width, self.tile_height)
 		self.terrain_z = self.tile_z / TERRAIN_STEPS_PER_CELL
 

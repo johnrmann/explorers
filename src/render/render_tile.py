@@ -1,5 +1,7 @@
 import pygame
 
+from dataclasses import dataclass
+
 from src.math.line import extrude_line_segment_y
 
 from src.render.multisurface import MultiSurface
@@ -31,11 +33,21 @@ def _wall_for_direction_height_zoom(direction, z, zoom):
 	tile_z = terrain_step_z_for_tile_width(tile_w) * z
 	return extrude_line_segment_y(lineseg, tile_z)
 
+@dataclass
+class TileColors:
+	top_color: tuple[int, int, int]
+	left_color: tuple[int, int, int]
+	right_color: tuple[int, int, int]
+
 class TileSurfaceCache:
 	"""
 	Pre-render diagonal tiles and their walls at different zooms and heights
 	for faster rendering.
 	"""
+
+	_top_color: tuple[int, int, int]
+	_left_color: tuple[int, int, int]
+	_right_color: tuple[int, int, int]
 
 	tile_multisurface: MultiSurface
 	left_ridge_multisurface: MultiSurface
@@ -46,9 +58,20 @@ class TileSurfaceCache:
 
 	zooms: list[int]
 
-	def __init__(self, zooms=None):
+	def __init__(self, zooms=None, colors=None):
 		if zooms is None:
 			zooms = ZOOMS
+
+		if colors is None:
+			colors = TileColors(
+				top_color=GROUND_COLOR,
+				left_color=WALL_COLOR_1,
+				right_color=WALL_COLOR_2,
+			)
+		self._top_color = colors.top_color
+		self._left_color = colors.left_color
+		self._right_color = colors.right_color
+
 		self.zooms = zooms
 		self.tile_multisurface = self._make_tile_multisurface()
 		self.left_ridge_multisurface = self._make_tile_multisurface(left_ridge=True)
@@ -58,16 +81,16 @@ class TileSurfaceCache:
 
 	def _make_tile_and_surface(self, w):
 		z = tile_z_for_width(w)
-		h = (w // 2)
+		h = w // 2
 		surface = pygame.Surface((w, h + z), pygame.SRCALPHA).convert_alpha()
 		tile = tile_polygon((w // 2, h // 2), (w, h))
-		pygame.draw.polygon(surface, GROUND_COLOR, tile)
+		pygame.draw.polygon(surface, self._top_color, tile)
 
 		# Now draw the tile's walls.
 		left_wall = _wall_for_direction_height_zoom('left', 8, w)
 		right_wall = _wall_for_direction_height_zoom('right', 8, w)
-		pygame.draw.polygon(surface, WALL_COLOR_1, left_wall)
-		pygame.draw.polygon(surface, WALL_COLOR_2, right_wall)
+		pygame.draw.polygon(surface, self._left_color, left_wall)
+		pygame.draw.polygon(surface, self._right_color, right_wall)
 
 		return tile, surface
 
@@ -79,9 +102,9 @@ class TileSurfaceCache:
 		for tile, surface, zoom in tilesurfs:
 			tile_top, tile_right, _, tile_left = tile
 			if left_ridge:
-				pygame.draw.line(surface, WALL_COLOR_1, tile_left, tile_top)
+				pygame.draw.line(surface, self._left_color, tile_left, tile_top)
 			if right_ridge:
-				pygame.draw.line(surface, WALL_COLOR_1, tile_top, tile_right)
+				pygame.draw.line(surface, self._right_color, tile_top, tile_right)
 		zoomed_surfaces = {
 			zoom: surface
 			for _, surface, zoom in tilesurfs
