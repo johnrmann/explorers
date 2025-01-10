@@ -54,7 +54,7 @@ class Viewport(Listener):
 		self._recompute_camera()
 
 	def _recompute_camera(self):
-		self._camera_screen_pos = self.global_tile_to_screen_coords(
+		self._camera_screen_pos = self.cell_position_on_global_screen(
 			self.camera_pos
 		)
 		self._camera_screen_transform = (
@@ -78,6 +78,7 @@ class Viewport(Listener):
 
 	@property
 	def camera_pos(self):
+		"""The camera position."""
 		return self._camera_pos
 
 	@camera_pos.setter
@@ -171,13 +172,24 @@ class Viewport(Listener):
 		Converts tile coordinates to screen coordinates.
 		"""
 		tx, ty = self._camera_screen_transform
-		x2,y2 = self.global_tile_to_screen_coords(p_tile)
+		x2,y2 = self.cell_position_on_global_screen(p_tile)
 		return (
 			x2 + tx,
 			y2 + ty,
 		)
 
-	def global_tile_to_screen_coords(self, cell_pos):
+	def global_screen_position_to_screen_position(self, position):
+		"""
+		Converts a global screen position to a screen position.
+		"""
+		tx, ty = self._camera_screen_transform
+		x, y = position
+		return (x + tx, y + ty)
+
+	def cell_position_on_global_screen(self, cell_pos):
+		"""
+		Convenience wrapper for cell_position_on_global_screen.
+		"""
 		return cell_position_on_global_screen(
 			cell_pos,
 			self.camera_orientation,

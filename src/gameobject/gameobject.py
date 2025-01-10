@@ -56,9 +56,21 @@ class GameObject:
 
 	@property
 	def draw_position(self) -> Vector2:
-		x, y = self.pos
-		sx, sy, _ = self.size
-		return (x + (sx / 2), y + (sy / 2))
+		"""
+		The position of the object must be an integer. The draw position can be
+		a float to represent an interpolated position for rendering purposes.
+		"""
+		return self.pos
+
+	@property
+	def draw_bounds(self):
+		"""
+		Returns a tuple of two points that represent the bounding box of the
+		object when rendered.
+		"""
+		x, y = self.draw_position
+		w, h, _ = self.size
+		return ((x, y), (x + w - 1, y + h - 1))
 
 	def on_init(self):
 		"""
