@@ -172,7 +172,7 @@ class GameManager(Listener):
 	def render(self):
 		self.clickmap.clear()
 		self.renderer.render()
-		self.renderer.render_terrain.highlight_tile(self.ctrl.cell_under_mouse)
+		self.renderer.highlight_tile(self.ctrl.cell_under_mouse)
 
 	def select_actor(self, player_id=1, actor=None):
 		if not actor:

@@ -208,12 +208,13 @@ class Terrain(object):
 	def land_height_at(self, p):
 		"""Returns the height at the given cell position, ignoring water."""
 		x, y = p
-		return self.map[y][x]
+		return self.map[y][x % self.width]
 
 	def height_at(self, p):
 		"""Returns the height at the given cell position, including water."""
 		x, y = p
-		return self.map[y][x] + self.water[y][x] + self.ice[y][x]
+		x_mod = x % self.width
+		return self.map[y][x_mod] + self.water[y][x_mod] + self.ice[y][x_mod]
 
 	def height_delta(self, p, direction: Direction):
 		x, y = p

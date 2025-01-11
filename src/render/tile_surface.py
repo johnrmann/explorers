@@ -23,6 +23,7 @@ LEFT_RIDGE = 1
 RIGHT_RIDGE = 2
 BOTH_RIDGES = LEFT_RIDGE | RIGHT_RIDGE
 
+
 def _wall_for_direction_height_zoom(direction, z, zoom):
 	tile_w = zoom
 	tile_h = tile_w // 2
@@ -33,17 +34,22 @@ def _wall_for_direction_height_zoom(direction, z, zoom):
 	tile_z = terrain_step_z_for_tile_width(tile_w) * z
 	return extrude_line_segment_y(lineseg, tile_z)
 
+
 @dataclass
 class TileColors:
 	top_color: tuple[int, int, int]
 	left_color: tuple[int, int, int]
 	right_color: tuple[int, int, int]
 
+
 class TileSurfaceCache:
 	"""
 	Pre-render diagonal tiles and their walls at different zooms and heights
 	for faster rendering.
 	"""
+
+	# This is mostly used for debug purposes.
+	_name: str
 
 	_top_color: tuple[int, int, int]
 	_left_color: tuple[int, int, int]
@@ -58,7 +64,9 @@ class TileSurfaceCache:
 
 	zooms: list[int]
 
-	def __init__(self, zooms=None, colors=None):
+	def __init__(self, zooms=None, colors=None, name=None):
+		self._name = name
+
 		if zooms is None:
 			zooms = ZOOMS
 
@@ -74,10 +82,17 @@ class TileSurfaceCache:
 
 		self.zooms = zooms
 		self.tile_multisurface = self._make_tile_multisurface()
-		self.left_ridge_multisurface = self._make_tile_multisurface(left_ridge=True)
-		self.right_ridge_multisurface = self._make_tile_multisurface(right_ridge=True)
-		self.both_ridge_multisurface = self._make_tile_multisurface(left_ridge=True, right_ridge=True)
+		self.left_ridge_multisurface = self._make_tile_multisurface(
+			left_ridge=True
+		)
+		self.right_ridge_multisurface = self._make_tile_multisurface(
+			right_ridge=True
+		)
+		self.both_ridge_multisurface = self._make_tile_multisurface(
+			left_ridge=True, right_ridge=True
+		)
 		self._init_jut()
+
 
 	def _make_tile_and_surface(self, w):
 		z = tile_z_for_width(w)
@@ -94,6 +109,7 @@ class TileSurfaceCache:
 
 		return tile, surface
 
+
 	def _make_tile_multisurface(self, left_ridge=False, right_ridge=False):
 		tilesurfs = [
 			self._make_tile_and_surface(zoom) + (zoom,)
@@ -102,9 +118,13 @@ class TileSurfaceCache:
 		for tile, surface, zoom in tilesurfs:
 			tile_top, tile_right, _, tile_left = tile
 			if left_ridge:
-				pygame.draw.line(surface, self._left_color, tile_left, tile_top)
+				pygame.draw.line(
+					surface, self._left_color, tile_left, tile_top
+				)
 			if right_ridge:
-				pygame.draw.line(surface, self._right_color, tile_top, tile_right)
+				pygame.draw.line(
+					surface, self._right_color, tile_top, tile_right
+				)
 		zoomed_surfaces = {
 			zoom: surface
 			for _, surface, zoom in tilesurfs
@@ -112,6 +132,7 @@ class TileSurfaceCache:
 		return MultiSurface(
 			zoomed_surfaces=zoomed_surfaces,
 		)
+
 
 	def _init_jut(self):
 		self._jut = {
@@ -121,7 +142,8 @@ class TileSurfaceCache:
 			BOTH_RIDGES: self.both_ridge_multisurface
 		}
 
-	def tile_surface_and_position(self, screen_p, zoom, ridges=None, light=None):
+
+	def tile_surface(self, zoom, ridges=None, light=None):
 		"""
 		Given a position on the screen that is the center of the tile we want
 		to draw and the zoom factor, return the tile surface and blit position
@@ -132,14 +154,4 @@ class TileSurfaceCache:
 			ridges = NO_RIDGES
 		sub_cache = self._jut[ridges]
 		surface = sub_cache.get(idx, light=light)
-		position = tile_screen_draw_position(screen_p, zoom)
-		return surface, position
-
-def tile_screen_draw_position(screen_p, tile_w):
-	"""
-	Given a center screen position and a tile width, return the top-left screen
-	point of the tile for surface drawing.
-	"""
-	x, y = screen_p
-	tile_h = tile_w // 2
-	return (x - (tile_w // 2), y - (tile_h // 2))
+		return surface
