@@ -86,6 +86,22 @@ class AtmosphereTest(unittest.TestCase):
 		)
 		self.assertEqual(atm.evt_mgr, evt_mgr)
 
+	def test__string(self):
+		"""Test that the atmospheric composition is printed."""
+		atm = Atmosphere(
+			astronomy=Astronomy(),
+			total={
+				key: 1000
+				for key in AtmosphereElement
+			}
+		)
+		result = str(atm)
+		self.assertIn("AtmosphereElement.CARBON - 1000", result)
+		self.assertIn("AtmosphereElement.OXYGEN - 1000", result)
+		self.assertIn("AtmosphereElement.NITROGEN - 1000", result)
+		self.assertIn("AtmosphereElement.METHANE - 1000", result)
+		self.assertIn("AtmosphereElement.WATER - 1000", result)
+
 	def test__moles_avg__earth(self):
 		self.assertEqual(self.earth.moles_avg(), 1000)
 

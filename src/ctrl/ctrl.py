@@ -78,11 +78,11 @@ class Control:
 			# TODO(mannjohn) - initialize a plant at the current mouse
 			# coordinates.
 			self._can_move_game_objects = True
-			# self._moving_game_object = Flora(
+			# self.moving_game_object = Flora(
 			# 	prototype=PALM_TREE,
 			# 	pos=self.cell_under_mouse
 			# )
-			# self.game_mgr.add_game_object(self._moving_game_object)
+			# self.game_mgr.add_game_object(self.moving_game_object)
 		else:
 			self._can_move_game_objects = False
 			self.moving_game_object = None

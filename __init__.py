@@ -21,6 +21,7 @@ arg_parser.add_argument(
 	'-sh', '--screen-height',
 	help='The height of the game window.',
 )
+
 arg_parser.add_argument(
 	'--epoch-year',
 	help='What year to start the game calendar at.'
@@ -32,6 +33,11 @@ arg_parser.add_argument(
 arg_parser.add_argument(
 	'--epoch-day',
 	help='What day to start the game calendar at.'
+)
+
+arg_parser.add_argument(
+	'--debug-print-atm',
+	help='Print the atmospheric composition to the CLI once per frame.'
 )
 
 args = arg_parser.parse_args()
@@ -57,6 +63,10 @@ else:
 	else:
 		WINDOW_WIDTH = 1440
 		WINDOW_HEIGHT = 900
+
+print_atm = False
+if args.debug_print_atm:
+	print_atm = True
 
 epoch_tuple = (
 	int(args.epoch_year or 2350),
@@ -90,6 +100,8 @@ def main():
 		game.gui_mgr.draw(window)
 		pygame.display.flip()
 		game.tick(dt)
+		if print_atm:
+			print(game.world.atmosphere)
 
 	pygame.quit()
 

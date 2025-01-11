@@ -168,6 +168,17 @@ class Atmosphere(Listener):
 		if evt_mgr is not None:
 			self._subscribe_to_events()
 
+	def __str__(self):
+		"""
+		Prints a user-friendly atmosphere string to the console.
+		"""
+		s = "Atmosphere:\n"
+		s += f"\tPressure: {self.density()}\n"
+		s += "\tComposition:\n"
+		for key, val in self.total.items():
+			s += f"\t\t{key} - {val}\n"
+		return s
+
 	def _recalculate_composition(self):
 		moles_total = self.moles_total()
 		if moles_total == 0:
