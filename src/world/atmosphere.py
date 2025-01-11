@@ -169,17 +169,34 @@ class Atmosphere(Listener):
 				for key, count in self.average.items()
 			}
 
+		self._ensure_keys()
 		self._recalculate_composition()
 		if evt_mgr is not None:
 			self._subscribe_to_events()
+
+
+	def _ensure_keys(self):
+		"""
+		Ensures that all keys are in the atmosphere dictionaries.
+		"""
+		for key in AtmosphereElement:
+			if key not in self.total:
+				self.total[key] = 0
+			if key not in self.average:
+				self.average[key] = 0
+			if key not in self.delta:
+				self.delta[key] = 0
 
 
 	def __str__(self):
 		"""
 		Prints a user-friendly atmosphere string to the console.
 		"""
+		tpr_kelvin = self.tpr_surface()
+		tpr_far = (tpr_kelvin - 273.15) * 9/5 + 32
 		s = "Atmosphere:\n"
 		s += f"\tPressure: {self.density()}\n"
+		s += f"\tTemperature: {tpr_kelvin} degK, {tpr_far} degF\n"
 		s += "\tComposition:\n"
 		for key, val in self.total.items():
 			s += f"\t\t{key} - {val}\n"
