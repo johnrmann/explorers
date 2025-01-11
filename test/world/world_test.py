@@ -1,6 +1,6 @@
 import unittest
 
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, Mock
 
 from src.utility.habitability import HabitabilityFactor
 
@@ -31,6 +31,23 @@ class TestWorld(unittest.TestCase):
 		self.assertEqual(world.horology, horology)
 		self.assertEqual(world.astronomy, astronomy)
 		self.assertEqual(world.atmosphere.average, atmosphere_composition)
+
+	def test__set_evt_mgr(self):
+		terrain = Terrain(HMAP)
+		horology = Horology()
+		astronomy = Astronomy()
+		atmosphere_composition = {
+			AtmosphereElement.OXYGEN: 21,
+			AtmosphereElement.NITROGEN: 78
+		}
+		world = World(terrain, horology, astronomy, atmosphere_composition)
+		self.assertIsNone(world.evt_mgr)
+		evt_mgr = MagicMock()
+		evt_mgr.pub = Mock()
+		evt_mgr.sub = Mock()
+		world.evt_mgr = evt_mgr
+		self.assertEqual(world.evt_mgr, evt_mgr)
+		self.assertEqual(world.atmosphere.evt_mgr, evt_mgr)
 
 	def test__dimensions__correct_value(self):
 		terrain = Terrain(HMAP)

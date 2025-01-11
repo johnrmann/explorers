@@ -50,6 +50,19 @@ class World:
 		self.history = PlanetHistory(self)
 
 	@property
+	def evt_mgr(self):
+		"""
+		World doesn't maintain a reference to the event manager, but some
+		of its children do. They should all be equal. If they're not, then
+		something is seriously wrong.
+		"""
+		return self.atmosphere.evt_mgr
+
+	@evt_mgr.setter
+	def evt_mgr(self, new_evt_mgr):
+		self.atmosphere.evt_mgr = new_evt_mgr
+
+	@property
 	def dimensions(self):
 		"""The dimensions of the world are defined by the terrain."""
 		return self.terrain.dimensions

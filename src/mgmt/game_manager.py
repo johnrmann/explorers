@@ -101,6 +101,7 @@ class GameManager(Listener):
 		self._make_holiday_queue()
 		if not no_gui:
 			self.core_gui_elements = CoreGuiElements(self, self.ctrl.playbar_mode_changed)
+		self.world.evt_mgr = self.evt_mgr
 
 	def _init_managers(self, evt_mgr, no_gui):
 		if evt_mgr is not None:
