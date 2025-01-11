@@ -10,6 +10,7 @@ from src.ctrl.ctrl import Control
 from src.ctrl.clickmap import ClickMap
 from src.render.render import Render
 from src.utility.calendar import next_christmas, utc_tuple_to_utc_float
+from src.math.vector2 import Vector2
 
 from src.gui.gui import _GuiManager, init_gui_manager
 from src.gui.mission_clock import MissionClock
@@ -37,10 +38,10 @@ class CoreGuiElements:
 	Creates the basic gui elements.
 	"""
 
-	def __init__(self, game):
+	def __init__(self, game, change_mode_callback):
 		self.mission_clock = MissionClock()
 		self.fps = FpsCounter()
-		self.playbar = Playbar(game)
+		self.playbar = Playbar(game, change_mode_callback=change_mode_callback)
 		self.colony_name = ColonyName()
 
 class GameManager(Listener):
@@ -99,7 +100,7 @@ class GameManager(Listener):
 		self._subscribe_to_events()
 		self._make_holiday_queue()
 		if not no_gui:
-			self.core_gui_elements = CoreGuiElements(self)
+			self.core_gui_elements = CoreGuiElements(self, self.ctrl.playbar_mode_changed)
 
 	def _init_managers(self, evt_mgr, no_gui):
 		if evt_mgr is not None:
@@ -260,3 +261,24 @@ class GameManager(Listener):
 			if go.occupies_cell(position):
 				return True
 		return False
+
+	def can_place_gameobject_at(self, gobj: GameObject, origin: Vector2):
+		"""
+		Returns True if the given game object can be placed at the given
+		position.
+		"""
+		if not self.world.terrain.is_valid_coordinates(origin):
+			return False
+		size = gobj.size
+		if not self.world.terrain.is_valid_coordinates(origin + size):
+			return False
+		w, h = size
+		is_flat = self.world.terrain.is_area_flat(origin, size)
+		is_land = self.world.terrain.is_area_land(origin, size)
+		if not is_flat or not is_land:
+			return False
+		for dy in range(h):
+			for dx in range(w):
+				if self.is_cell_occupied(origin + (dx, dy)):
+					return False
+		return True

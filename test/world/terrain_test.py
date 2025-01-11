@@ -119,6 +119,14 @@ class TerrainTest(unittest.TestCase):
 		terrain = Terrain(desert_heightmap)
 		self.assertEqual(terrain.coordinates_to_index((2, 2)), (2, 2))
 
+	def test__is_area_flat__flat(self):
+		terrain = Terrain(desert_heightmap)
+		self.assertTrue(terrain.is_area_flat((2, 2), (1, 1)))
+
+	def test__is_area_flat__not_flat(self):
+		terrain = Terrain(desert_heightmap, icemap=mars_icemap_shallow)
+		self.assertFalse(terrain.is_area_flat((0, 0), (3, 3)))
+
 	def test__sea_level__all_land(self):
 		terrain = Terrain(desert_heightmap, desert_watermap)
 		self.assertEqual(terrain.sea_level(), 1)
@@ -138,6 +146,14 @@ class TerrainTest(unittest.TestCase):
 	def test__is_cell_land__water(self):
 		terrain = Terrain(waterworld_heightmap, waterworld_watermap)
 		self.assertFalse(terrain.is_cell_land((1, 1)))
+
+	def test__is_area_land__land(self):
+		terrain = Terrain(desert_heightmap)
+		self.assertTrue(terrain.is_area_land((2, 2), (1, 1)))
+
+	def test__is_area_land__water(self):
+		terrain = Terrain(waterworld_heightmap, waterworld_watermap)
+		self.assertFalse(terrain.is_area_land((1, 1), (1, 1)))
 
 	def test__is_cell_water__land(self):
 		terrain = Terrain(desert_heightmap)

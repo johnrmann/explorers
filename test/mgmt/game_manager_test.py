@@ -7,14 +7,19 @@ from src.gameobject.lander import Lander
 from src.world.terrain import Terrain
 from src.world.world import World
 from src.render.viewport import Viewport
+from src.math.vector2 import Vector2
 
 from src.mgmt.game_manager import GameManager
+
+_FLAT_MAP = [
+	[1] * 64 for _ in range(32)
+]
 
 class GameManagerTest(unittest.TestCase):
 	def setUp(self):
 		self.viewport = MagicMock(spec=Viewport)
 		self.viewport.window_dims = (800, 600)
-		self.terrain = MagicMock(spec=Terrain)
+		self.terrain = Terrain(_FLAT_MAP)
 		self.world = MagicMock(spec=World)
 		self.world.terrain = self.terrain
 
@@ -155,6 +160,50 @@ class GameManagerTest(unittest.TestCase):
 		)
 		self.assertEqual(len(colony.structures), 1)
 		self.assertIn(lander, colony.structures)
+
+	def test__can_place_gameobject_at__works(self):
+		"""Test that can_place_gameobject_at works."""
+		gm = GameManager(self.world, self.viewport)
+		obj = MagicMock()
+		obj.size = (1,1)
+		gm.is_cell_occupied = Mock(return_value=False)
+		self.assertTrue(gm.can_place_gameobject_at(obj, Vector2(0,0)))
+
+	def test__can_place_gameobject_at__occupied(self):
+		"""Test that can_place_gameobject_at returns False when the cell is
+		occupied."""
+		gm = GameManager(self.world, self.viewport)
+		obj = MagicMock()
+		obj.size = (1,1)
+		gm.is_cell_occupied = Mock(return_value=True)
+		self.assertFalse(gm.can_place_gameobject_at(obj, Vector2(0,0)))
+
+	def test__can_place_gameobject_at__position_out_of_bounds(self):
+		"""Test that can_place_gameobject_at returns False when the object is
+		out of bounds."""
+		gm = GameManager(self.world, self.viewport)
+		obj = MagicMock()
+		obj.size = (1,1)
+		gm.is_cell_occupied = Mock(return_value=False)
+		self.assertFalse(gm.can_place_gameobject_at(obj, Vector2(0,-1)))
+
+	def test__can_place_gameobject_at__size_out_of_bounds(self):
+		"""Test that can_place_gameobject_at returns False when the object is
+		out of bounds."""
+		gm = GameManager(self.world, self.viewport)
+		obj = MagicMock()
+		obj.size = Vector2(5,5)
+		gm.is_cell_occupied = Mock(return_value=False)
+		self.assertFalse(gm.can_place_gameobject_at(obj, Vector2(0,30)))
+
+	def test__can_place_gameobject_at__not_flat(self):
+		"""Test that can_place_gameobject_at returns False when the cell is
+		occupied."""
+		gm = GameManager(self.world, self.viewport)
+		obj = MagicMock()
+		obj.size = Vector2(1,1)
+		gm.world.terrain.is_area_flat = Mock(return_value=False)
+		self.assertFalse(gm.can_place_gameobject_at(obj, Vector2(0,0)))
 
 if __name__ == "__main__":
 	unittest.main()

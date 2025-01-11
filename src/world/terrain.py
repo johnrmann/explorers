@@ -180,9 +180,33 @@ class Terrain(object):
 		x, y = p
 		return (x % self.width, y)
 
+	def is_area_flat(self, origin, size):
+		"""
+		Returns true if the area is flat, meaning all cells have the same
+		height.
+		"""
+		x, y = origin
+		w, h = size
+		height = self.height_at((x, y))
+		for dy in range(h):
+			for dx in range(w):
+				if self.height_at((x + dx, y + dy)) != height:
+					return False
+		return True
+
 	def is_cell_land(self, p):
 		"""Is the given cell position land?"""
 		return not self.is_cell_water(p) and not self.is_cell_ice(p)
+
+	def is_area_land(self, origin, size):
+		"""Are all points in the given area land?"""
+		x, y = origin
+		w, h = size
+		for dy in range(h):
+			for dx in range(w):
+				if not self.is_cell_land((x + dx, y + dy)):
+					return False
+		return True
 
 	def is_cell_water(self, p):
 		"""Is the given cell position water?"""

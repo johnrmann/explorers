@@ -5,10 +5,6 @@ from argparse import ArgumentParser
 from src.gen.gen import make_game
 from src.utility.calendar import utc_tuple_to_utc_float
 from src.mgmt.constants import TARGET_FPS
-from src.gui.mission_clock import MissionClock
-from src.gui.fps import FpsCounter
-from src.gui.playbar import Playbar
-from src.gui.colony_name import ColonyName
 
 flags = pygame.DOUBLEBUF
 

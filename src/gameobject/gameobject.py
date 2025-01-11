@@ -45,6 +45,10 @@ class GameObject:
 		"""
 		return self._pos
 
+	@pos.setter
+	def pos(self, new_pos):
+		self._pos = new_pos
+
 	@property
 	def pos3(self):
 		"""
