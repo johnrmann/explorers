@@ -6,11 +6,16 @@ from src.gameobject.structure import Structure
 from src.gui.superevent import ShowSupereventEvent
 from src.world.world import World
 from src.colony.colony import Colony
-from src.gui.gui import _GuiManager, init_gui_manager
 from src.ctrl.ctrl import Control
 from src.ctrl.clickmap import ClickMap
 from src.render.render import Render
 from src.utility.calendar import next_christmas, utc_tuple_to_utc_float
+
+from src.gui.gui import _GuiManager, init_gui_manager
+from src.gui.mission_clock import MissionClock
+from src.gui.fps import FpsCounter
+from src.gui.playbar import Playbar
+from src.gui.colony_name import ColonyName
 
 from src.mgmt.event_manager import EventManager
 from src.mgmt.listener import Listener
@@ -27,6 +32,17 @@ def y3k_event(score):
 		"y3k-bad",
 	])
 
+class CoreGuiElements:
+	"""
+	Creates the basic gui elements.
+	"""
+
+	def __init__(self, game):
+		self.mission_clock = MissionClock()
+		self.fps = FpsCounter()
+		self.playbar = Playbar(game)
+		self.colony_name = ColonyName()
+
 class GameManager(Listener):
 	"""
 	Primarily responsible for managing game state and the passage of time.
@@ -34,6 +50,7 @@ class GameManager(Listener):
 
 	evt_mgr: EventManager
 	gui_mgr: _GuiManager
+	core_gui_elements: CoreGuiElements
 	ctrl: Control
 	renderer: Render = None
 	clickmap: ClickMap
@@ -81,6 +98,8 @@ class GameManager(Listener):
 		self._init_managers(evt_mgr, no_gui)
 		self._subscribe_to_events()
 		self._make_holiday_queue()
+		if not no_gui:
+			self.core_gui_elements = CoreGuiElements(self)
 
 	def _init_managers(self, evt_mgr, no_gui):
 		if evt_mgr is not None:

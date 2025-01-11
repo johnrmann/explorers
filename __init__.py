@@ -86,13 +86,6 @@ def main():
 	)
 	clock = pygame.time.Clock()
 
-	mission_clock = MissionClock()
-	fps = FpsCounter()
-	playbar = Playbar(
-		game,
-	)
-	cname = ColonyName()
-
 	while running:
 		dt = clock.tick(TARGET_FPS) / 1000
 		game.ctrl.interpret_pygame_input()
