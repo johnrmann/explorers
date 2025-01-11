@@ -97,9 +97,6 @@ def main():
 		dt = clock.tick(TARGET_FPS) / 1000
 		game.ctrl.interpret_pygame_input()
 		game.render()
-		game.renderer.render_terrain.highlight_tile_at_screen_pos(
-			pygame.mouse.get_pos()
-		)
 		game.gui_mgr.update(dt)
 		game.gui_mgr.draw(window)
 		pygame.display.flip()

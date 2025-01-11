@@ -13,7 +13,6 @@ from src.ctrl.clickmap import ClickMap
 from src.ctrl.event_id import (
 	CameraMoveEvent,
 	CameraZoomEvent,
-	CameraRotateEvent,
 )
 
 class Control:
@@ -27,17 +26,27 @@ class Control:
 
 	lock_camera: bool
 
+	_screen_to_tile = None
+	cell_under_mouse = None
+
 	def __init__(
 			self,
 			game_mgr,
 			lock_camera = False,
 			on_quit = None,
-			clickmap = None
+			clickmap = None,
+			screen_to_tile = None
 	):
 		self.game_mgr = game_mgr
 		self.clickmap = clickmap
 		self.lock_camera = lock_camera
 		self.on_quit = on_quit
+		self._screen_to_tile = screen_to_tile
+
+	def tick(self, dt: float):
+		mouse_x, mouse_y = pygame.mouse.get_pos()
+		if self._screen_to_tile:
+			self.cell_under_mouse = self._screen_to_tile((mouse_x, mouse_y))
 
 	def interpret_pygame_camera_keyboard_event(self, event):
 		d_camdir = pygame_key_to_camdir(event.key)
@@ -77,15 +86,10 @@ class Control:
 				return True
 			else:
 				player_character = self.game_mgr.player_character
-				r_terrain = self.game_mgr.renderer.render_terrain
-				tile_x, tile_y = r_terrain.tile_at_screen_pos(
-					(click_x, click_y)
-				)
-				click_tile = (round(tile_x), round(tile_y))
 				self.game_mgr.evt_mgr.pub(
 					MoveActorEvent(
 						actor=player_character,
-						to_position=click_tile,
+						to_position=self.cell_under_mouse,
 					)
 				)
 			return True

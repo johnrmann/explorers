@@ -76,11 +76,11 @@ class GameManager(Listener):
 		self.vp = viewport
 		self.on_quit = on_quit
 		self.selected_actors = {}
+		if screen:
+			self.prepare_render()
 		self._init_managers(evt_mgr, no_gui)
 		self._subscribe_to_events()
 		self._make_holiday_queue()
-		if screen:
-			self.prepare_render()
 
 	def _init_managers(self, evt_mgr, no_gui):
 		if evt_mgr is not None:
@@ -90,7 +90,15 @@ class GameManager(Listener):
 		if not no_gui:
 			self.gui_mgr = init_gui_manager(self)
 		self.clickmap = ClickMap(self.vp.window_dims)
-		self.ctrl = Control(self, on_quit=self.on_quit, clickmap=self.clickmap)
+		screen_to_tile = None
+		if self.renderer:
+			screen_to_tile = self.renderer.render_terrain.tile_at_screen_pos
+		self.ctrl = Control(
+			self,
+			on_quit=self.on_quit,
+			clickmap=self.clickmap,
+			screen_to_tile=screen_to_tile
+		)
 
 	def _subscribe_to_events(self):
 		self.evt_mgr.sub("ShowSupereventEvent", self)
@@ -131,6 +139,7 @@ class GameManager(Listener):
 		"""
 		if dt <= 0:
 			raise ValueError("Time travel not allowed")
+		self.ctrl.tick(dt)
 		if self.paused:
 			return
 		floor_new_utc = int(self.utc + dt)
@@ -163,6 +172,7 @@ class GameManager(Listener):
 	def render(self):
 		self.clickmap.clear()
 		self.renderer.render()
+		self.renderer.render_terrain.highlight_tile(self.ctrl.cell_under_mouse)
 
 	def select_actor(self, player_id=1, actor=None):
 		if not actor:
