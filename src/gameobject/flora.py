@@ -5,7 +5,7 @@ This module contains everything related to flora (plants and trees).
 from src.gameobject.gameobject import GameObject
 from src.mgmt.event import Event
 
-from src.world.atmosphere import AtmosphereChangeDeltaEvent, AtmosphereElement
+from src.world.atmosphere import AtmosphereChangeTransformEvent, AtmosphereElement
 
 # Use 0deg F - 120deg F as the default temperature range for flora.
 DEFAULT_TPR_RANGE = (255, 322)
@@ -59,6 +59,7 @@ class FloraPrototype:
 		self.carbon_sequestration = carbon_sequestration
 		self.max_health = max_health
 
+
 	def tpr_health_delta(self, tpr):
 		"""
 		Input units: degrees kelvin.
@@ -73,7 +74,13 @@ class FloraPrototype:
 			delta = abs(tpr - self.max_tpr)
 			return -delta * self.tpr_damage_rate
 
-PALM_TREE = FloraPrototype(name='Palm Tree')
+
+
+PALM_TREE = FloraPrototype(name='Palm Tree', carbon_sequestration=0)
+
+DEBUG_TREE = FloraPrototype(name='Debug Tree', carbon_sequestration=10_000)
+
+
 
 class Flora(GameObject):
 	"""
@@ -95,22 +102,31 @@ class Flora(GameObject):
 		self.prototype = prototype
 		self.health = prototype.max_health
 
+
 	def image_path(self):
 		return "assets/img/sprite/palm-tree.png"
 
+
+	def _make_sequestration_event(self, direction = 1):
+		"""
+		Make an event that represents the sequestration of carbon. Use
+		direction = -1 to undo the event.
+		"""
+		elems = (AtmosphereElement.CARBON, AtmosphereElement.OXYGEN)
+		factor = self.prototype.carbon_sequestration
+		amounts = (factor * direction, factor * direction)
+		return AtmosphereChangeTransformEvent({
+			elems: amounts
+		})
+
+
 	def on_init(self):
-		pt = self.prototype
-		self.evt_mgr.pub(AtmosphereChangeDeltaEvent({
-			AtmosphereElement.CARBON: -pt.carbon_sequestration,
-			AtmosphereElement.OXYGEN: pt.carbon_sequestration
-		}))
+		self.evt_mgr.pub(self._make_sequestration_event(1))
+
 
 	def on_remove(self):
-		pt = self.prototype
-		self.evt_mgr.pub(AtmosphereChangeDeltaEvent({
-			AtmosphereElement.CARBON: pt.carbon_sequestration,
-			AtmosphereElement.OXYGEN: -pt.carbon_sequestration
-		}))
+		self.evt_mgr.pub(self._make_sequestration_event(-1))
+
 
 	def tick(self, dt, utc):
 		"""
@@ -122,6 +138,8 @@ class Flora(GameObject):
 		self.health = min(self.prototype.max_health, max(0, self.health))
 		if self.health <= 0:
 			self.evt_mgr.pub(FloraDiedEvent(self))
+
+
 
 class FloraDiedEvent(Event):
 	"""
@@ -136,6 +154,7 @@ class FloraDiedEvent(Event):
 			raise ValueError("Expected Flora!")
 		super().__init__()
 		self.flora = flora
+
 
 	def __eq__(self, other):
 		if not isinstance(other, FloraDiedEvent):

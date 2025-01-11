@@ -1,7 +1,7 @@
 import pygame
 
 from src.gameobject.actor import MoveActorEvent, Actor
-from src.gameobject.flora import Flora, PALM_TREE
+from src.gameobject.flora import Flora, DEBUG_TREE
 
 from src.gui.action_menu import ActionMenu
 from src.gui.playbar import PlaybarMode
@@ -79,7 +79,7 @@ class Control:
 			# coordinates.
 			self._can_move_game_objects = True
 			# self.moving_game_object = Flora(
-			# 	prototype=PALM_TREE,
+			# 	prototype=DEBUG_TREE,
 			# 	pos=self.cell_under_mouse
 			# )
 			# self.game_mgr.add_game_object(self.moving_game_object)

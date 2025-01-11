@@ -6,6 +6,7 @@ Further Reading:
 	- https://atmos.washington.edu/academics/classes/2001Q4/211/notes_greenhouse.html
 """
 
+from collections import defaultdict
 from enum import Enum
 
 from src.mgmt.listener import Listener
@@ -122,6 +123,9 @@ class Atmosphere(Listener):
 	composition = None
 
 	delta = None
+	transform: dict[
+		tuple[AtmosphereElement, AtmosphereElement], tuple[int, int]
+	] = None
 
 	planet_area = 1024 * 512
 
@@ -143,6 +147,7 @@ class Atmosphere(Listener):
 			element: 0
 			for element in AtmosphereElement
 		}
+		self.transform = {}
 
 		if astronomy is not None:
 			self.astronomy = astronomy
@@ -168,6 +173,7 @@ class Atmosphere(Listener):
 		if evt_mgr is not None:
 			self._subscribe_to_events()
 
+
 	def __str__(self):
 		"""
 		Prints a user-friendly atmosphere string to the console.
@@ -178,6 +184,7 @@ class Atmosphere(Listener):
 		for key, val in self.total.items():
 			s += f"\t\t{key} - {val}\n"
 		return s
+
 
 	def _recalculate_composition(self):
 		moles_total = self.moles_total()
@@ -192,9 +199,12 @@ class Atmosphere(Listener):
 				for key, count in self.total.items()
 			}
 
+
 	def _subscribe_to_events(self):
 		self._evt_mgr.sub(AtmosphereChangeEvent, self)
 		self._evt_mgr.sub(AtmosphereChangeDeltaEvent, self)
+		self._evt_mgr.sub(AtmosphereChangeTransformEvent, self)
+
 
 	@property
 	def evt_mgr(self):
@@ -204,12 +214,14 @@ class Atmosphere(Listener):
 		"""
 		return self._evt_mgr
 
+
 	@evt_mgr.setter
 	def evt_mgr(self, value):
 		if self._evt_mgr is not None:
 			raise ValueError("Write-once property.")
 		self._evt_mgr = value
 		self._subscribe_to_events()
+
 
 	def update(self, event):
 		if isinstance(event, AtmosphereChangeEvent):
@@ -218,12 +230,22 @@ class Atmosphere(Listener):
 		elif isinstance(event, AtmosphereChangeDeltaEvent):
 			for elem, count in event.delta.items():
 				self.change_delta(elem, count)
+		elif isinstance(event, AtmosphereChangeTransformEvent):
+			for elems, amounts in event.transform.items():
+				consumed_elem, produced_elem = elems
+				consumed_amount, produced_amount = amounts
+				self.change_transform(
+					(consumed_elem, consumed_amount),
+					(produced_elem, produced_amount)
+				)
+
 
 	def moles_total(self):
 		"""
 		Returns the total number of moles of stuff in the atmosphere.
 		"""
 		return sum(self.total.values())
+
 
 	def moles_avg(self):
 		"""
@@ -234,6 +256,7 @@ class Atmosphere(Listener):
 			moles += count
 		return moles / self.planet_area
 
+
 	def total_molar_mass(self):
 		"""
 		Returns the total molecular mass of the atmosphere.
@@ -243,12 +266,14 @@ class Atmosphere(Listener):
 			total_molar_mass += ELEMENT_MOLAR_MASS[key] * count
 		return total_molar_mass
 
+
 	def density(self):
 		"""
 		Returns the density of the atmosphere as a multiple of Earth's.
 		"""
 		raw = self.total_molar_mass() / self.planet_area
 		return raw / EARTH_ATMOSPHERE_DENSITY
+
 
 	def change_total(self, element, count):
 		"""
@@ -258,6 +283,7 @@ class Atmosphere(Listener):
 		self.average[element] = self.total[element] / self.planet_area
 		self._recalculate_composition()
 
+
 	def change_delta(self, element, count):
 		"""
 		Second derivative - change the amount the atmosphere is changing
@@ -266,6 +292,28 @@ class Atmosphere(Listener):
 		New(Atmosphere[element]) = Atmosphere[element] + count
 		"""
 		self.delta[element] += count
+
+
+	def change_transform(self, consumed, produced):
+		"""
+		Another form of the second derivative - represents a chemical
+		reaction that changes one element to another. Best used for situations
+		like trees.
+		"""
+		consumed_elem, consumed_amount = consumed
+		produced_elem, produced_amount = produced
+		if consumed_amount * produced_amount < 0:
+			raise ValueError("Values must have same sign.")
+		pair = (consumed_elem, produced_elem)
+		if pair not in self.transform:
+			self.transform[pair] = (consumed_amount, produced_amount)
+		else:
+			old_consumed, old_produced = self.transform[pair]
+			self.transform[pair] = (
+				old_consumed + consumed_amount,
+				old_produced + produced_amount
+			)
+
 
 	def evolve(self, d_seconds=1):
 		"""
@@ -278,16 +326,30 @@ class Atmosphere(Listener):
 		Call this once per second (not frame!).
 		"""
 		for key, count in self.delta.items():
-			if key not in self.total:
-				self.total[key] = 0
 			self.total[key] += count * d_seconds
 			if self.total[key] < 0:
 				self.total[key] = 0
+
+		for elements, amounts in self.transform.items():
+			consumed, produced = elements
+			consumed_amount, produced_amount = amounts
+			if consumed_amount == 0 and produced_amount == 0:
+				continue
+			ratio = produced_amount / consumed_amount
+			to_consume = consumed_amount * d_seconds
+			to_produce = produced_amount * d_seconds
+			if to_consume > self.total[consumed]:
+				to_consume = self.total[consumed]
+				to_produce = to_consume * ratio
+			self.total[consumed] -= to_consume
+			self.total[produced] += to_produce
+
 		self.average = {
 			key: subtotal / self.planet_area
 			for key, subtotal in self.total.items()
 		}
 		self._recalculate_composition()
+
 
 	def albedo(self):
 		"""
@@ -305,12 +367,14 @@ class Atmosphere(Listener):
 		"""
 		return max(0.22, min(0.9, self.density() - 0.70))
 
+
 	def surface_energy(self):
 		"""
 		Returns the amount of energy that the planet's surface receives from
 		the sun (accounting for energy reflected by the atmosphere).
 		"""
 		return self.astronomy.power_density * (1 - self.albedo())
+
 
 	def tpr_effective(self):
 		"""
@@ -320,6 +384,7 @@ class Atmosphere(Listener):
 		tpr4 = energy * BOLTZMANN
 		return pow(tpr4, 0.25)
 
+
 	def tpr_surface(self):
 		"""
 		Retruns the average surface temperature of the planet.
@@ -327,6 +392,7 @@ class Atmosphere(Listener):
 		tpr_eff = self.tpr_effective()
 		gh = greenhouse_factor(self.average)
 		return tpr_eff * gh
+
 
 	def tpr_daily_flux(self):
 		"""
@@ -337,6 +403,7 @@ class Atmosphere(Listener):
 		"""
 		return 10.0
 
+
 	def tpr_latitude_flux(self):
 		"""
 		Returns `n` where the planet's temperature varies between
@@ -344,6 +411,7 @@ class Atmosphere(Listener):
 		at the equator.
 		"""
 		return 15.0
+
 
 	def delta_tpr_daily(self, time):
 		"""
@@ -355,6 +423,7 @@ class Atmosphere(Listener):
 		time = 1 - (time * 4)
 		return time * self.tpr_daily_flux()
 
+
 	def delta_tpr_latitude(self, latitude):
 		"""
 		Returns the temperature at a given latitude where 0 is the equator and
@@ -364,6 +433,7 @@ class Atmosphere(Listener):
 		dist_middle = (2 * abs_lat) - 1
 		return -(dist_middle * self.tpr_latitude_flux())
 
+
 	def tpr_at(self, time, latitude):
 		"""
 		Returns the temperature at a given time and latitude.
@@ -371,6 +441,7 @@ class Atmosphere(Listener):
 		delta_daily = self.delta_tpr_daily(time)
 		delta_lat = self.delta_tpr_latitude(latitude)
 		return self.tpr_surface() + delta_daily + delta_lat
+
 
 	def habitability(self):
 		"""
@@ -384,6 +455,8 @@ class Atmosphere(Listener):
 				self.density()
 			),
 		}
+
+
 
 class AtmosphereChangeEvent(Event):
 	"""
@@ -401,6 +474,8 @@ class AtmosphereChangeEvent(Event):
 	def __str__(self):
 		return f'AtmosphereChangeEvent({self.delta})'
 
+
+
 class AtmosphereChangeDeltaEvent(Event):
 	"""
 	An event that signals a change in the rate of change of the atmosphere of
@@ -417,6 +492,31 @@ class AtmosphereChangeDeltaEvent(Event):
 
 	def __str__(self):
 		return f'AtmosphereChangeDeltaEvent({self.delta})'
+
+
+
+class AtmosphereChangeTransformEvent(Event):
+	"""
+	An event that signals a change in the rate of atmospheric transformation
+	of a planet.
+
+	Atmospheric transformation is the process where something is changing
+	one element to another, like a plant changing carbon dioxide to oxygen.
+	Whereas atmospheric delta is the process of putting something or
+	removing something from the atmosphere, like factories or carbon absorbers.
+	"""
+
+	transform: dict[tuple[AtmosphereElement, AtmosphereElement], tuple[int, int]]
+
+	def __init__(self, transform):
+		self.transform = transform
+
+	def __eq__(self, other):
+		return compare_atmosphere_dicts(self.transform, other.transform)
+
+	def __str__(self):
+		return f'AtmosphereChangeTransformEvent({self.transform})'
+
 
 def compare_atmosphere_dicts(a, b):
 	"""
