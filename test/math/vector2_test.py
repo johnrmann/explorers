@@ -11,10 +11,29 @@ from src.math.vector2 import (
 )
 
 class Vector2Test(unittest.TestCase):
+	def test__init__tuple(self):
+		p = Vector2((1, 2))
+		self.assertEqual(p.x, 1)
+		self.assertEqual(p.y, 2)
+
+	def test__init__coordinates(self):
+		p = Vector2(1, 2)
+		self.assertEqual(p.x, 1)
+		self.assertEqual(p.y, 2)
+
+	def test__init__vector2(self):
+		p = Vector2(Vector2(1, 2))
+		self.assertEqual(p.x, 1)
+		self.assertEqual(p.y, 2)
+
+	def test__init__raises_error(self):
+		with self.assertRaises(ValueError):
+			Vector2(1, 2, 3)
+
 	def test__print(self):
 		p = Vector2(4,8)
 		self.assertEqual(str(p), "(4.00, 8.00)")
-	
+
 	def test__equality(self):
 		p = Vector2(1,1)
 		q = Vector2(1,1)
@@ -22,7 +41,7 @@ class Vector2Test(unittest.TestCase):
 		r = Vector2(2,3)
 		s = Vector2(4,5)
 		self.assertEqual(r == s, False)
-	
+
 	def test__equality__with_tuple(self):
 		p = Vector2(1,1)
 		q = (1,1)
@@ -37,7 +56,19 @@ class Vector2Test(unittest.TestCase):
 		p = Vector2(4, 8)
 		q = (15, 16)
 		self.assertEqual(p + q, Vector2(19, 24))
-	
+
+	def test__division(self):
+		p = Vector2(4, 8)
+		self.assertEqual(p / 2, Vector2(2, 4))
+
+	def test__comparison__same_as_tuple(self):
+		t1 = (1, 2)
+		t2 = (3, 4)
+		v1 = Vector2(1, 2)
+		v2 = Vector2(3, 4)
+		self.assertEqual(t1 < t2, v1 < v2)
+		self.assertEqual(t1 > t2, v1 > v2)
+
 	def test__is_cardinal(self):
 		yes = [
 			Vector2(2,0),
@@ -52,7 +83,7 @@ class Vector2Test(unittest.TestCase):
 		]
 		for nope in nopes:
 			self.assertFalse(nope.is_cardinal())
-	
+
 	def test__is_diagonal(self):
 		yes = Vector2(1, 1)
 		self.assertTrue(yes.is_diagonal())
@@ -63,19 +94,19 @@ class Vector2Test(unittest.TestCase):
 		]
 		for nope in nopes:
 			self.assertFalse(nope.is_diagonal())
-	
+
 	def test__magnitude2(self):
 		self.assertEqual(Vector2(0,0).magnitude2(), 0)
 		self.assertEqual(Vector2(1,0).magnitude2(), 1)
 		self.assertEqual(Vector2(1,1).magnitude2(), 2)
 		self.assertEqual(Vector2(0,-2).magnitude2(), 4)
-	
+
 	def test__magnitude(self):
 		self.assertAlmostEqual(Vector2(0,0).magnitude(), 0)
 		self.assertAlmostEqual(Vector2(1,0).magnitude(), 1)
 		self.assertAlmostEqual(Vector2(1,1).magnitude(), sqrt(2))
 		self.assertAlmostEqual(Vector2(0,-2).magnitude(), 2)
-	
+
 	def test__normalized(self):
 		dn_x, dn_y = Vector2(1,1).normalized()
 		self.assertAlmostEqual(dn_x, 1 / sqrt(2))
@@ -83,7 +114,7 @@ class Vector2Test(unittest.TestCase):
 		dn_x, dn_y = Vector2(-1,1).normalized()
 		self.assertAlmostEqual(dn_x, -1 / sqrt(2))
 		self.assertAlmostEqual(dn_y, 1 / sqrt(2))
-	
+
 	def test__vector2_lerp__works(self):
 		p = Vector2(0, 0)
 		q = Vector2(10, 20)

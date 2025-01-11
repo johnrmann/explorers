@@ -12,9 +12,17 @@ class Vector2:
 
 	__slots__ = ["x", "y"]
 
-	def __init__(self, x, y):
-		self.x = x
-		self.y = y
+	def __init__(self, *args):
+		"""
+		A Vector2 can either be initialized by passing a single argument in the
+		form of a tuple or two arguments in the form of two numbers.
+		"""
+		if len(args) == 1:
+			self.x, self.y = args[0]
+		elif len(args) == 2:
+			self.x, self.y = args
+		else:
+			raise ValueError('Need either a tuple or two numbers')
 
 	def __iter__(self):
 		yield self.x
@@ -41,7 +49,7 @@ class Vector2:
 	def __mul__(self, k: float):
 		return Vector2(self.x * k, self.y * k)
 
-	def __div__(self, k: float):
+	def __truediv__(self, k: float):
 		return Vector2(self.x / k, self.y / k)
 
 	def __lt__(self, q):
