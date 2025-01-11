@@ -78,7 +78,7 @@ def make_game(
 		raise ValueError("window_dimensions must be provided.")
 	world = make_world()
 	vp = Viewport(window_dimensions, world.terrain)
-	game_mgr = init_game_manager(world, vp, on_quit=on_quit, screen=screen, epoch=epoch)
+	game_mgr = init_game_manager(world, vp, on_quit=on_quit, screen=screen, epoch=epoch, no_gui=False)
 	vp.game_mgr = game_mgr
 	positions = [world.terrain.center]
 	if num_players > 1:

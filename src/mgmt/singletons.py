@@ -10,7 +10,8 @@ def init_game_manager(
 		vp: Viewport,
 		on_quit=None,
 		screen=None,
-		epoch=None
+		epoch=None,
+		no_gui=True
 ):
 	"""Initializes the game manager singleton."""
 	global _global_game_manager
@@ -21,7 +22,8 @@ def init_game_manager(
 		vp,
 		on_quit=on_quit,
 		screen=screen,
-		epoch=epoch
+		epoch=epoch,
+		no_gui=no_gui
 	)
 	return _global_game_manager
 

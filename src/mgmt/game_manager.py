@@ -81,7 +81,7 @@ class GameManager(Listener):
 			on_quit=None,
 			evt_mgr=None,
 			screen=None,
-			no_gui=False,
+			no_gui=True,
 	):
 		self.screen = screen
 		self.utc = 0.0
