@@ -2,8 +2,6 @@ import unittest
 
 from unittest.mock import MagicMock
 
-from math import modf
-
 from src.math.vector2 import Vector2
 from src.mgmt.game_manager import GameManager
 from src.mgmt.event_manager import EventManager

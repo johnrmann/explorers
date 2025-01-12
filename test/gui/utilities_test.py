@@ -1,26 +1,46 @@
-import pygame
-
 import unittest
+import pygame
 
 from src.gui.utilities import bounding_box, create_gradient_surface
 from src.gui.gui import GuiElement
 
+from test.gui.setup import make_mock_gui_manager
+
 class TestBoundingBox(unittest.TestCase):
 
+	def setUp(self):
+		self.mock_gui_mgr = make_mock_gui_manager()
+
 	def test__bounding_box__single_element(self):
-		elem = GuiElement(origin=(10, 10), dimensions=(5, 5))
+		elem = GuiElement(
+			origin=(10, 10),
+			dimensions=(5, 5),
+			gui_mgr=self.mock_gui_mgr
+		)
 		result = bounding_box([elem])
 		self.assertEqual(result, ((10, 10), (5, 5)))
 
 	def test__bounding_box__multiple_elements(self):
-		elem1 = GuiElement(origin=(10, 10), dimensions=(5, 5))
-		elem2 = GuiElement(origin=(20, 20), dimensions=(10, 10))
+		elem1 = GuiElement(
+			origin=(10, 10),
+			dimensions=(5, 5),
+			gui_mgr=self.mock_gui_mgr
+		)
+		elem2 = GuiElement(
+			origin=(20, 20),
+			dimensions=(10, 10),
+			gui_mgr=self.mock_gui_mgr
+		)
 		result = bounding_box([elem1, elem2])
 		self.assertEqual(result, ((10, 10), (20, 20)))
 
 	def test__bounding_box__overlapping_elements(self):
-		elem1 = GuiElement(origin=(10, 10), dimensions=(10, 10))
-		elem2 = GuiElement(origin=(15, 15), dimensions=(10, 10))
+		elem1 = GuiElement(
+			origin=(10, 10), dimensions=(10, 10), gui_mgr=self.mock_gui_mgr
+		)
+		elem2 = GuiElement(
+			origin=(15, 15), dimensions=(10, 10), gui_mgr=self.mock_gui_mgr
+		)
 		result = bounding_box([elem1, elem2])
 		self.assertEqual(result, ((10, 10), (15, 15)))
 

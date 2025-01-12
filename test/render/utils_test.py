@@ -9,6 +9,7 @@ from src.render.utils import (
 )
 
 class UtilsTest(unittest.TestCase):
+
 	def test__scale_color__three_channels(self):
 		color = (255, 0, 0)
 		scale = 0.5

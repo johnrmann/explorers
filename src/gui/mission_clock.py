@@ -44,11 +44,6 @@ class MissionClock(GuiElement):
 		self._epoch = self.gui_mgr.game_mgr.epoch
 		self._update_label(0)
 
-	def __del__(self):
-		del self.button
-		del self.label
-		del self.panel
-	
 	@property
 	def origin(self):
 		return (0,0)

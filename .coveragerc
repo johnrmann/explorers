@@ -1,4 +1,4 @@
 [report]
-omit = ./test/**/*.py,./*.py,**/__init__.py
+omit = ./test/**/*.py,./*.py,**/__init__.py,./run_tests.py
 exclude_also =
 	def test__

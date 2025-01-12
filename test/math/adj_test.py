@@ -1,6 +1,16 @@
 import unittest
 
-from src.math.adj import *
+from src.math.direction import Direction
+from src.math.vector2 import Vector2
+from src.math.adj import (
+	adj_cells,
+	keyed_adj_cells,
+	bool_adj_from_labels,
+	select_adj_degree,
+	are_cells_adj_cardinally,
+	are_cells_adj,
+	are_cells_adj_diagonally
+)
 
 EXAMPLE_ADJ = [
 	[0,0,1,1],
@@ -22,10 +32,10 @@ EXAMPLE_ADJ_PAIRS = [
 ]
 
 SIMPLE_B_ADJ = [[False] * 4 for i in range(4)]
-for p in range(3):
-	q = p + 1
-	SIMPLE_B_ADJ[p][q] = True
-	SIMPLE_B_ADJ[q][p] = True
+for a in range(3):
+	b = a + 1
+	SIMPLE_B_ADJ[a][b] = True
+	SIMPLE_B_ADJ[b][a] = True
 
 class AdjTest(unittest.TestCase):
 	def test__keyed_adj_cells__normie(self):

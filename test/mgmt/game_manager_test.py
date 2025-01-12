@@ -25,7 +25,7 @@ class GameManagerTest(unittest.TestCase):
 
 	def test__utc(self):
 		"""Test that UTC changes with the flow of time."""
-		gm = GameManager(self.world, self.viewport)
+		gm = GameManager(self.world, self.viewport, no_gui=True)
 		self.assertEqual(gm.utc, 0)
 		gm.tick(1 / 50)
 		self.assertEqual(gm.utc, 1 / 50)
@@ -34,7 +34,7 @@ class GameManagerTest(unittest.TestCase):
 
 	def test__select_actor(self):
 		"""Test that we can select an actor."""
-		gm = GameManager(self.world, self.viewport)
+		gm = GameManager(self.world, self.viewport, no_gui=True)
 		actor1 = gm.new_player_character((0, 0))
 		actor2 = gm.new_player_character((1, 1))
 		self.assertEqual(gm.selected_actors[1], actor1)
@@ -43,7 +43,7 @@ class GameManagerTest(unittest.TestCase):
 
 	def test__select_actor__multiplayer(self):
 		"""Test that we can select an actor in multiplayer mode."""
-		gm = GameManager(self.world, self.viewport)
+		gm = GameManager(self.world, self.viewport, no_gui=True)
 		actor1 = gm.new_player_character((0, 0), owner=1)
 		actor2 = gm.new_player_character((1, 1), owner=2)
 		actor3 = gm.new_player_character((2, 2), owner=2)
@@ -57,7 +57,7 @@ class GameManagerTest(unittest.TestCase):
 		"""
 		Ensure that pausing the game does not render events or tick objects.
 		"""
-		gm = GameManager(self.world, self.viewport)
+		gm = GameManager(self.world, self.viewport, no_gui=True)
 		p1 = gm.new_player_character((0, 0))
 		p2 = gm.new_player_character((1, 1))
 		p1.tick = MagicMock()
@@ -69,7 +69,7 @@ class GameManagerTest(unittest.TestCase):
 
 	def test__tick__ticks_objects(self):
 		"""Ensure that game objects are ticked."""
-		gm = GameManager(self.world, self.viewport)
+		gm = GameManager(self.world, self.viewport, no_gui=True)
 		p1 = gm.new_player_character((0, 0))
 		p2 = gm.new_player_character((1, 1))
 		p1.tick = MagicMock()
@@ -81,12 +81,12 @@ class GameManagerTest(unittest.TestCase):
 	def test__tick__rejects_time_travel(self):
 		"""Ensure that an error is thrown if we try to tick with a negative
 		dt."""
-		gm = GameManager(self.world, self.viewport)
+		gm = GameManager(self.world, self.viewport, no_gui=True)
 		self.assertRaises(ValueError, lambda: gm.tick(-1))
 
 	def test__tick__evolves_world(self):
 		"""Test that the world evolves one second at a time."""
-		gm = GameManager(self.world, self.viewport)
+		gm = GameManager(self.world, self.viewport, no_gui=True)
 		gm.world.evolve = MagicMock()
 		gm.tick(0.5)
 		gm.world.evolve.assert_not_called()
@@ -95,14 +95,14 @@ class GameManagerTest(unittest.TestCase):
 
 	def test__tick__evolves_world_multiple_seconds(self):
 		"""Test that the world evolves multiple seconds at a time."""
-		gm = GameManager(self.world, self.viewport)
+		gm = GameManager(self.world, self.viewport, no_gui=True)
 		gm.world.evolve = MagicMock()
 		gm.tick(2)
 		gm.world.evolve.assert_called_once_with(2)
 
 	def test__add_game_object__calls_init(self):
 		"""Test that add_game_object calls the object's init method."""
-		gm = GameManager(self.world, self.viewport)
+		gm = GameManager(self.world, self.viewport, no_gui=True)
 		obj = MagicMock()
 		obj.on_init = Mock()
 		gm.add_game_object(obj)
@@ -110,14 +110,14 @@ class GameManagerTest(unittest.TestCase):
 
 	def test__add_game_object__adds_game_object(self):
 		"""Test that add_game_object adds the object to the game_objects set."""
-		gm = GameManager(self.world, self.viewport)
+		gm = GameManager(self.world, self.viewport, no_gui=True)
 		obj = MagicMock()
 		gm.add_game_object(obj)
 		self.assertIn(obj, gm.game_objects)
 
 	def test__remove_game_object__calls_remove(self):
 		"""Test that remove_game_object calls the object's remove method."""
-		gm = GameManager(self.world, self.viewport)
+		gm = GameManager(self.world, self.viewport, no_gui=True)
 		obj = MagicMock()
 		obj.on_remove = Mock()
 		gm.add_game_object(obj)
@@ -127,7 +127,7 @@ class GameManagerTest(unittest.TestCase):
 	def test__remove_game_object__removes_game_object(self):
 		"""Test that remove_game_object removes the object from the game_objects
 		set."""
-		gm = GameManager(self.world, self.viewport)
+		gm = GameManager(self.world, self.viewport, no_gui=True)
 		obj = MagicMock()
 		gm.add_game_object(obj)
 		gm.remove_game_object(obj)
@@ -135,7 +135,7 @@ class GameManagerTest(unittest.TestCase):
 
 	def test__new_colony(self):
 		"""Test that new_colony creates a new colony."""
-		gm = GameManager(self.world, self.viewport)
+		gm = GameManager(self.world, self.viewport, no_gui=True)
 		self.assertEqual(len(gm.colonies), 0)
 		gm.new_colony(
 			position=(0,0),
@@ -146,7 +146,7 @@ class GameManagerTest(unittest.TestCase):
 
 	def test__new_colony__adds_structures(self):
 		"""Test that new_colony adds structures to the world."""
-		gm = GameManager(self.world, self.viewport)
+		gm = GameManager(self.world, self.viewport, no_gui=True)
 		lander = Lander(
 			pos=(0, 0),
 			game_mgr=gm,

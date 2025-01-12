@@ -11,11 +11,14 @@ class _GuiManager:
 
 	game_mgr = None
 
-	def __init__(self, game_mgr=None):
+	def __init__(self, game_mgr=None, surface=None):
 		if game_mgr is None:
 			raise ValueError("Game manager must be provided.")
 		self.game_mgr = game_mgr
-		self.surface = pygame.display.get_surface()
+		if surface is None:
+			self.surface = pygame.display.get_surface()
+		else:
+			self.surface = surface
 		if not self.surface:
 			raise ValueError("pygame not initialized yet")
 
@@ -75,6 +78,11 @@ class GuiElement:
 		self.hidden = hidden
 		self.elements = []
 		self.anchor = anchor
+		if gui_mgr is None and parent is not None:
+			gui_mgr = parent.gui_mgr
+		if evt_mgr is None and parent is not None:
+			evt_mgr = parent.evt_mgr
+
 		if rect is not None:
 			origin, dimensions = rect
 		if dimensions is not None:
@@ -105,7 +113,7 @@ class GuiElement:
 		if self.parent is not None:
 			self.parent.remove_child(self)
 			self.parent = None
-		else:
+		elif self.gui_mgr is not None:
 			self.gui_mgr.remove_element(self)
 
 	@property

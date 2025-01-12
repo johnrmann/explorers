@@ -1,21 +1,25 @@
 import unittest
-from unittest.mock import MagicMock, Mock
+from unittest.mock import MagicMock, Mock, patch
 import pygame
 from src.gui.playbar import Playbar, PlaybarMode
 from src.gui.primitives import Panel
 
+from test.gui.setup import make_mock_gui_manager
+
 class TestPlaybar(unittest.TestCase):
 
-	def setUp(self):
-		self.game_mock = MagicMock()
-		self.game_mock.world = MagicMock()
-		self.game_mock.world.terrain = MagicMock()
-		self.game_mock.world.terrain.dimensions = (64, 64)
-		self.game_mock.renderer.vp.window_dims = (800, 600)
+	@patch('src.gui.playbar.Scanline', autospec=True)
+	@patch('src.gui.playbar.LineGraph', autospec=True)
+	def setUp(self, MockScanline, MockLineGraph):
+		MockScanline.return_value = Mock()
+		MockLineGraph.return_value = Mock()
 		self.change_mode_callback = Mock()
+		self.gui_mgr = make_mock_gui_manager()
 		self.playbar = Playbar(
-			self.game_mock,
-			change_mode_callback=self.change_mode_callback
+			self.gui_mgr.game_mgr,
+			change_mode_callback=self.change_mode_callback,
+			gui_mgr=self.gui_mgr,
+			evt_mgr=self.gui_mgr.game_mgr.evt_mgr
 		)
 
 	def test__init__initial_mode_is_character(self):

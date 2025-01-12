@@ -2,7 +2,7 @@
 Classes and functions for 2D vectors.
 """
 
-from math import sqrt
+import math
 
 class Vector2:
 	"""
@@ -94,7 +94,7 @@ class Vector2:
 		"""
 		Returns the magnitude of the vector.
 		"""
-		return sqrt(self.magnitude2())
+		return math.sqrt(self.magnitude2())
 
 	def normalized(self):
 		"""

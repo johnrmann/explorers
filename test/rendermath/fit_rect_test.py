@@ -1,6 +1,6 @@
 import unittest
 
-from math import sqrt
+import math
 
 from src.rendermath.fit_rect import (
 	fit_img_rect_on_tile_base,
@@ -33,7 +33,7 @@ class FitRectTest(unittest.TestCase):
 		self.assertEqual(result_height, expected_height)
 
 	def test__object_height_from_img_dims__cubic(self):
-		tile_z = sqrt(50**2 + 25**2)
+		tile_z = math.sqrt(50**2 + 25**2)
 		img_dims = (100, 50 + tile_z)
 		expected_height = 1
 		result_height = object_height_from_img_dims(img_dims)

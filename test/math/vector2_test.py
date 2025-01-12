@@ -1,6 +1,6 @@
 import unittest
 
-from math import sqrt
+import math
 
 from src.math.vector2 import Vector2, vector2_lerp, vector2_bounding_rect
 from src.math.vector2 import vector2_move_points_near_zero
@@ -104,16 +104,16 @@ class Vector2Test(unittest.TestCase):
 	def test__magnitude(self):
 		self.assertAlmostEqual(Vector2(0,0).magnitude(), 0)
 		self.assertAlmostEqual(Vector2(1,0).magnitude(), 1)
-		self.assertAlmostEqual(Vector2(1,1).magnitude(), sqrt(2))
+		self.assertAlmostEqual(Vector2(1,1).magnitude(), math.sqrt(2))
 		self.assertAlmostEqual(Vector2(0,-2).magnitude(), 2)
 
 	def test__normalized(self):
 		dn_x, dn_y = Vector2(1,1).normalized()
-		self.assertAlmostEqual(dn_x, 1 / sqrt(2))
-		self.assertAlmostEqual(dn_y, 1 / sqrt(2))
+		self.assertAlmostEqual(dn_x, 1 / math.sqrt(2))
+		self.assertAlmostEqual(dn_y, 1 / math.sqrt(2))
 		dn_x, dn_y = Vector2(-1,1).normalized()
-		self.assertAlmostEqual(dn_x, -1 / sqrt(2))
-		self.assertAlmostEqual(dn_y, 1 / sqrt(2))
+		self.assertAlmostEqual(dn_x, -1 / math.sqrt(2))
+		self.assertAlmostEqual(dn_y, 1 / math.sqrt(2))
 
 	def test__vector2_lerp__works(self):
 		p = Vector2(0, 0)

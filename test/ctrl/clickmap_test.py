@@ -6,12 +6,8 @@ from src.ctrl.clickmap import ClickMap
 class TestClickMap(unittest.TestCase):
 
 	def setUp(self):
-		pygame.init()
 		self.screen_dimensions = (32, 32)
 		self.clickmap = ClickMap(self.screen_dimensions)
-
-	def tearDown(self):
-		pygame.quit()
 
 	def test__init__raises_ValueError(self):
 		with self.assertRaises(ValueError):

@@ -15,7 +15,14 @@ class Rangebar(GuiElement):
 	A GUI Element rendering a bar with multiple layers.
 	"""
 
-	def __init__(self, rect=None, layers=None, values=None, parent=None):
+	def __init__(
+			self,
+			rect=None,
+			layers=None,
+			values=None,
+			parent=None,
+			gui_mgr=None
+	):
 		if rect is None:
 			raise ValueError('Need rect.')
 		if layers is None:
@@ -26,7 +33,7 @@ class Rangebar(GuiElement):
 		origin, dimensions = rect
 		self.relative_origin = origin
 		self.dimensions = dimensions
-		super().__init__(parent=parent)
+		super().__init__(parent=parent, gui_mgr=gui_mgr)
 		self.layers = layers
 		self.values = values
 
