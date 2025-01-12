@@ -11,10 +11,13 @@ class Spacer(GuiElement):
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
 
-class Button(GuiElement):
+
+
+class _BaseButton(GuiElement):
 	"""Buttons can be clicked to trigger callbacks."""
 
-	text = None
+	callback = None
+	events = None
 
 	def __init__(self, text="", callback=None, events=None, **kwargs):
 		super().__init__(**kwargs)
@@ -23,6 +26,7 @@ class Button(GuiElement):
 		if events is None:
 			events = []
 		self.events = events
+
 
 	@property
 	def _inner_pygame_rect(self):
@@ -34,13 +38,6 @@ class Button(GuiElement):
 			h - (BUTTON_CHROME * 2)
 		)
 
-	def my_draw(self, screen):
-		pygame.draw.rect(screen, (0, 255, 255), self.pygame_rect)
-		pygame.draw.rect(screen, (0, 0, 255), self._inner_pygame_rect)
-		font = pygame.font.Font(None, 24)
-		text_surface = font.render(self.text, True, (255, 255, 255))
-		text_rect = text_surface.get_rect(center=self._inner_pygame_rect.center)
-		screen.blit(text_surface, text_rect)
 
 	def process_event(self, event):
 		if event.type == pygame.MOUSEBUTTONDOWN:
@@ -52,6 +49,28 @@ class Button(GuiElement):
 				return True
 		return False
 
+
+
+class Button(_BaseButton):
+	"""This is a button with text."""
+
+	text: str = None
+
+	def __init__(self, text: str = "", **kwargs):
+		super().__init__(**kwargs)
+		self.text = text
+
+
+	def my_draw(self, screen):
+		pygame.draw.rect(screen, (0, 255, 255), self.pygame_rect)
+		pygame.draw.rect(screen, (0, 0, 255), self._inner_pygame_rect)
+		font = pygame.font.Font(None, 24)
+		text_surface = font.render(self.text, True, (255, 255, 255))
+		text_rect = text_surface.get_rect(center=self._inner_pygame_rect.center)
+		screen.blit(text_surface, text_rect)
+
+
+
 class Label(GuiElement):
 	"""Labels show text on the sceren."""
 
@@ -61,11 +80,14 @@ class Label(GuiElement):
 		super().__init__(**kwargs)
 		self.text = text
 
+
 	def my_draw(self, screen):
 		font = pygame.font.Font(None, 24)
 		text_surface = font.render(self.text, True, (255, 255, 255))
 		text_rect = text_surface.get_rect(center=self.pygame_rect.center)
 		screen.blit(text_surface, text_rect)
+
+
 
 class Panel(GuiElement):
 	"""Panels are basically rects. Will add some more dressing on them soon."""
@@ -73,8 +95,11 @@ class Panel(GuiElement):
 	def __init__(self, **kwargs):
 		super().__init__(**kwargs)
 
+
 	def my_draw(self, screen):
 		pygame.draw.rect(screen, (0, 0, 255), self.pygame_rect)
+
+
 
 class TextBox(GuiElement):
 	"""Multi-line labels."""
@@ -84,6 +109,7 @@ class TextBox(GuiElement):
 	def __init__(self, text="", **kwargs):
 		super().__init__(**kwargs)
 		self.text = text
+
 
 	def my_draw(self, screen):
 		# Starting from the top of the pygame_rect, draw lines of text from
@@ -95,6 +121,8 @@ class TextBox(GuiElement):
 			text_draw = font.render(line, True, (255, 255, 255))
 			screen.blit(text_draw, (self.pygame_rect.left + 5, y))
 			y += 26
+
+
 
 class Image(GuiElement):
 	"""An image drawn on the screen within a rect."""
@@ -108,9 +136,43 @@ class Image(GuiElement):
 		else:
 			self.image_surface = image
 
+
 	def my_draw(self, screen):
 		transformed_image = pygame.transform.scale(
 			self.image_surface,
 			self.dimensions
 		)
 		screen.blit(transformed_image, self.pygame_rect)
+
+
+
+class ImageButton(_BaseButton):
+	"""A button with an image."""
+
+	image_surface = None
+
+	def __init__(
+			self,
+			image_surface=None,
+			image_path=None,
+			**kwargs
+	):
+		if image_surface is None and image_path is None:
+			raise ValueError("Need an image object xor image path.")
+		if image_surface is not None and image_path is not None:
+			raise ValueError("Need an image object xor image path, not both.")
+		super().__init__(**kwargs)
+		if image_surface is not None:
+			self.image_surface = image_surface
+		else:
+			self.image_surface = pygame.image.load(image_path).convert_alpha()
+
+
+	def my_draw(self, screen):
+		pygame.draw.rect(screen, (0, 255, 255), self.pygame_rect)
+		pygame.draw.rect(screen, (0, 0, 255), self._inner_pygame_rect)
+		transformed_image = pygame.transform.scale(
+			self.image_surface,
+			self._inner_pygame_rect.size
+		)
+		screen.blit(transformed_image, self._inner_pygame_rect)

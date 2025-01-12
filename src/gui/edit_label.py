@@ -1,5 +1,5 @@
 from src.gui.gui import GuiElement
-from src.gui.primitives import Label, Button
+from src.gui.primitives import Label, ImageButton
 
 class EditLabel(GuiElement):
 	"""
@@ -9,7 +9,7 @@ class EditLabel(GuiElement):
 	_is_editable: bool = True
 
 	_label: Label = None
-	_button: Button = None
+	_button: ImageButton = None
 
 	def __init__(self, is_editable=True, on_edit=None, text='', **kwargs):
 		super().__init__(**kwargs)
@@ -21,8 +21,8 @@ class EditLabel(GuiElement):
 			dimensions=(width - height, height),
 			parent=self,
 		)
-		self._button = Button(
-			text='Edit',
+		self._button = ImageButton(
+			image_path='assets/img/icon/pencil.png',
 			origin=(width - height, 0),
 			dimensions=(height, height),
 			parent=self,
