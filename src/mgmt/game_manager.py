@@ -166,7 +166,7 @@ class GameManager(Listener):
 		floor_new_utc = int(self.utc + dt)
 		floor_old_utc = int(self.utc)
 		if floor_new_utc != floor_old_utc:
-			self.world.evolve(floor_new_utc - floor_old_utc)
+			self.world.tick_second(floor_new_utc - floor_old_utc, self.utc)
 			self._check_for_holidays(int(self.utc + dt))
 		self.utc += dt
 		self.evt_mgr.tick(dt, self.utc)

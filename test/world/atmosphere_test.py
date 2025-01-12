@@ -182,7 +182,7 @@ class AtmosphereTest(unittest.TestCase):
 
 
 	def test__evolve__identity(self):
-		self.basic.evolve()
+		self.basic.tick_second(1, 0)
 		self.assertEqual(self.basic.average, {
 			elem: 1000
 			for elem in AtmosphereElement
@@ -191,19 +191,19 @@ class AtmosphereTest(unittest.TestCase):
 
 	def test__evolve__add(self):
 		self.basic.change_delta(AtmosphereElement.CARBON, 100)
-		self.basic.evolve()
+		self.basic.tick_second(1, 0)
 		self.assertEqual(self.basic.average[AtmosphereElement.CARBON], 1100)
 
 
 	def test__evolve__remove(self):
 		self.basic.change_delta(AtmosphereElement.CARBON, -100)
-		self.basic.evolve()
+		self.basic.tick_second(1, 0)
 		self.assertEqual(self.basic.average[AtmosphereElement.CARBON], 900)
 
 
 	def test__evolve__remove_cap_zero(self):
 		self.basic.change_delta(AtmosphereElement.CARBON, -2000)
-		self.basic.evolve()
+		self.basic.tick_second(1, 0)
 		self.assertEqual(self.basic.average[AtmosphereElement.CARBON], 0)
 
 
@@ -212,7 +212,7 @@ class AtmosphereTest(unittest.TestCase):
 			(AtmosphereElement.CARBON, 100),
 			(AtmosphereElement.OXYGEN, 100),
 		)
-		self.basic.evolve()
+		self.basic.tick_second(1, 0)
 		self.assertEqual(self.basic.average[AtmosphereElement.CARBON], 900)
 		self.assertEqual(self.basic.average[AtmosphereElement.OXYGEN], 1100)
 
@@ -226,7 +226,7 @@ class AtmosphereTest(unittest.TestCase):
 			(AtmosphereElement.CARBON, 100),
 			(AtmosphereElement.OXYGEN, 100),
 		)
-		self.basic.evolve()
+		self.basic.tick_second(1, 0)
 		self.assertEqual(self.basic.average[AtmosphereElement.CARBON], 800)
 		self.assertEqual(self.basic.average[AtmosphereElement.OXYGEN], 1200)
 
@@ -240,7 +240,7 @@ class AtmosphereTest(unittest.TestCase):
 			(AtmosphereElement.CARBON, -100),
 			(AtmosphereElement.OXYGEN, -100),
 		)
-		self.basic.evolve()
+		self.basic.tick_second(1, 0)
 		self.assertEqual(self.basic.average[AtmosphereElement.CARBON], 1000)
 		self.assertEqual(self.basic.average[AtmosphereElement.OXYGEN], 1000)
 
@@ -250,8 +250,8 @@ class AtmosphereTest(unittest.TestCase):
 			(AtmosphereElement.CARBON, 100),
 			(AtmosphereElement.OXYGEN, 100),
 		)
-		for _ in range(20):
-			self.basic.evolve()
+		for t in range(20):
+			self.basic.tick_second(1, t)
 		self.assertEqual(self.basic.average[AtmosphereElement.CARBON], 0)
 		self.assertEqual(self.basic.average[AtmosphereElement.OXYGEN], 2000)
 
@@ -268,7 +268,7 @@ class AtmosphereTest(unittest.TestCase):
 			(AtmosphereElement.CARBON, 100_000),
 			(AtmosphereElement.OXYGEN, 200_000),
 		)
-		self.basic.evolve()
+		self.basic.tick_second(1, 0)
 		self.assertEqual(self.basic.average[AtmosphereElement.CARBON], 0)
 		self.assertEqual(self.basic.average[AtmosphereElement.OXYGEN], 3000)
 
@@ -354,10 +354,10 @@ class AtmosphereTest(unittest.TestCase):
 			AtmosphereElement.CARBON: 100
 		}))
 		evt_mgr.tick(0, 0)
-		self.earth.evolve()
+		self.earth.tick_second(1, 0)
 		new_carbon = self.earth.total[AtmosphereElement.CARBON]
 		self.assertEqual(new_carbon, old_carbon + 100)
-		self.earth.evolve()
+		self.earth.tick_second(1, 0)
 		new_carbon = self.earth.total[AtmosphereElement.CARBON]
 		self.assertEqual(new_carbon, old_carbon + 200)
 
@@ -369,7 +369,7 @@ class AtmosphereTest(unittest.TestCase):
 			(AtmosphereElement.CARBON, AtmosphereElement.OXYGEN): (100, 100)
 		}))
 		evt_mgr.tick(0, 0)
-		self.basic.evolve()
+		self.basic.tick_second(1, 0)
 		new_carbon = self.basic.total[AtmosphereElement.CARBON]
 		self.assertEqual(new_carbon, 900)
 		new_oxygen = self.basic.total[AtmosphereElement.OXYGEN]

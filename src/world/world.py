@@ -4,9 +4,11 @@ from src.world.history import PlanetHistory
 from src.world.horology import Horology, CENTURIA
 from src.world.terrain import Terrain
 
+from src.mgmt.tick import Tickable
+
 from src.utility.habitability import HabitabilityFactor, habitability_index
 
-class World:
+class World(Tickable):
 	"""
 	This class contains information about the "planetology" of the game world,
 	including the terrain, horology (timekeeping), astronomy (distance from
@@ -67,11 +69,11 @@ class World:
 		"""The dimensions of the world are defined by the terrain."""
 		return self.terrain.dimensions
 
-	def evolve(self, d_seconds=1):
+	def tick_second(self, dt, utc):
 		"""
-		Evolves the world by `d_seconds` seconds.
+		Evolves the world by `dt` seconds.
 		"""
-		self.atmosphere.evolve(d_seconds)
+		self.atmosphere.tick_second(dt, utc)
 		self.history.update(self.game_mgr.utc)
 
 	def habitability(self):

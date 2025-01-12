@@ -12,6 +12,7 @@ from enum import Enum
 from src.mgmt.listener import Listener
 from src.mgmt.event import Event
 from src.mgmt.event_manager import EventManager
+from src.mgmt.tick import Tickable
 
 from src.utility.habitability import (
 	temperature_habitability,
@@ -105,7 +106,7 @@ def greenhouse_factor(weights):
 # This one is based on multiples of Earth's solar radiation.
 BOLTZMANN = (2.416 / 4) * 10**10
 
-class Atmosphere(Listener):
+class Atmosphere(Listener, Tickable):
 	"""
 	The atmosphere of a planet is modeled by distributing many "units" of
 	particles across the whole surface area of the planet. This will allow us
@@ -332,7 +333,7 @@ class Atmosphere(Listener):
 			)
 
 
-	def evolve(self, d_seconds=1):
+	def tick_second(self, dt, utc):
 		"""
 		Mutates the atmosphere according to the delta.
 
@@ -343,7 +344,7 @@ class Atmosphere(Listener):
 		Call this once per second (not frame!).
 		"""
 		for key, count in self.delta.items():
-			self.total[key] += count * d_seconds
+			self.total[key] += count * dt
 			if self.total[key] < 0:
 				self.total[key] = 0
 
@@ -353,8 +354,8 @@ class Atmosphere(Listener):
 			if consumed_amount == 0 and produced_amount == 0:
 				continue
 			ratio = produced_amount / consumed_amount
-			to_consume = consumed_amount * d_seconds
-			to_produce = produced_amount * d_seconds
+			to_consume = consumed_amount * dt
+			to_produce = produced_amount * dt
 			if to_consume > self.total[consumed]:
 				to_consume = self.total[consumed]
 				to_produce = to_consume * ratio

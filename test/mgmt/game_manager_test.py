@@ -87,18 +87,18 @@ class GameManagerTest(unittest.TestCase):
 	def test__tick__evolves_world(self):
 		"""Test that the world evolves one second at a time."""
 		gm = GameManager(self.world, self.viewport, no_gui=True)
-		gm.world.evolve = MagicMock()
+		gm.world.tick_second = MagicMock()
 		gm.tick(0.5)
-		gm.world.evolve.assert_not_called()
+		gm.world.tick_second.assert_not_called()
 		gm.tick(0.5)
-		gm.world.evolve.assert_called_once_with(1)
+		gm.world.tick_second.assert_called_once_with(1)
 
 	def test__tick__evolves_world_multiple_seconds(self):
 		"""Test that the world evolves multiple seconds at a time."""
 		gm = GameManager(self.world, self.viewport, no_gui=True)
-		gm.world.evolve = MagicMock()
+		gm.world.tick_second = MagicMock()
 		gm.tick(2)
-		gm.world.evolve.assert_called_once_with(2)
+		gm.world.tick_second.assert_called_once_with(2)
 
 	def test__add_game_object__calls_init(self):
 		"""Test that add_game_object calls the object's init method."""

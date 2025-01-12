@@ -1,11 +1,12 @@
-
 from src.math.direction import Direction
 from src.math.cart_prod import spatial_cart_prod
 from src.math.vector2 import Vector2
 
+from src.mgmt.tick import Tickable
+
 from src.gameobject.constants import NO_OWNER
 
-class GameObject:
+class GameObject(Tickable):
 	"""
 	Represents a thing in the game world. Can be a character, a prop, or
 	invisible tiles that can be interacted with.
@@ -150,4 +151,4 @@ class GameObject:
 		Signal from the game manager that time has passed. dt is the time since
 		the last draw in seconds. UTC is time since mission start in seconds.
 		"""
-		pass
+		return

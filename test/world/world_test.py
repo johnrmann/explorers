@@ -60,7 +60,7 @@ class TestWorld(unittest.TestCase):
 		world.game_mgr = MagicMock()
 		world.game_mgr.utc = 0
 		world.atmosphere.change_delta(AtmosphereElement.OXYGEN, 1)
-		world.evolve(d_seconds=10)
+		world.tick_second(10, 0)
 		self.assertEqual(world.atmosphere.total[AtmosphereElement.OXYGEN], 10)
 
 	def test__evolve__updates_history(self):
@@ -69,13 +69,13 @@ class TestWorld(unittest.TestCase):
 		world.game_mgr = MagicMock()
 		world.game_mgr.utc = 1
 		world.atmosphere.change_delta(AtmosphereElement.OXYGEN, 1)
-		world.evolve(d_seconds=1)
+		world.tick_second(1, 0)
 		self.assertEqual(
 			len(world.history.habitability[HabitabilityFactor.TOTAL]),
 			1
 		)
 		world.game_mgr.utc = 2
-		world.evolve(d_seconds=1)
+		world.tick_second(1, 0)
 		self.assertEqual(
 			len(world.history.habitability[HabitabilityFactor.TOTAL]),
 			2
