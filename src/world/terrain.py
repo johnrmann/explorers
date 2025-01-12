@@ -430,3 +430,20 @@ class Terrain(object):
 						self.water[y][x] -= 1
 						self.water[y2][x2] += 1
 		self._postbalance_water()
+
+	def freeze_water_cell(self, cell_pos):
+		"""Turns the water at the given cell position into ice."""
+		x, y = cell_pos
+		if self.water[y][x] == 0:
+			return
+		water_level = self.water[y][x]
+		self.water[y][x] = 0
+		self.ice[y][x] = water_level
+		self._water_area -= 1
+		self._ice_area += 1
+
+	def freeze_water_row(self, y_coord):
+		"""Turns all water in the given row into ice."""
+		for x in range(self.width):
+			if self.is_cell_water((x, y_coord)):
+				self.freeze_water_cell((x, y_coord))

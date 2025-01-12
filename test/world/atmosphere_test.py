@@ -303,9 +303,30 @@ class AtmosphereTest(unittest.TestCase):
 		self.assertEqual(self.earth.tpr_at(0.5, 1), 288 - 15 - 10)
 
 
+	def test__tpr_at__noon_poles(self):
+		self.earth.tpr_surface = lambda: 288
+		self.assertEqual(self.earth.tpr_at(0, -1), 288 - 15 + 10)
+
+
 	def test__tpr_at__noon_equator(self):
 		self.earth.tpr_surface = lambda: 288
 		self.assertEqual(self.earth.tpr_at(0, 0), 288 + 15 + 10)
+
+
+	def test__tpr_at__midnight_equator(self):
+		self.earth.tpr_surface = lambda: 288
+		self.assertEqual(self.earth.tpr_at(0.5, 0), 288 + 15 - 10)
+
+
+	def test__is_frozen_at__earth_poles_true(self):
+		self.earth.tpr_surface = lambda: 275
+		self.assertTrue(self.earth.is_frozen_at(1))
+		self.assertTrue(self.earth.is_frozen_at(-1))
+
+
+	def test__is_frozen_at__earth_equator_false(self):
+		self.earth.tpr_surface = lambda: 275
+		self.assertFalse(self.earth.is_frozen_at(0))
 
 
 	def test__set_evt_mgr(self):

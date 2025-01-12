@@ -9,11 +9,15 @@ Note - temperature is to be abbreviated as 'tpr' in this codebase, not as
 'temp' since that can be confused with 'temporary'.
 """
 
+WATER_FREEZE_POINT = 273.15
+
+
 def kelvin_to_fahrenheit(kelvin):
 	"""
 	Converts a temperature in Kelvin to Fahrenheit.
 	"""
 	return (kelvin - 273.15) * 9/5 + 32
+
 
 def fahrenheit_to_kelvin(fahrenheit):
 	"""
@@ -21,11 +25,13 @@ def fahrenheit_to_kelvin(fahrenheit):
 	"""
 	return (fahrenheit - 32) * 5/9 + 273.15
 
+
 def centigrade_to_kelvin(centigrade):
 	"""
 	Converts a temperature in Centigrade to Kelvin.
 	"""
 	return centigrade + 273.15
+
 
 def kelvin_to_centigrade(kelvin):
 	"""
@@ -33,11 +39,13 @@ def kelvin_to_centigrade(kelvin):
 	"""
 	return kelvin - 273.15
 
+
 def fahrenheit_to_centigrade(fahrenheit):
 	"""
 	Converts a temperature in Fahrenheit to Centigrade.
 	"""
 	return (fahrenheit - 32) * 5/9
+
 
 def centigrade_to_fahrenheit(centigrade):
 	"""

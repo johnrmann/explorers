@@ -14,6 +14,7 @@ from src.mgmt.event import Event
 from src.mgmt.event_manager import EventManager
 from src.mgmt.tick import Tickable
 
+from src.utility.temperature import WATER_FREEZE_POINT
 from src.utility.habitability import (
 	temperature_habitability,
 	pressure_habitability,
@@ -459,6 +460,15 @@ class Atmosphere(Listener, Tickable):
 		delta_daily = self.delta_tpr_daily(time)
 		delta_lat = self.delta_tpr_latitude(latitude)
 		return self.tpr_surface() + delta_daily + delta_lat
+
+
+	def is_frozen_at(self, latitude):
+		"""
+		Returns True if the planet is frozen at the given latitude at any time
+		of the day (use noon as maximum). Useful for determining if water
+		should become ice.
+		"""
+		return self.tpr_at(0.25, latitude) < WATER_FREEZE_POINT
 
 
 	def habitability(self):

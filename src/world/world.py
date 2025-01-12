@@ -51,6 +51,7 @@ class World(Tickable):
 
 		self.history = PlanetHistory(self)
 
+
 	@property
 	def evt_mgr(self):
 		"""
@@ -60,14 +61,17 @@ class World(Tickable):
 		"""
 		return self.atmosphere.evt_mgr
 
+
 	@evt_mgr.setter
 	def evt_mgr(self, new_evt_mgr):
 		self.atmosphere.evt_mgr = new_evt_mgr
+
 
 	@property
 	def dimensions(self):
 		"""The dimensions of the world are defined by the terrain."""
 		return self.terrain.dimensions
+
 
 	def tick_second(self, dt, utc):
 		"""
@@ -75,6 +79,14 @@ class World(Tickable):
 		"""
 		self.atmosphere.tick_second(dt, utc)
 		self.history.update(self.game_mgr.utc)
+		# TODO(jm) - this is going to be slow. We can keep track of the "edge"
+		# of the arctic area, only update that, and then increment / decrement
+		# it.
+		for y in range(self.terrain.height):
+			latitude = self.terrain.lats[y]
+			if self.atmosphere.is_frozen_at(latitude):
+				self.terrain.freeze_water_row(y)
+
 
 	def habitability(self):
 		"""
