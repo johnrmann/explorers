@@ -2,13 +2,15 @@ import pygame
 
 from argparse import ArgumentParser
 
-from src.gen.gen import make_game
+from src.gen.gen import make_game, MakeTerrainOptions
 from src.utility.calendar import utc_tuple_to_utc_float
 from src.mgmt.constants import TARGET_FPS
 
 flags = pygame.DOUBLEBUF
 
 arg_parser = ArgumentParser()
+
+# Arguments related to the game display.
 arg_parser.add_argument(
 	'--fullscreen',
 	help='Run the game in fullscreen mode.',
@@ -22,6 +24,7 @@ arg_parser.add_argument(
 	help='The height of the game window.',
 )
 
+# Arguments related to the game calendar.
 arg_parser.add_argument(
 	'--epoch-year',
 	help='What year to start the game calendar at.'
@@ -35,6 +38,25 @@ arg_parser.add_argument(
 	help='What day to start the game calendar at.'
 )
 
+# Arguments related to terrain generation.
+arg_parser.add_argument(
+	'--terrain-width',
+	help='The width of the terrain.'
+)
+arg_parser.add_argument(
+	'--terrain-ice-cap-size',
+	help='The size of the ice caps on the terrain.'
+)
+arg_parser.add_argument(
+	'--terrain-landmass-size',
+	help='The size of the landmasses on the terrain.'
+)
+arg_parser.add_argument(
+	'--terrain-ocean',
+	help='Whether the terrain should have an ocean.'
+)
+
+# Arguments related to debugging.
 arg_parser.add_argument(
 	'--debug-print-atm',
 	help='Print the atmospheric composition to the CLI once per frame.'
@@ -75,6 +97,16 @@ epoch_tuple = (
 )
 epoch = utc_tuple_to_utc_float(epoch_tuple)
 
+terrain_options = MakeTerrainOptions()
+if args.terrain_width:
+	terrain_options.width = int(args.terrain_width)
+if args.terrain_ice_cap_size:
+	terrain_options.ice_cap_size = int(args.terrain_ice_cap_size)
+if args.terrain_landmass_size:
+	terrain_options.landmass_cell_radius = int(args.terrain_landmass_size)
+if args.terrain_ocean:
+	terrain_options.ocean = True
+
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), flags)
 pygame.display.set_caption("Explorers")
 
@@ -85,6 +117,7 @@ def main():
 		running = False
 
 	game = make_game(
+		terrain_options=terrain_options,
 		on_quit=on_quit,
 		screen=window,
 		window_dimensions=(WINDOW_WIDTH, WINDOW_HEIGHT),

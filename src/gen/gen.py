@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import random
 
 from src.math.vector2 import Vector2
@@ -15,22 +16,34 @@ from src.gen.atmosphere_generator import (
 )
 from src.gen.terrain_generator import TerrainGenerator
 
-def make_terrain(
-		width = None,
-		height = None
-):
-	tgen = TerrainGenerator(width=width, height=height)
-	#tgen.set_ice_caps()
-	tgen.set_landmasses()
-	#tgen.set_ocean()
+@dataclass
+class MakeTerrainOptions:
+	"""Options for making terrain."""
+	width: int = 256
+	height: int = 128
+	ice_cap_size: int = 0
+	landmass_cell_radius: int = 5
+	ocean: bool = False
+
+
+def make_terrain(options: MakeTerrainOptions = None):
+	"""Create a terrain."""
+	if options is None:
+		options = MakeTerrainOptions()
+	tgen = TerrainGenerator(width=options.width, height=options.height)
+	if options.ice_cap_size:
+		tgen.set_ice_caps(cells_tall=options.ice_cap_size)
+	tgen.set_landmasses(cell_radius=options.landmass_cell_radius)
+	if options.ocean:
+		tgen.set_ocean()
 	return tgen.make()
 
+
 def make_world(
-		width = None,
-		height = None,
+		terrain_options: MakeTerrainOptions = None,
 		atmosphere_type = AtmosphereType.MARS_LIKE,
 ):
-	terrain = make_terrain(width=width, height=height)
+	terrain = make_terrain(options=terrain_options)
 	world = World(
 		terrain,
 		astronomy=Astronomy(),
@@ -38,12 +51,14 @@ def make_world(
 	)
 	return world
 
+
 def make_plant_flag(game_mgr, lz_position=None, player_id=1):
 	"""Create the flag the player plants."""
 	flag_pos = lz_position + Vector2(0, 10)
 	flag = PlantFlag(pos=flag_pos, is_first=True)
 	flag.owner = player_id
 	game_mgr.add_game_object(flag)
+
 
 def make_landing_zone(
 		game_mgr = None,
@@ -66,7 +81,9 @@ def make_landing_zone(
 	make_plant_flag(game_mgr, lz_position=position, player_id=player_id)
 	return lander
 
+
 def make_game(
+		terrain_options: MakeTerrainOptions = None,
 		num_players = 1,
 		window_dimensions = None,
 		on_quit = None,
@@ -76,9 +93,16 @@ def make_game(
 	"""Create the game."""
 	if window_dimensions is None:
 		raise ValueError("window_dimensions must be provided.")
-	world = make_world()
+	world = make_world(terrain_options=terrain_options)
 	vp = Viewport(window_dimensions, world.terrain)
-	game_mgr = init_game_manager(world, vp, on_quit=on_quit, screen=screen, epoch=epoch, no_gui=False)
+	game_mgr = init_game_manager(
+		world,
+		vp,
+		on_quit=on_quit,
+		screen=screen,
+		epoch=epoch,
+		no_gui=False
+	)
 	vp.game_mgr = game_mgr
 	positions = [world.terrain.center]
 	if num_players > 1:
