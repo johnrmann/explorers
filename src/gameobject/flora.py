@@ -3,14 +3,19 @@ This module contains everything related to flora (plants and trees).
 """
 
 from src.gameobject.gameobject import GameObject
+from src.gameobject.prototype import GameObjectPrototype
+
 from src.mgmt.event import Event
 
-from src.world.atmosphere import AtmosphereChangeTransformEvent, AtmosphereElement
+from src.world.atmosphere import (
+	AtmosphereChangeTransformEvent,
+	AtmosphereElement
+)
 
 # Use 0deg F - 120deg F as the default temperature range for flora.
 DEFAULT_TPR_RANGE = (255, 322)
 
-class FloraPrototype:
+class FloraPrototype(GameObjectPrototype):
 	"""
 	We're going to have hundreds or possibly thousands of flora instances
 	throughout the game world, and each of them will be one of a few dozen
@@ -43,14 +48,14 @@ class FloraPrototype:
 
 	def __init__(
 			self,
-			name = None,
 			tpr_range=None,
-			tpr_damage_rate=0, tpr_recovery_rate=0,
+			tpr_damage_rate=0,
+			tpr_recovery_rate=0,
 			carbon_sequestration=0,
 			max_health=100,
+			**kwargs,
 	):
-		if name is None:
-			raise ValueError("Expected name!")
+		super().__init__(**kwargs)
 		if tpr_range is None:
 			tpr_range = DEFAULT_TPR_RANGE
 		self.min_tpr, self.max_tpr = tpr_range
@@ -76,9 +81,20 @@ class FloraPrototype:
 
 
 
-PALM_TREE = FloraPrototype(name='Palm Tree', carbon_sequestration=0)
+# Imported from the Florida region of Earth's United States. Best suited for
+# tropical environments.
+PALM_TREE = FloraPrototype(
+	name='Palm Tree',
+	preview_image="assets/img/sprite/palm-tree.png",
+	carbon_sequestration=0
+)
 
-DEBUG_TREE = FloraPrototype(name='Debug Tree', carbon_sequestration=10_000)
+# Sequesters a lot of carbon. Good for terraforming planets in record time.
+DEBUG_TREE = FloraPrototype(
+	name='Debug Tree',
+	preview_image="assets/img/sprite/palm-tree.png",
+	carbon_sequestration=10_000
+)
 
 
 
