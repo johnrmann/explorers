@@ -103,7 +103,7 @@ class TerrainHelperTest(unittest.TestCase):
 		terrain_helper = TerrainHelper(self.land_only, viewport)
 		result = list(terrain_helper.tile_draws((0, 0)))
 		self.assertEqual(len(result), 1)
-		self.assertEqual(result[0][0], (388, 256.58359213500125))
+		self.assertEqual(result[0][0], (-12, -19.41640786499874))
 
 
 	def test__tile_draws__x_looped(self):
@@ -115,7 +115,7 @@ class TerrainHelperTest(unittest.TestCase):
 		terrain_helper = TerrainHelper(self.land_only, viewport)
 		result = list(terrain_helper.tile_draws((4, 0)))
 		self.assertEqual(len(result), 1)
-		self.assertEqual(result[0][0], (436, 280.58359213500125))
+		self.assertEqual(result[0][0], (36, 4.5835921350012615))
 
 
 	def test__tile_draws__ice_cap_land_visible(self):

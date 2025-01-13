@@ -152,7 +152,7 @@ class TerrainHelper:
 		x, y = cell_pos
 		cell_pos_mod = (x % self.terrain.width, y)
 		zoom = self.vp.tile_width
-		screen_x, screen_y = self.vp.tile_to_screen_coords(cell_pos)
+		screen_x, screen_y = self.vp.cell_position_on_global_screen(cell_pos)
 		ridges = self._ridge_draws[cell_pos_mod]
 
 		tw2 = zoom // 2

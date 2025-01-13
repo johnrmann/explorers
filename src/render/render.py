@@ -13,7 +13,9 @@ from src.rendermath.multicell import multicell_polygon_on_global_screen
 
 from src.world.world import World
 
-from src.render.multisurface import MultiSurface, LIGHT_LEVELS
+from src.render.multisurface import (
+	MAX_LIGHT_LEVEL_IDX, MultiSurface, LIGHT_LEVELS
+)
 from src.render.viewport import Viewport
 from src.render.terrain_helper import TerrainHelper
 from src.render.utils import height_offset_tile, box_between_tiles
@@ -161,7 +163,7 @@ class Render:
 				h = 0
 		return Box(p=pos, size=(w, d, h))
 
-	def render_tile(self, cell_pos, light=7):
+	def render_tile(self, cell_pos, light=MAX_LIGHT_LEVEL_IDX):
 		_, y = cell_pos
 		if y < 0:
 			return
@@ -170,7 +172,8 @@ class Render:
 
 		draws = self.render_terrain.tile_draws(cell_pos, light=light)
 		for draw_pos, surface in draws:
-			self.window.blit(surface, surface.get_rect(topleft=draw_pos))
+			local_draw_pos = self.vp.global_screen_position_to_screen_position(draw_pos)
+			self.window.blit(surface, surface.get_rect(topleft=local_draw_pos))
 		self.drawn_cells.add(cell_pos)
 
 	def render(self):
