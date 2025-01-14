@@ -108,7 +108,7 @@ class Actor(GameObject, Listener):
 		self._tick_motives(dt)
 
 	def image_path(self):
-		return "assets/img/astronaut-cropped.png"
+		return "assets/img/sprite/astronaut-cropped.png"
 
 class MoveActorEvent(Event):
 	"""

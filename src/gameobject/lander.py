@@ -58,7 +58,7 @@ class Lander(Structure, RabbitHole, Listener):
 				self.motive_filling = event.data
 
 	def image_path(self):
-		return "assets/img/lander.png"
+		return "assets/img/sprite/lander.png"
 
 	def tick(self, dt: float, utc: float):
 		for actor in self.inside.copy():
