@@ -16,7 +16,7 @@ def long(x, w):
 	dx = x - center_x
 	return (dx / w) * 2
 
-class Terrain(object):
+class Terrain:
 	"""
 	Represents the terrain of the game world as two heightmaps: one for the
 	land layer, and one for the water layer.

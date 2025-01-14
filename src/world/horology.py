@@ -1,10 +1,8 @@
-import math
-
 from functools import lru_cache
 
 EARTH_YEAR_LENGTH = 360 * 1
 
-class Horology(object):
+class Horology:
 	"""
 	Properites of time on the planet we're colonizing.
 

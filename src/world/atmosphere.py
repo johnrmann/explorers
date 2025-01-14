@@ -6,7 +6,6 @@ Further Reading:
 	- https://atmos.washington.edu/academics/classes/2001Q4/211/notes_greenhouse.html
 """
 
-from collections import defaultdict
 from enum import Enum
 
 from src.mgmt.listener import Listener
