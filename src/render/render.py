@@ -2,7 +2,7 @@ import pygame
 
 from src.gameobject.gameobject import GameObject
 
-from src.rendermath.order import cells_in_draw_order
+from src.rendermath.order import screen_draw_order
 from src.rendermath.draw_graph import DrawGraph
 from src.rendermath.fit_rect import (
 	object_height_from_img_dims,
@@ -71,7 +71,7 @@ class Render:
 
 	def _calc_draw_order(self):
 		self._last_zoom = self.vp.tile_width
-		self.draw_order = list(cells_in_draw_order(
+		self.draw_order = list(screen_draw_order(
 			(0, 0),
 			self.vp.camera_orientation,
 			self.vp.tiles_wide,

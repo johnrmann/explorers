@@ -20,6 +20,7 @@ def draw_order_next_column(
 	x, y = cell_pos
 	return Vector2(x + dx, y + dy)
 
+
 def draw_order_next_row(
 		cell_pos: Vector2,
 		cam_dir: Direction,
@@ -39,7 +40,48 @@ def draw_order_next_row(
 	x, y = cell_pos
 	return Vector2(x + dx, y + dy)
 
-def cells_in_draw_order(
+
+def _cells_draw_order_origin(
+		origin: Vector2,
+		size: int,
+		cam_dir: Direction,
+):
+	"""
+	Returns the origin of a (size x size) area in the draw order for a given
+	camera direction.
+	"""
+	if cam_dir == Direction.NORTHWEST or size == 1:
+		return origin
+	x_end = Vector2(size - 1, 0)
+	y_end = Vector2(0, size - 1)
+	if cam_dir == Direction.NORTHEAST:
+		return origin + x_end
+	elif cam_dir == Direction.SOUTHWEST:
+		return origin + y_end
+	elif cam_dir == Direction.SOUTHEAST:
+		return origin + x_end + y_end
+
+
+def cells_draw_order(
+		origin: Vector2,
+		size: int,
+		cam_dir: Direction,
+):
+	"""
+	Returns the cells of a (size x size) area starting at an origin in the
+	draw order for a given camera direction.
+	"""
+	if cam_dir != Direction.NORTHWEST:
+		raise NotImplementedError("Only northwest is supported")
+	ox, oy = _cells_draw_order_origin(origin, size, cam_dir)
+	for man_dist in range(2 * size - 1):
+		for i in range(man_dist + 1):
+			j = man_dist - i
+			if i < size and j < size:
+				yield (i + ox, j + oy)
+
+
+def screen_draw_order(
 		origin: Vector2,
 		cam_dir: Direction,
 		num_cols: int,
@@ -59,6 +101,7 @@ def cells_in_draw_order(
 		x, y = next_x, next_y
 		carry = not carry
 
+
 def draw_order_vector(camera_orientation: Direction) -> Vector2:
 	"""
 	The draw order vector is the vector along which we draw rows of
@@ -70,6 +113,7 @@ def draw_order_vector(camera_orientation: Direction) -> Vector2:
 	"""
 	dx, dy = direction_to_delta(camera_orientation)
 	return Vector2(-dx, -dy)
+
 
 def offset_tile_by_draw_order_vector(
 		p: Vector2,
