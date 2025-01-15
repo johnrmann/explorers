@@ -1,15 +1,82 @@
 import unittest
 
+from unittest.mock import patch
+
 from src.render.utils import height_offset_tile
 from src.rendermath.tile import tile_polygon
 from src.world.terrain import Terrain
 
 from src.render.viewport import Viewport
-from src.render.terrain_helper import TerrainHelper
+from src.render.terrain_helper import TerrainHelper, TerrainSurfacer
 
 class MockTileSurfaceCache:
 	def tile_surface(self, zoom, ridges=None, light=None):
 		return f"tile_surface({zoom}, {ridges}, {light})"
+
+
+
+class TerrainSurfacerTest(unittest.TestCase):
+	@patch('src.render.terrain_helper.TileSurfaceCache')
+	def setUp(self, _MockTileSurfaceCache):
+		_MockTileSurfaceCache.return_value = MockTileSurfaceCache()
+
+		self.terrain_surfacer = TerrainSurfacer()
+		self.tile_size = 48
+
+
+	def test__draws__land_visible(self):
+		"""
+		Test that it draws land if land is visible.
+		"""
+		result = list(self.terrain_surfacer.draws(land_visible=True))
+		self.assertEqual(len(result), 1)
+		self.assertEqual(result[0], (-0.0, "tile_surface(48, 0, 7)"))
+
+
+	def test__draws__land_not_visible(self):
+		"""
+		Test that it doesn't draw land if land isn't visible.
+		"""
+		result = list(self.terrain_surfacer.draws(land_visible=False))
+		self.assertEqual(len(result), 0)
+
+
+	def test__draws__land_and_water(self):
+		"""
+		Test that it draws land and water when both are visible.
+		"""
+		result = list(
+			self.terrain_surfacer.draws(
+				land_height=8,
+				land_visible=True,
+				water_height=8
+			)
+		)
+		self.assertEqual(len(result), 2)
+		self.assertEqual(
+			result[0], (-26.832815729997478, "tile_surface(48, 0, 7)")
+		)
+		self.assertEqual(
+			result[1], (2 * -26.832815729997478, "tile_surface(48, 0, 7)")
+		)
+
+
+	def test__draws__frozen(self):
+		"""
+		Test that it draws ice if frozen.
+		"""
+		result = list(self.terrain_surfacer.draws(is_frozen=True))
+		self.assertEqual(len(result), 1)
+		self.assertEqual(result[0], (-0.0, "tile_surface(48, 0, 7)"))
+
+
+	def test__draws__ridges(self):
+		"""
+		Test that it draws ridges if specified.
+		"""
+		result = list(self.terrain_surfacer.draws(ridges=1))
+		self.assertEqual(len(result), 1)
+		self.assertEqual(result[0], (-0.0, "tile_surface(48, 1, 7)"))
 
 
 class TerrainHelperTest(unittest.TestCase):

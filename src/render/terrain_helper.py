@@ -11,37 +11,43 @@ from src.math.direction import (
 )
 from src.math.vector2 import Vector2
 
-from src.rendermath.tile import tile_polygon, is_point_in_tile, is_tile_in_screen
+from src.rendermath.tile import (
+	tile_polygon,
+	is_point_in_tile,
+	is_tile_in_screen,
+	tile_z_for_width
+)
 from src.rendermath.order import offset_tile_by_draw_order_vector
 from src.rendermath.geometry import is_point_in_screen
 
-from src.render.tile_surface import TileSurfaceCache, TileColors
+from src.render.tile_surface import NO_RIDGES, TileSurfaceCache, TileColors
 from src.render.multisurface import MAX_LIGHT_LEVEL_IDX
 from src.render.viewport import Viewport
 from src.render.utils import height_offset_tile
 
-class TerrainHelper:
+class TerrainSurfacer:
 	"""
-	The purpose of this class is to calculate draw positions and draw surfaces
-	for the terrain.
+	This class is responsible for returning the surfaces for the terrain, and
+	the height offsets at which to draw them.
+
+	Do not instantiate more than one of these, as creating the different tile
+	caches is expensive (four sizes times eight light levels).
 	"""
 
-	_all_ridge_draws: dict[Direction, dict[tuple[int, int], int]]
-	_ridge_draws: dict[tuple[int, int], int]
-
-	_land_visibility: dict[tuple[int, int], bool]
-
-	terrain: Terrain
-	vp: Viewport
-
-	tile_cache: TileSurfaceCache
+	land_cache: TileSurfaceCache
 	water_cache: TileSurfaceCache
 	ice_cache: TileSurfaceCache
 
-	def __init__(self, terrain: Terrain, vp: Viewport):
-		self.terrain = terrain
-		self.vp = vp
-		self.tile_cache = TileSurfaceCache(name='land')
+	_terrain_thicknesses: dict[int, int] = None
+
+	def __init__(self):
+		self._terrain_thicknesses = {
+			96: tile_z_for_width(96) / 8,
+			48: tile_z_for_width(48) / 8,
+			24: tile_z_for_width(24) / 8,
+			12: tile_z_for_width(12) / 8,
+		}
+		self.land_cache = TileSurfaceCache(name='land')
 		self.water_cache = TileSurfaceCache(
 			colors=TileColors(
 				top_color=(0, 0, 200),
@@ -58,6 +64,57 @@ class TerrainHelper:
 			),
 			name='ice'
 		)
+
+
+	def draws(
+			self,
+			land_height: int = 0,
+			land_visible: bool = True,
+			water_height: int = 0,
+			is_frozen: bool = False,
+			light: int = MAX_LIGHT_LEVEL_IDX,
+			tile_size: int = 48,
+			ridges: int = NO_RIDGES,
+	):
+		"""
+		Get all pairs of height offset and surface to draw for the given
+		tile configuration.
+		"""
+		terrain_thickness = self._terrain_thicknesses[tile_size]
+		h = -land_height * terrain_thickness
+		if land_visible:
+			land_surface = self.land_cache.tile_surface(
+				tile_size, ridges, light
+			)
+			yield h, land_surface
+		h -= water_height * terrain_thickness
+		if water_height:
+			layer_cache = self.ice_cache if is_frozen else self.water_cache
+			water_surface = layer_cache.tile_surface(tile_size, ridges, light)
+			yield h, water_surface
+
+
+
+class TerrainHelper:
+	"""
+	The purpose of this class is to calculate draw positions and draw surfaces
+	for the terrain.
+	"""
+
+	_all_ridge_draws: dict[Direction, dict[tuple[int, int], int]]
+	_ridge_draws: dict[tuple[int, int], int]
+
+	_land_visibility: dict[tuple[int, int], bool]
+
+	terrain: Terrain
+	vp: Viewport
+
+	terrain_surfacer: TerrainSurfacer = None
+
+	def __init__(self, terrain: Terrain, vp: Viewport):
+		self.terrain = terrain
+		self.vp = vp
+		self.terrain_surfacer = TerrainSurfacer()
 		self._calc_ridges()
 		self._calc_land_visibility()
 
@@ -149,30 +206,29 @@ class TerrainHelper:
 		tile at the given position.
 		"""
 
+		self_terrain = self.terrain
+
 		x, y = cell_pos
-		cell_pos_mod = (x % self.terrain.width, y)
+		cell_pos_mod = (x % self_terrain.width, y)
 		zoom = self.vp.tile_width
 		screen_x, screen_y = self.vp.cell_position_on_global_screen(cell_pos)
+		screen_x -= (self.vp.tile_width // 2)
+		screen_y -= (self.vp.tile_height // 2)
 		ridges = self._ridge_draws[cell_pos_mod]
 
-		tw2 = zoom // 2
-		th2 = zoom // 4
-
-		if self._land_visibility[cell_pos_mod]:
-			land_surface = self.tile_cache.tile_surface(zoom, ridges, light)
-			h = self.terrain.land_height_at(cell_pos)
-			cell_depth_px = h * self.vp.terrain_z
-			land_pos = (screen_x - tw2, screen_y - cell_depth_px - th2)
-			yield land_pos, land_surface
-
-		is_ice = self.terrain.is_cell_ice(cell_pos)
-		if self.terrain.is_cell_water(cell_pos) or is_ice:
-			h = self.terrain.height_at(cell_pos)
-			cell_depth_px = h * self.vp.terrain_z
-			water_layer_cache = self.ice_cache if is_ice else self.water_cache
-			water_surface = water_layer_cache.tile_surface(zoom, ridges, light)
-			water_pos = (screen_x - tw2, screen_y - cell_depth_px - th2)
-			yield water_pos, water_surface
+		land_height = self_terrain.land_height_at(cell_pos)
+		draws = self.terrain_surfacer.draws(
+			land_height=land_height,
+			land_visible=self._land_visibility[cell_pos_mod],
+			water_height=self_terrain.height_at(cell_pos) - land_height,
+			is_frozen=self_terrain.is_cell_ice(cell_pos),
+			light=light,
+			tile_size=zoom,
+			ridges=ridges
+		)
+		for height_offset, surface in draws:
+			pos = (screen_x, screen_y + height_offset)
+			yield pos, surface
 
 
 	def tile_at_screen_pos(self, screen_p):
