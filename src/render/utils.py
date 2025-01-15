@@ -9,6 +9,7 @@ def height_offset_tile(tile, dh, vp: Viewport):
 	"""
 	return [(p[0], p[1] - dh * vp.tile_z) for p in tile]
 
+
 def box_between_tiles(top, bottom):
 	"""
 	Given a top tile and a bottom tile, returns three sets of polygon coords
@@ -20,6 +21,7 @@ def box_between_tiles(top, bottom):
 		[top[3], top[2], bottom[2], bottom[3]],
 		[top[2], top[1], bottom[1], bottom[2]]
 	)
+
 
 def scale_color(color, k):
 	"""
@@ -34,6 +36,7 @@ def scale_color(color, k):
 		return (round(k * r), round(k * g), round(k * b))
 	else:
 		raise ValueError("Color must be a 3-tuple or 4-tuple.")
+
 
 def alpha_mask_from_surface(surface, fill_color=None):
 	"""
@@ -56,6 +59,7 @@ def alpha_mask_from_surface(surface, fill_color=None):
 			alpha_mask.set_at((x, y), fill_color)
 	return alpha_mask.convert_alpha()
 
+
 def resize_surface(surface, factor=1):
 	"""
 	Returns a copy of the given surface resized to the given dimensions.
@@ -65,15 +69,27 @@ def resize_surface(surface, factor=1):
 	h2 = int(round(h * factor))
 	return pygame.transform.scale(surface, (w2, h2))
 
+
+def tint_surface(surface, color, intensity: float = 1):
+	"""
+	Tints the given image with the given color and intensity.
+	"""
+
+	r, g, b = color
+	r2, g2, b2 = [round(c * intensity) for c in (r, g, b)]
+	r2, g2, b2 = [max(0, min(255, c)) for c in (r2, g2, b2)]
+	color2 = (r2, g2, b2)
+
+	surf2 = surface.copy().convert_alpha()
+	blend_surface = pygame.Surface(surface.get_size())
+	blend_surface.fill(color2)
+	surf2.blit(blend_surface, (0, 0), special_flags=pygame.BLEND_RGBA_MULT)
+	return surf2
+
+
 def relight_surface(surface, factor=1):
 	"""
 	Returns a copy of the given surface such that each pixel color is
 	multiplied by the given factor.
 	"""
-	w, h = surface.get_size()
-	surf2 = pygame.Surface((w, h), pygame.SRCALPHA)
-	for x in range(w):
-		for y in range(h):
-			color = surface.get_at((x, y))
-			surf2.set_at((x, y), scale_color(color, factor))
-	return surf2
+	return tint_surface(surface, (255, 255, 255), factor)
