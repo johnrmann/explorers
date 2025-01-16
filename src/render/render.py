@@ -2,6 +2,7 @@ import pygame
 
 from src.gameobject.gameobject import GameObject
 
+
 from src.rendermath.order import screen_draw_order
 from src.rendermath.draw_graph import DrawGraph
 from src.rendermath.fit_rect import (
@@ -19,6 +20,7 @@ from src.render.multisurface import (
 from src.render.viewport import Viewport
 from src.render.terrain_helper import TerrainHelper
 from src.render.utils import height_offset_tile, box_between_tiles
+from src.render.render_order import RenderOrder
 
 IMG_PATHS = [
 	'assets/img/sprite/astronaut-cropped.png',
@@ -33,6 +35,8 @@ HIGHLIGHT_COLOR = (0, 250, 0)
 NO_GOBJ_IMAGE_TOP_COLOR = (0, 0, 200)
 NO_GOBJ_IMAGE_LEFT_COLOR = (0, 0, 100)
 NO_GOBJ_IMAGE_RIGHT_COLOR = (0, 0, 50)
+
+
 
 class Render:
 	"""
@@ -49,7 +53,6 @@ class Render:
 		self.world = world
 		self.vp = vp
 		self.render_terrain = TerrainHelper(world.terrain, vp)
-		self.drawn_cells = set()
 		self._load_images()
 		self._calc_draw_order()
 		self._calc_brightnesses()
@@ -97,12 +100,6 @@ class Render:
 		# Easy out if the gameobject is hidden
 		if go.hidden:
 			return
-
-		# First, render all terrain tiles below the gobj.
-		for p in go.cells_occupied(self.vp.camera_orientation):
-			if p in self.drawn_cells:
-				continue
-			self.render_tile(p, light=light)
 
 		cam_ori = self.vp.camera_orientation
 		tile_dims = self.vp.tile_dimensions
@@ -174,14 +171,14 @@ class Render:
 		for draw_pos, surface in draws:
 			local_draw_pos = self.vp.global_screen_position_to_screen_position(draw_pos)
 			self.window.blit(surface, surface.get_rect(topleft=local_draw_pos))
-		self.drawn_cells.add(cell_pos)
 
-	def render(self):
-		self.drawn_cells = set()
-		if self.vp.tile_width != self._last_zoom:
-			self._calc_draw_order()
 
-		self.window.fill((0,0,200))
+	def render_order(self) -> RenderOrder:
+		"""
+		Returns a list of RenderTuples that represent the order in which
+		stuff should be rendered.
+		"""
+		order = RenderOrder()
 
 		pre_go_draw_graph = {
 			go: self.bounding_box_for_gameobject(go)
@@ -189,39 +186,55 @@ class Render:
 		}
 		draw_graph = DrawGraph(key_vals=pre_go_draw_graph)
 
-		gobj_cells = {
+		gobjs_by_draw_pos = {
 			go.draw_point(self.vp.camera_orientation): go
 			for go in self.game_mgr.game_objects
 		}
 
-		ox, oy = self.vp.get_draw_origin()
-
-		# Cache frequently accessed attributes and methods
-		horology = self.world.horology
-		render_tile = self.render_tile
-		game_mgr_utc = self.game_mgr.utc
-		terrain_width = self.vp.terrain_width
 		terrain_height = self.vp.terrain_height
+		game_mgr_utc = self.game_mgr.utc
+		horology = self.world.horology
+		terrain_width = self.vp.terrain_width
 		cycle_frac = game_mgr_utc / horology.ticks_in_cycle
-		time_offset = int(((cycle_frac) % 1) * terrain_width)
+		time_offset = int((cycle_frac % 1) * terrain_width)
 
+		ox, oy = self.vp.get_draw_origin()
 		for dx, dy in self.draw_order:
-			x = ox + dx
 			y = oy + dy
-			p = (x, y)
 			if not 0 <= y < terrain_height:
 				continue
-			if p in self.drawn_cells:
+			x = ox + dx
+			p = (x, y)
+			if p in order:
 				continue
 			bness_x = (x + time_offset) % terrain_width
-			bness = self._brightnesses[bness_x]
-			render_tile(p, light=bness)
-			if p in gobj_cells:
-				go = gobj_cells[p]
-				to_draw = draw_graph.get_draws(go)
+			brightness = self._brightnesses[bness_x]
+			order.add_cell(p, brightness=brightness)
+			if p in gobjs_by_draw_pos:
+				gobj = gobjs_by_draw_pos[p]
+				to_draw = draw_graph.get_draws(gobj)
 				for draw_gobj in to_draw:
-					self._render_game_object(draw_gobj, light=bness)
+					order.add_game_object(draw_gobj, brightness=brightness)
 					draw_graph.mark_drawn(draw_gobj)
+
+		return order
+
+
+	def render(self):
+		if self.vp.tile_width != self._last_zoom:
+			self._calc_draw_order()
+
+		self.window.fill((0,0,200))
+
+		order = self.render_order()
+		render_tile = self.render_tile
+		render_gobj = self._render_game_object
+
+		for to_draw in order:
+			if to_draw.cell:
+				render_tile(to_draw.cell, light=to_draw.brightness)
+			elif to_draw.game_object:
+				render_gobj(to_draw.game_object, light=to_draw.brightness)
 
 	def highlight_tile(self, tile_p):
 		"""
