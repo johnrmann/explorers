@@ -1,3 +1,6 @@
+# Line profiler stuff.
+**/*.lprof
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 

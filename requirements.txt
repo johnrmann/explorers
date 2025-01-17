@@ -2,3 +2,4 @@ numpy==2.0.2
 pygame==2.6.1
 coverage==7.6.4
 noise==1.2.2
+line_profiler==4.2.0
