@@ -31,6 +31,7 @@ def cell_to_screen_transform(cell_pos, orientation: Direction):
 		return (-(x + y), -(y - x))
 	raise ArithmeticError("Unsupported orientation.")
 
+
 def cell_position_on_global_screen(cell_pos, camera_dir, tile_dims):
 	"""
 	Return the pixel position of the cell on an infinite screen where the
@@ -44,6 +45,7 @@ def cell_position_on_global_screen(cell_pos, camera_dir, tile_dims):
 	screen_y = ty * half_h
 	return (screen_x, screen_y)
 
+
 def cell_polygon_on_global_screen(cell_pos, camera_dir, tile_dims):
 	"""
 	Given a cell position (in world space), camera direction, and the width and
@@ -53,3 +55,18 @@ def cell_polygon_on_global_screen(cell_pos, camera_dir, tile_dims):
 	"""
 	screen_pos = cell_position_on_global_screen(cell_pos, camera_dir, tile_dims)
 	return tile_polygon(screen_pos, tile_dims)
+
+
+def cell_origin_on_global_screen(cell_pos, camera_dir, tile_width):
+	"""
+	Whereas cell_position_on_global_screen returns the center coordinate of the
+	cell on the global screen, this returns the top-right corner.
+	"""
+	tile_height = tile_width // 2
+	cx, cy = cell_position_on_global_screen(
+		cell_pos, camera_dir, (tile_width, tile_height)
+	)
+	half_tile_width = tile_width // 2
+	half_tile_height = tile_height // 2
+	top_left = ((cx - half_tile_width), (cy - half_tile_height))
+	return top_left

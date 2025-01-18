@@ -60,6 +60,11 @@ class GameObject(Tickable):
 		return (x, y, self.game_mgr.world.terrain.height_at(self.pos))
 
 	@property
+	def rect(self):
+		w, h, _ = self.size
+		return (self.pos, (w, h))
+
+	@property
 	def draw_position(self) -> Vector2:
 		"""
 		The position of the object must be an integer. The draw position can be

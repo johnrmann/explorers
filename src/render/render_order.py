@@ -5,6 +5,7 @@ Defines classes for managing the order in which to draw things on the screen.
 from src.gameobject.gameobject import GameObject
 
 from src.render.multisurface import MAX_LIGHT_LEVEL_IDX
+from src.render.chunk import Chunk
 
 from src.math.direction import Direction
 
@@ -15,10 +16,11 @@ class RenderTuple:
 	Represents something to draw on the screen.
 	"""
 
-	__slots__ = ['cell', 'game_object', 'brightness']
+	__slots__ = ['cell', 'game_object', 'brightness', 'chunk']
 
 	cell: tuple[int, int]
 	game_object: GameObject
+	chunk: Chunk
 
 	brightness: int
 
@@ -26,6 +28,7 @@ class RenderTuple:
 			self,
 			tile: tuple[int, int] = None,
 			game_object: GameObject = None,
+			chunk: Chunk = None,
 			brightness: int = MAX_LIGHT_LEVEL_IDX
 	):
 		"""
@@ -33,6 +36,7 @@ class RenderTuple:
 		"""
 		self.cell = tile
 		self.game_object = game_object
+		self.chunk = chunk
 		self.brightness = brightness
 
 
@@ -46,12 +50,14 @@ class RenderOrder:
 
 	_drawn_cells: set[tuple[int, int]]
 	_drawn_game_objects: set[GameObject]
+	_drawn_chunks: set[Chunk]
 
 	def __init__(self):
 		"""A RenderOrder is initially empty."""
 		self._tuples = []
 		self._drawn_cells = set()
 		self._drawn_game_objects = set()
+		self._drawn_chunks = set()
 
 
 	def __len__(self):
@@ -66,7 +72,11 @@ class RenderOrder:
 
 	def __contains__(self, item):
 		"""Returns true if we've already determined how to draw the item."""
-		return item in self._drawn_cells or item in self._drawn_game_objects
+		return (
+			item in self._drawn_cells
+			or item in self._drawn_game_objects
+			or item in self._drawn_chunks
+		)
 
 
 	def add_cell(self, tile, brightness: int = None):
@@ -75,11 +85,11 @@ class RenderOrder:
 		self._tuples.append(RenderTuple(tile=tile, brightness=brightness))
 
 
-	def add_tiles(self, tiles):
+	def add_cells(self, cells, brightness: int = None):
 		"""Marks the tiles at the given positions as drawn."""
-		for tile in tiles:
-			self._drawn_cells.add(tile)
-			self._tuples.append(RenderTuple(tile=tile))
+		for cell in cells:
+			self._drawn_cells.add(cell)
+			self._tuples.append(RenderTuple(tile=cell, brightness=brightness))
 
 
 	def add_game_object(
@@ -100,3 +110,10 @@ class RenderOrder:
 		self._tuples.append(
 			RenderTuple(game_object=gobj, brightness=brightness)
 		)
+
+
+	def add_chunk(self, chunk: Chunk, brightness: int = None):
+		"""Marks the chunk as drawn."""
+		self._drawn_chunks.add(chunk)
+		self._tuples.append(RenderTuple(chunk=chunk, brightness=brightness))
+		self._drawn_cells |= chunk.bounds.cells

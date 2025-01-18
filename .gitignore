@@ -22,3 +22,6 @@ bin/**
 
 # Virtual environment.
 .venv
+
+# Output from debug_chunk.
+./chunk.png

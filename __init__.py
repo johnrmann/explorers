@@ -1,3 +1,4 @@
+import line_profiler
 import pygame
 
 from argparse import ArgumentParser
@@ -110,6 +111,7 @@ if args.terrain_ocean:
 window = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT), flags)
 pygame.display.set_caption("Explorers")
 
+@line_profiler.profile
 def main():
 	running = True
 	def on_quit():

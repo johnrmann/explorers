@@ -1,3 +1,4 @@
+import line_profiler
 import random
 
 from src.gameobject.gameobject import GameObject
@@ -190,6 +191,7 @@ class GameManager(Listener):
 		"""
 		self.renderer = Render(self.screen, self.world, self.vp, game_mgr=self)
 
+	@line_profiler.profile
 	def render(self):
 		self.clickmap.clear()
 		self.renderer.render()

@@ -1,7 +1,7 @@
+import line_profiler
 import pygame
 
 from src.gameobject.gameobject import GameObject
-
 
 from src.rendermath.order import screen_draw_order
 from src.rendermath.draw_graph import DrawGraph
@@ -21,6 +21,7 @@ from src.render.viewport import Viewport
 from src.render.terrain_helper import TerrainHelper
 from src.render.utils import height_offset_tile, box_between_tiles
 from src.render.render_order import RenderOrder
+from src.render.chunk import TerrainChunker, Chunk
 
 IMG_PATHS = [
 	'assets/img/sprite/astronaut-cropped.png',
@@ -47,15 +48,24 @@ class Render:
 
 	_brightnesses = None
 
+	_chunker: TerrainChunker
+
 	def __init__(self, window, world: World, vp: Viewport, game_mgr=None):
 		self.game_mgr = game_mgr
 		self.window = window
 		self.world = world
 		self.vp = vp
 		self.render_terrain = TerrainHelper(world.terrain, vp)
+		self._chunker = TerrainChunker(
+			terrain=world.terrain,
+			surfacer=self.render_terrain.terrain_surfacer,
+			get_ridge_type=self.render_terrain.get_ridge_type,
+		)
 		self._load_images()
 		self._calc_draw_order()
 		self._calc_brightnesses()
+		self._chunker.make_all_chunks()
+
 
 	def _load_images(self):
 		self.images = {}
@@ -72,6 +82,7 @@ class Render:
 			img_dims = object_height_from_img_dims(surface.get_size())
 			self.image_z_factors[path] = img_dims
 
+
 	def _calc_draw_order(self):
 		self._last_zoom = self.vp.tile_width
 		self.draw_order = list(screen_draw_order(
@@ -81,12 +92,14 @@ class Render:
 			2 * self.vp.tiles_tall
 		))
 
+
 	def _calc_brightnesses(self):
 		self._brightnesses = {}
 		for idx, long in enumerate(self.world.terrain.longs):
 			self._brightnesses[idx] = self.world.horology.brightness(
 				0, long
 			)
+
 
 	def game_object_at(self, p):
 		for go in self.game_mgr.game_objects:
@@ -95,6 +108,7 @@ class Render:
 			if x == gx and y == gy:
 				return go
 		return None
+
 
 	def _render_game_object(self, go: GameObject=None, light = None):
 		# Easy out if the gameobject is hidden
@@ -139,6 +153,7 @@ class Render:
 			pygame.draw.polygon(self.window, NO_GOBJ_IMAGE_LEFT_COLOR, left)
 			pygame.draw.polygon(self.window, NO_GOBJ_IMAGE_RIGHT_COLOR, right)
 
+
 	def bounding_box_for_gameobject(self, go):
 		"""
 		Use the game object's position and size to compute its bounding box
@@ -160,25 +175,50 @@ class Render:
 				h = 0
 		return Box(p=pos, size=(w, d, h))
 
-	def render_tile(self, cell_pos, light=MAX_LIGHT_LEVEL_IDX):
-		_, y = cell_pos
-		if y < 0:
-			return
-		if y >= self.vp.terrain_height:
-			return
 
+	def render_tile(self, cell_pos, light=MAX_LIGHT_LEVEL_IDX):
 		draws = self.render_terrain.tile_draws(cell_pos, light=light)
 		for draw_pos, surface in draws:
 			local_draw_pos = self.vp.global_screen_position_to_screen_position(draw_pos)
 			self.window.blit(surface, surface.get_rect(topleft=local_draw_pos))
 
 
+	def _render_chunk(self, chunk: Chunk, light):
+		global_pos, surface = chunk.get_draw(
+			tile_width=self.vp.tile_width,
+			light=light,
+			camera_orientation=self.vp.camera_orientation
+		)
+		draw_pos = self.vp.global_screen_position_to_screen_position(global_pos)
+		self.window.blit(surface, draw_pos)
+
+
+	def cells_to_draw(self):
+		"""
+		Returns all cells that should be drawn.
+		"""
+		terrain_height = self.vp.terrain_height
+		ox, oy = self.vp.get_draw_origin()
+		draw_order = map(
+			lambda p: (p[0] + ox, p[1] + oy),
+			self.draw_order
+		)
+		safe_draw_order = filter(
+			lambda p: 0 <= p[1] < terrain_height,
+			draw_order
+		)
+		return safe_draw_order
+
+
+	@line_profiler.profile
 	def render_order(self) -> RenderOrder:
 		"""
 		Returns a list of RenderTuples that represent the order in which
 		stuff should be rendered.
 		"""
 		order = RenderOrder()
+
+		clean_chunks = self._chunker.get_chunks()
 
 		pre_go_draw_graph = {
 			go: self.bounding_box_for_gameobject(go)
@@ -191,25 +231,40 @@ class Render:
 			for go in self.game_mgr.game_objects
 		}
 
-		terrain_height = self.vp.terrain_height
 		game_mgr_utc = self.game_mgr.utc
 		horology = self.world.horology
 		terrain_width = self.vp.terrain_width
 		cycle_frac = game_mgr_utc / horology.ticks_in_cycle
 		time_offset = int((cycle_frac % 1) * terrain_width)
+		_brightnesses = self._brightnesses
+		get_chunk = self._chunker.get_chunk
 
-		ox, oy = self.vp.get_draw_origin()
-		for dx, dy in self.draw_order:
-			y = oy + dy
-			if not 0 <= y < terrain_height:
-				continue
-			x = ox + dx
+		time_offset_bnesses = {
+			x: _brightnesses[(x + time_offset) % terrain_width]
+			for x in range(-terrain_width, terrain_width * 3)
+		}
+		for chunk in clean_chunks.copy():
+			c_size = chunk.bounds.size
+			light_west = time_offset_bnesses[chunk.bounds.origin.x]
+			light_east = time_offset_bnesses[chunk.bounds.origin.x + c_size]
+			if light_west != light_east:
+				clean_chunks.remove(chunk)
+		for gobj in self.game_mgr.game_objects:
+			inter = self._chunker.chunks_intersecting_rect(gobj.rect)
+			clean_chunks -= set(inter)
+
+		for x, y in self.cells_to_draw():
 			p = (x, y)
-			if p in order:
-				continue
-			bness_x = (x + time_offset) % terrain_width
-			brightness = self._brightnesses[bness_x]
-			order.add_cell(p, brightness=brightness)
+			brightness = time_offset_bnesses[x]
+
+			if p not in order:
+				chunk = get_chunk(p)
+				if chunk in clean_chunks:
+					order.add_chunk(chunk, brightness=brightness)
+					clean_chunks.remove(chunk)
+				else:
+					order.add_cell(p, brightness=brightness)
+
 			if p in gobjs_by_draw_pos:
 				gobj = gobjs_by_draw_pos[p]
 				to_draw = draw_graph.get_draws(gobj)
@@ -220,6 +275,7 @@ class Render:
 		return order
 
 
+	@line_profiler.profile
 	def render(self):
 		if self.vp.tile_width != self._last_zoom:
 			self._calc_draw_order()
@@ -229,12 +285,16 @@ class Render:
 		order = self.render_order()
 		render_tile = self.render_tile
 		render_gobj = self._render_game_object
+		render_chunk = self._render_chunk
 
 		for to_draw in order:
 			if to_draw.cell:
 				render_tile(to_draw.cell, light=to_draw.brightness)
 			elif to_draw.game_object:
 				render_gobj(to_draw.game_object, light=to_draw.brightness)
+			elif to_draw.chunk:
+				render_chunk(to_draw.chunk, light=to_draw.brightness)
+
 
 	def highlight_tile(self, tile_p):
 		"""
@@ -248,6 +308,7 @@ class Render:
 			p1 = top[p1_idx]
 			p2 = top[p2_idx]
 			pygame.draw.line(self.window, HIGHLIGHT_COLOR, p1, p2)
+
 
 	def highlight_tile_at_screen_pos(self, screen_pos):
 		"""

@@ -19,8 +19,8 @@ from src.gen.terrain_generator import TerrainGenerator
 @dataclass
 class MakeTerrainOptions:
 	"""Options for making terrain."""
-	width: int = 256
-	height: int = 128
+	width: int = 512
+	height: int = 256
 	ice_cap_size: int = 0
 	landmass_cell_radius: int = 5
 	ocean: bool = False

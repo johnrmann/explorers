@@ -131,6 +131,13 @@ class TerrainHelper:
 		return left_bit | right_bit
 
 
+	def get_ridge_type(self, cell_pos, direction: Direction):
+		"""
+		Returns the ridge type at the given cell position.
+		"""
+		return self._all_ridge_draws[direction][cell_pos]
+
+
 	def _calc_ridges(self):
 		self._all_ridge_draws = {}
 		for d in DIAGONAL_DIRECTIONS:
