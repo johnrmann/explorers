@@ -33,6 +33,8 @@ def collect_line_counts(directory, prefix=""):
 				continue
 			if '.git' in item_path:
 				continue
+			if '.venv' in item_path:
+				continue
 			if 'assets' in item_path or '.vscode' in item_path:
 				continue
 			# Recurse into subdirectory
