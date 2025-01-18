@@ -7,9 +7,11 @@ The draw graph is represented as a directed adj. matrix. If there is an edge
 from box A to box B, then that means that B should be drawn before A.
 """
 
+from collections import defaultdict
+
 from src.math.direction import Direction
 
-from src.rendermath.box import Box, compare_boxes
+from src.rendermath.box import compare_boxes
 
 class DrawGraph:
 	def __init__(self, key_vals=None, cam_dir=Direction.NORTHWEST):
@@ -22,21 +24,21 @@ class DrawGraph:
 
 	def _make(self):
 		"""Constructs the adjacency matrix for the draw graph."""
-		self.adj_matrix = {}
+		self.adj_matrix = defaultdict(set)
 		for key, box in self.key_vals.items():
-			self.adj_matrix[key] = []
+			self.adj_matrix[key] = set()
 			for other_key, other_box in self.key_vals.items():
 				if key == other_key:
 					continue
 				if compare_boxes(box, other_box, self.cam_dir) == -1:
-					self.adj_matrix[key].append(other_key)
+					self.adj_matrix[key].add(other_key)
 
-	def _dfs(self, key, visited, draws):
+	def _dfs(self, key, visited: set, draws: list):
 		"""Depth-first search to get the draw order."""
 		if key in visited:
 			return
 		visited.add(key)
-		for neighbor in self.adj_matrix.get(key, []):
+		for neighbor in self.adj_matrix[key]:
 			self._dfs(neighbor, visited, draws)
 		draws.append(key)
 
