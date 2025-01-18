@@ -14,8 +14,8 @@ class SpaceTest(unittest.TestCase):
 		self.viewport.camera_pos = (0,0)
 	
 	def test__sanity__tile_size(self):
-		self.assertEqual(self.viewport.tile_width, 24)
-		self.assertEqual(self.viewport.tile_height, 12)
+		self.assertEqual(self.viewport.tile_width, 32)
+		self.assertEqual(self.viewport.tile_height, 16)
 
 	def test__tile_to_screen_coords__northwest(self):
 		self.viewport.camera_orientation = Direction.NORTHWEST
@@ -23,14 +23,14 @@ class SpaceTest(unittest.TestCase):
 		result1 = self.viewport.tile_to_screen_coords((0, 0))
 		self.assertEqual(result1, (400, 300))
 		result2 = self.viewport.tile_to_screen_coords((-1, -1))
-		self.assertEqual(result2, (400, 300 - 12))
+		self.assertEqual(result2, (400, 300 - 16))
 
 	def test__tile_to_screen_coords__southeast(self):
 		self.viewport.camera_orientation = Direction.SOUTHEAST
 		self.viewport.camera_pos = (0, 0)
 		result = self.viewport.tile_to_screen_coords((1, 1))
 		expected_x = 400
-		expected_y = 288
+		expected_y = 284
 		self.assertEqual(result, (expected_x, expected_y))
 
 	def test__screen_to_tile_coords__northwest(self):

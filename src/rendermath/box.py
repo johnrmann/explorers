@@ -96,7 +96,7 @@ def compare_boxes(
 	drawn before box1. Return 0 if they can be drawn in any order.
 	"""
 	if tile_dims is None:
-		tile_dims = (48, 24)
+		tile_dims = (64, 32)
 	if not are_boxes_overlapping(box1, box2, cam_dir, tile_dims):
 		return 0
 	min1, max1 = _transform_box_coords(box1, cam_dir=cam_dir)

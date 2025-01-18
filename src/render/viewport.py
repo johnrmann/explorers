@@ -22,8 +22,9 @@ from src.rendermath.cell import cell_position_on_global_screen
 from src.rendermath.tile import tile_z_for_width
 from src.rendermath.terrain import TERRAIN_STEPS_PER_CELL
 
-TILE_WIDTH = 48
+TILE_WIDTH = 64
 TILE_HEIGHT = TILE_WIDTH // 2
+TILE_THICKNESS = TILE_WIDTH // 2
 
 ZOOMS = [TILE_WIDTH // 4, TILE_WIDTH // 2, TILE_WIDTH, TILE_WIDTH * 2]
 

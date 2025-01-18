@@ -21,7 +21,7 @@ class TerrainSurfacerTest(unittest.TestCase):
 		_MockTileSurfaceCache.return_value = MockTileSurfaceCache()
 
 		self.terrain_surfacer = TerrainSurfacer()
-		self.tile_size = 48
+		self.tile_size = 64
 
 
 	def test__draws__land_visible(self):
@@ -30,7 +30,7 @@ class TerrainSurfacerTest(unittest.TestCase):
 		"""
 		result = list(self.terrain_surfacer.draws(land_visible=True))
 		self.assertEqual(len(result), 1)
-		self.assertEqual(result[0], (-0.0, "tile_surface(48, 0, 7)"))
+		self.assertEqual(result[0], (-0.0, "tile_surface(64, 0, 7)"))
 
 
 	def test__draws__land_not_visible(self):
@@ -54,10 +54,10 @@ class TerrainSurfacerTest(unittest.TestCase):
 		)
 		self.assertEqual(len(result), 2)
 		self.assertEqual(
-			result[0], (-26.832815729997478, "tile_surface(48, 0, 7)")
+			result[0], (-32, "tile_surface(64, 0, 7)")
 		)
 		self.assertEqual(
-			result[1], (2 * -26.832815729997478, "tile_surface(48, 0, 7)")
+			result[1], (-64, "tile_surface(64, 0, 7)")
 		)
 
 
@@ -67,7 +67,7 @@ class TerrainSurfacerTest(unittest.TestCase):
 		"""
 		result = list(self.terrain_surfacer.draws(is_frozen=True))
 		self.assertEqual(len(result), 1)
-		self.assertEqual(result[0], (-0.0, "tile_surface(48, 0, 7)"))
+		self.assertEqual(result[0], (-0.0, "tile_surface(64, 0, 7)"))
 
 
 	def test__draws__ridges(self):
@@ -76,7 +76,7 @@ class TerrainSurfacerTest(unittest.TestCase):
 		"""
 		result = list(self.terrain_surfacer.draws(ridges=1))
 		self.assertEqual(len(result), 1)
-		self.assertEqual(result[0], (-0.0, "tile_surface(48, 1, 7)"))
+		self.assertEqual(result[0], (-0.0, "tile_surface(64, 1, 7)"))
 
 
 class TerrainHelperTest(unittest.TestCase):
@@ -170,7 +170,7 @@ class TerrainHelperTest(unittest.TestCase):
 		terrain_helper = TerrainHelper(self.land_only, viewport)
 		result = list(terrain_helper.tile_draws((0, 0)))
 		self.assertEqual(len(result), 1)
-		self.assertEqual(result[0][0], (-12, -19.41640786499874))
+		self.assertEqual(result[0][0], (-16, -24))
 
 
 	def test__tile_draws__x_looped(self):
@@ -182,7 +182,7 @@ class TerrainHelperTest(unittest.TestCase):
 		terrain_helper = TerrainHelper(self.land_only, viewport)
 		result = list(terrain_helper.tile_draws((4, 0)))
 		self.assertEqual(len(result), 1)
-		self.assertEqual(result[0][0], (36, 4.5835921350012615))
+		self.assertEqual(result[0][0], (48, 8))
 
 
 	def test__tile_draws__ice_cap_land_visible(self):

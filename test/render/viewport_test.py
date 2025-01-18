@@ -83,39 +83,35 @@ class ViewportTest(unittest.TestCase):
 
 	def test__zoom_camera__in(self):
 		vp = make_viewport()
-		self.assertEqual(vp.tile_width, 24)
-		self.assertEqual(vp.tile_height, 12)
-		self.assertAlmostEqual(vp.tile_z**2, 180)
+		self.assertEqual(vp.tile_width, 32)
+		self.assertEqual(vp.tile_height, 16)
 		vp.change_zoom(1)
-		self.assertEqual(vp.tile_width, 48)
-		self.assertEqual(vp.tile_height, 24)
-		self.assertAlmostEqual(vp.tile_z**2, 720)
+		self.assertEqual(vp.tile_width, 64)
+		self.assertEqual(vp.tile_height, 32)
 
 	def test__zoom_camera__out(self):
 		vp = make_viewport()
-		self.assertEqual(vp.tile_width, 24)
-		self.assertEqual(vp.tile_height, 12)
-		self.assertAlmostEqual(vp.tile_z**2, 180)
+		self.assertEqual(vp.tile_width, 32)
+		self.assertEqual(vp.tile_height, 16)
 		vp.change_zoom(-1)
-		self.assertEqual(vp.tile_width, 12)
-		self.assertEqual(vp.tile_height, 6)
-		self.assertAlmostEqual(vp.tile_z**2, 45)
+		self.assertEqual(vp.tile_width, 16)
+		self.assertEqual(vp.tile_height, 8)
 
 	def test__zoom_camera__nothing(self):
 		vp = make_viewport()
-		self.assertEqual(vp.tile_width, 24)
-		self.assertEqual(vp.tile_height, 12)
-		self.assertAlmostEqual(vp.tile_z**2, 180)
+		self.assertEqual(vp.tile_width, 32)
+		self.assertEqual(vp.tile_height, 16)
+		self.assertAlmostEqual(vp.tile_z, 16)
 		vp.change_zoom(0)
-		self.assertEqual(vp.tile_width, 24)
-		self.assertEqual(vp.tile_height, 12)
-		self.assertAlmostEqual(vp.tile_z**2, 180)
+		self.assertEqual(vp.tile_width, 32)
+		self.assertEqual(vp.tile_height, 16)
+		self.assertAlmostEqual(vp.tile_z, 16)
 
 	def test__zoom_camera__via_evt_mgr(self):
 		vp = make_viewport()
-		self.assertEqual(vp.tile_width, 24)
+		self.assertEqual(vp.tile_width, 32)
 		vp.update(CameraZoomEvent(1))
-		self.assertEqual(vp.tile_width, 48)
+		self.assertEqual(vp.tile_width, 64)
 
 	def test__rotate_camera__left(self):
 		vp = make_viewport()
@@ -145,7 +141,7 @@ class ViewportTest(unittest.TestCase):
 		vp = make_viewport()
 		vp.camera_pos = (15, 15)
 		self.assertEqual(
-			vp.global_screen_position_to_screen_position((0, 0)), (400, 120)
+			vp.global_screen_position_to_screen_position((0, 0)), (400, 60)
 		)
 
 if __name__ == "__main__":

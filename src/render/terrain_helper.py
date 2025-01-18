@@ -42,10 +42,10 @@ class TerrainSurfacer:
 
 	def __init__(self):
 		self._terrain_thicknesses = {
-			96: tile_z_for_width(96) / 8,
-			48: tile_z_for_width(48) / 8,
-			24: tile_z_for_width(24) / 8,
-			12: tile_z_for_width(12) / 8,
+			128: tile_z_for_width(128) / 8,
+			64: tile_z_for_width(64) / 8,
+			32: tile_z_for_width(32) / 8,
+			16: tile_z_for_width(16) / 8,
 		}
 		self.land_cache = TileSurfaceCache(name='land')
 		self.water_cache = TileSurfaceCache(
@@ -73,7 +73,7 @@ class TerrainSurfacer:
 			water_height: int = 0,
 			is_frozen: bool = False,
 			light: int = MAX_LIGHT_LEVEL_IDX,
-			tile_size: int = 48,
+			tile_size: int = 64,
 			ridges: int = NO_RIDGES,
 	):
 		"""
