@@ -46,3 +46,32 @@ def round_matrix_to_int(matrix):
 	Rounds a matrix to integers.
 	"""
 	return [[int(round(v)) for v in row] for row in matrix]
+
+
+def matrix_double_width(matrix):
+	"""
+	Doubles a matrix's width, copying each cell over by the width of the
+	matrix.
+	"""
+	h = len(matrix)
+	w = len(matrix[0])
+	new_matrix = [[0] * (w * 2) for _ in range(h)]
+	for y in range(h):
+		for x in range(w):
+			new_matrix[y][x] = matrix[y][x]
+			new_matrix[y][w + x] = matrix[y][x]
+	return new_matrix
+
+
+def matrix_minfold_width(matrix):
+	"""
+	Folds a matrix in half along the x-axis, taking the minimum value of
+	each pair of cells.
+	"""
+	h = len(matrix)
+	w = len(matrix[0])
+	new_matrix = [[0] * (w // 2) for _ in range(h)]
+	for y in range(h):
+		for x in range(w // 2):
+			new_matrix[y][x] = min(matrix[y][x], matrix[y][x + w // 2])
+	return new_matrix
