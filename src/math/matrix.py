@@ -25,7 +25,7 @@ def smooth_matrix(
 	"""
 	h = len(matrix)
 	w = len(matrix[0])
-	
+
 	smoothed = [[0] * w for _ in range(h)]
 
 	for y in range(h):
@@ -37,5 +37,12 @@ def smooth_matrix(
 			for x2,y2 in adj:
 				v += matrix[y2][x2] * weight
 			smoothed[y][x] = v / sv
-	
+
 	return smoothed
+
+
+def round_matrix_to_int(matrix):
+	"""
+	Rounds a matrix to integers.
+	"""
+	return [[int(round(v)) for v in row] for row in matrix]

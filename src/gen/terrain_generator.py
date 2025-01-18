@@ -6,7 +6,7 @@ from collections import defaultdict
 from src.world.terrain import Terrain
 from src.math.voronoi import make_voronoi
 from src.math.adj import select_adj_degree, bool_adj_from_labels
-from src.math.smooth import smooth_matrix
+from src.math.matrix import smooth_matrix, round_matrix_to_int
 
 TERRAIN_X = 256
 TERRAIN_Y = TERRAIN_X // 2
@@ -190,6 +190,7 @@ class TerrainGenerator:
 				self.land_map[y][x] = self.land_heights[label]
 				self.ice_map[y][x] = self.ice_heights[label]
 		self.land_map = smooth_matrix(self.land_map)
+		self.land_map = round_matrix_to_int(self.land_map)
 
 
 	def make(self):
