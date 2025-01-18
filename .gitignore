@@ -20,3 +20,5 @@ bin/**
 # Development stuff
 .vscode
 
+# Virtual environment.
+.venv
