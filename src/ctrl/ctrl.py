@@ -6,6 +6,8 @@ from src.gameobject.flora import Flora, DEBUG_TREE
 from src.gui.action_menu import ActionMenu
 from src.gui.playbar import PlaybarMode
 
+from src.debug.debug import command_to_event
+
 from src.ctrl.camera import (
 	pygame_key_to_delta_zoom,
 	pygame_key_to_delta_camera_rotate,
@@ -88,6 +90,16 @@ class Control:
 			self.moving_game_object = None
 
 
+	def _interpret_debug_console_command(self, event):
+		key = event.key
+		if key == pygame.K_BACKQUOTE:
+			command = input("Debug command: ")
+			if command:
+				event = command_to_event(command)
+				if event:
+					self.game_mgr.evt_mgr.pub(event)
+
+
 	def interpret_pygame_camera_keyboard_event(self, event):
 		d_camdir = pygame_key_to_camdir(event.key)
 		d_zoom = pygame_key_to_delta_zoom(event.key)
@@ -147,6 +159,7 @@ class Control:
 		elif self.game_mgr.gui_mgr.process_event(event):
 			return True
 		elif event.type == pygame.KEYDOWN:
+			self._interpret_debug_console_command(event)
 			self.interpret_pygame_camera_keyboard_event(event)
 			return True
 		elif event.type == pygame.MOUSEBUTTONDOWN:

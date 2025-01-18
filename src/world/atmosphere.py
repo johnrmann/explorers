@@ -27,6 +27,26 @@ class AtmosphereElement(Enum):
 	METHANE = 3
 	WATER = 4
 
+	@staticmethod
+	def from_str(s):
+		"""
+		Returns the atmosphere element from a string.
+		"""
+		s = s.lower()
+		if s == "oxygen":
+			return AtmosphereElement.OXYGEN
+		elif s == "nitrogen":
+			return AtmosphereElement.NITROGEN
+		elif s == "carbon":
+			return AtmosphereElement.CARBON
+		elif s == "methane":
+			return AtmosphereElement.METHANE
+		elif s == "water":
+			return AtmosphereElement.WATER
+		else:
+			raise ValueError("Unknown atmosphere element.")
+
+
 ELEMENT_MOLAR_MASS = {
 	AtmosphereElement.OXYGEN: 32,
 	AtmosphereElement.NITROGEN: 28,

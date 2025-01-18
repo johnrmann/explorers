@@ -15,6 +15,48 @@ from src.world.atmosphere import (
 )
 from src.world.astronomy import Astronomy
 
+class AtmosphereElementTest(unittest.TestCase):
+	def test__from_str__carbon(self):
+		self.assertEqual(
+			AtmosphereElement.from_str("carbon"),
+			AtmosphereElement.CARBON
+		)
+
+
+	def test__from_str__oxygen(self):
+		self.assertEqual(
+			AtmosphereElement.from_str("oxygen"),
+			AtmosphereElement.OXYGEN
+		)
+
+
+	def test__from_str__nitrogen(self):
+		self.assertEqual(
+			AtmosphereElement.from_str("nitrogen"),
+			AtmosphereElement.NITROGEN
+		)
+
+
+	def test__from_str__methane(self):
+		self.assertEqual(
+			AtmosphereElement.from_str("methane"),
+			AtmosphereElement.METHANE
+		)
+
+
+	def test__from_str__water(self):
+		self.assertEqual(
+			AtmosphereElement.from_str("water"),
+			AtmosphereElement.WATER
+		)
+
+
+	def test__from_str__invalid(self):
+		with self.assertRaises(ValueError):
+			AtmosphereElement.from_str("invalid")
+
+
+
 class AtmosphereTest(unittest.TestCase):
 	def setUp(self):
 		self.earth = Atmosphere(
