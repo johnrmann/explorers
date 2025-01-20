@@ -301,6 +301,8 @@ class Chunk:
 
 
 	def draws(self, key: ChunkSurfaceKey = None):
+		lw_dir = left_wall_direction(key.orientation)
+		rw_dir = right_wall_direction(key.orientation)
 		for position in self.draw_order(cam_dir=key.orientation):
 			ox, oy = cell_position_on_global_screen(
 				position,
@@ -311,6 +313,11 @@ class Chunk:
 			ox -= key.tile_width // 2
 			oy -= key.tile_width // 4
 			land_height = self.terrain.land_height_at(position)
+			wall_thickness = max(
+				self.terrain.height_delta(position, lw_dir),
+				self.terrain.height_delta(position, rw_dir),
+				0
+			)
 			draws = self.terrain_surfacer.draws(
 				land_height=land_height,
 				land_visible=True,
@@ -318,7 +325,8 @@ class Chunk:
 				water_height=self.terrain.height_at(position) - land_height,
 				tile_size=key.tile_width,
 				light=key.light,
-				ridges=self._get_ridge_type((x,y), key.orientation)
+				ridges=self._get_ridge_type((x,y), key.orientation),
+				delta_height=wall_thickness
 			)
 			for h, surface in draws:
 				yield (ox, oy + h), surface

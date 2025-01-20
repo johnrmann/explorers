@@ -75,6 +75,7 @@ class TerrainSurfacer:
 			light: int = MAX_LIGHT_LEVEL_IDX,
 			tile_size: int = 64,
 			ridges: int = NO_RIDGES,
+			delta_height: int = 0
 	):
 		"""
 		Get all pairs of height offset and surface to draw for the given
@@ -84,13 +85,15 @@ class TerrainSurfacer:
 		h = -land_height * terrain_thickness
 		if land_visible:
 			land_surface = self.land_cache.tile_surface(
-				tile_size, ridges, light
+				tile_width=tile_size, ridges=ridges, light=light, thickness=min(delta_height, 8)
 			)
 			yield h, land_surface
 		h -= water_height * terrain_thickness
 		if water_height:
 			layer_cache = self.ice_cache if is_frozen else self.water_cache
-			water_surface = layer_cache.tile_surface(tile_size, ridges, light)
+			water_surface = layer_cache.tile_surface(
+				tile_width=tile_size, ridges=ridges, light=light, thickness=min(delta_height, 8)
+			)
 			yield h, water_surface
 
 
@@ -117,6 +120,7 @@ class TerrainHelper:
 		self.terrain_surfacer = TerrainSurfacer()
 		self._calc_ridges()
 		self._calc_land_visibility()
+		self._calc_wall_thicknesses()
 
 
 	def _calc_ridge(self, cell_pos, direction: Direction):
@@ -154,6 +158,29 @@ class TerrainHelper:
 		for y in range(self.terrain.height):
 			for x in range(self.terrain.width):
 				self._land_visibility[(x, y)] = self.land_visible_at((x, y))
+
+
+	def _calc_wall_thicknesses_for_cell_in_dir(self, cell_pos, direction):
+		lw_dir = left_wall_direction(direction)
+		rw_dir = right_wall_direction(direction)
+		left = self.terrain.height_delta(cell_pos, lw_dir)
+		right = self.terrain.height_delta(cell_pos, rw_dir)
+		return max(left, right, 0)
+
+
+	def _calc_wall_thicknesses_for_dir(self, direction):
+		thicknesses = {}
+		sub_fun = self._calc_wall_thicknesses_for_cell_in_dir
+		for y in range(self.terrain.height):
+			for x in range(self.terrain.width):
+				thicknesses[(x, y)] = sub_fun((x, y), direction)
+		return thicknesses
+
+
+	def _calc_wall_thicknesses(self):
+		self._wall_thicknesses = {}
+		for d in DIAGONAL_DIRECTIONS:
+			self._wall_thicknesses[d] = self._calc_wall_thicknesses_for_dir(d)
 
 
 	def tile_bottom_polygon(self, tile_p):
@@ -224,6 +251,7 @@ class TerrainHelper:
 		ridges = self._ridge_draws[cell_pos_mod]
 
 		land_height = self_terrain.land_height_at(cell_pos)
+		delta_height = self._wall_thicknesses[self.vp.camera_orientation][cell_pos_mod]
 		draws = self.terrain_surfacer.draws(
 			land_height=land_height,
 			land_visible=self._land_visibility[cell_pos_mod],
@@ -231,7 +259,8 @@ class TerrainHelper:
 			is_frozen=self_terrain.is_cell_ice(cell_pos),
 			light=light,
 			tile_size=zoom,
-			ridges=ridges
+			ridges=ridges,
+			delta_height=delta_height
 		)
 		for height_offset, surface in draws:
 			pos = (screen_x, screen_y + height_offset)

@@ -10,8 +10,8 @@ from src.render.viewport import Viewport
 from src.render.terrain_helper import TerrainHelper, TerrainSurfacer
 
 class MockTileSurfaceCache:
-	def tile_surface(self, zoom, ridges=None, light=None):
-		return f"tile_surface({zoom}, {ridges}, {light})"
+	def tile_surface(self, tile_width=None, thickness=None, ridges=None, light=None):
+		return f"tile_surface({tile_width}, {ridges}, {light})"
 
 
 

@@ -9,7 +9,6 @@ from src.render.multisurface import MultiSurface
 from src.rendermath.terrain import terrain_step_z_for_tile_width
 from src.rendermath.tile import tile_polygon
 from src.render.viewport import ZOOMS
-from src.rendermath.tile import tile_z_for_width
 
 GROUND_COLOR = (200, 0, 0)
 WALL_COLOR_1 = (100, 0, 0)
@@ -55,11 +54,6 @@ class TileSurfaceCache:
 	_left_color: tuple[int, int, int]
 	_right_color: tuple[int, int, int]
 
-	tile_multisurface: MultiSurface
-	left_ridge_multisurface: MultiSurface
-	right_ridge_multisurface: MultiSurface
-	both_ridge_multisurface: MultiSurface
-
 	_jut = None
 
 	zooms: list[int]
@@ -81,41 +75,38 @@ class TileSurfaceCache:
 		self._right_color = colors.right_color
 
 		self.zooms = zooms
-		self.tile_multisurface = self._make_tile_multisurface()
-		self.left_ridge_multisurface = self._make_tile_multisurface(
-			left_ridge=True
-		)
-		self.right_ridge_multisurface = self._make_tile_multisurface(
-			right_ridge=True
-		)
-		self.both_ridge_multisurface = self._make_tile_multisurface(
-			left_ridge=True, right_ridge=True
-		)
 		self._init_jut()
 
 
-	def _make_tile_and_surface(self, w):
-		z = tile_z_for_width(w)
-		h = w // 2
-		surface = pygame.Surface((w, h + z), pygame.SRCALPHA).convert_alpha()
-		tile = tile_polygon((w // 2, h // 2), (w, h))
+	def _make_tile_and_surface(self, tile_width, thickness=0):
+		z = terrain_step_z_for_tile_width(tile_width) * thickness
+		h = tile_width // 2
+		dims = (tile_width, h + z)
+		surface = pygame.Surface(dims, pygame.SRCALPHA).convert_alpha()
+		tile = tile_polygon((tile_width // 2, h // 2), (tile_width, h))
 		pygame.draw.polygon(surface, self._top_color, tile)
 
 		# Now draw the tile's walls.
-		left_wall = _wall_for_direction_height_zoom('left', 8, w)
-		right_wall = _wall_for_direction_height_zoom('right', 8, w)
-		pygame.draw.polygon(surface, self._left_color, left_wall)
-		pygame.draw.polygon(surface, self._right_color, right_wall)
+		if thickness != 0:
+			left_wall = _wall_for_direction_height_zoom('left', 8, tile_width)
+			right_wall = _wall_for_direction_height_zoom('right', 8, tile_width)
+			pygame.draw.polygon(surface, self._left_color, left_wall)
+			pygame.draw.polygon(surface, self._right_color, right_wall)
 
 		return tile, surface
 
 
-	def _make_tile_multisurface(self, left_ridge=False, right_ridge=False):
+	def _make_tile_multisurface(
+			self,
+			left_ridge=False,
+			right_ridge=False,
+			thickness=0
+	):
 		tilesurfs = [
-			self._make_tile_and_surface(zoom) + (zoom,)
+			self._make_tile_and_surface(zoom, thickness=thickness) + (zoom,)
 			for zoom in self.zooms
 		]
-		for tile, surface, zoom in tilesurfs:
+		for tile, surface, _ in tilesurfs:
 			tile_top, tile_right, _, tile_left = tile
 			if left_ridge:
 				pygame.draw.line(
@@ -135,23 +126,23 @@ class TileSurfaceCache:
 
 
 	def _init_jut(self):
-		self._jut = {
-			NO_RIDGES: self.tile_multisurface,
-			LEFT_RIDGE: self.left_ridge_multisurface,
-			RIGHT_RIDGE: self.right_ridge_multisurface,
-			BOTH_RIDGES: self.both_ridge_multisurface
-		}
+		self._jut = {}
+		for ridges in (NO_RIDGES, LEFT_RIDGE, RIGHT_RIDGE, BOTH_RIDGES):
+			for thickness in range(9):
+				self._jut[ridges, thickness] = self._make_tile_multisurface(
+					left_ridge=(ridges & LEFT_RIDGE) != 0,
+					right_ridge=(ridges & RIGHT_RIDGE) != 0,
+					thickness=thickness
+				)
 
 
-	def tile_surface(self, zoom, ridges=None, light=None):
+	def tile_surface(self, tile_width=64, thickness=0, ridges=NO_RIDGES, light=7):
 		"""
 		Given a position on the screen that is the center of the tile we want
 		to draw and the zoom factor, return the tile surface and blit position
 		(top left corner).
 		"""
-		idx = int(zoom)
-		if ridges is None:
-			ridges = NO_RIDGES
-		sub_cache = self._jut[ridges]
+		idx = int(tile_width)
+		sub_cache = self._jut[ridges, thickness]
 		surface = sub_cache.get(idx, light=light)
 		return surface
