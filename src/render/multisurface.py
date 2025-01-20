@@ -28,7 +28,7 @@ class MultiSurface:
 	"""
 
 	# Surface cache is a dict of zoom factors to brightness levels to surfaces.
-	_cache = None
+	_cache: dict[tuple[int, int], object] = None
 
 	# Alpha cache is a dict of zoom factors to alpha masks. No need to cache
 	# different light levels here since we don't care about that with alpha
@@ -39,7 +39,7 @@ class MultiSurface:
 	_light_levels: list[float]
 
 	_using_light: bool = False
-	_default_light: float = DEFAULT_LIGHT_LEVEL
+	_default_light: int = MAX_LIGHT_LEVEL_IDX
 
 	def __init__(
 			self,
@@ -63,7 +63,7 @@ class MultiSurface:
 			lights = [DEFAULT_LIGHT_LEVEL]
 		else:
 			self._using_light = True
-			self._default_light = lights[-1]
+			self._default_light = len(lights) - 1
 
 		if surface is not None and zoom_factors is not None:
 			self._init_from_surface(surface, zoom_factors, lights, alpha_color)
@@ -82,11 +82,11 @@ class MultiSurface:
 		self._light_levels = lights
 		for zoom in zoom_factors:
 			zoomed = resize_surface(surface, zoom)
-			self._cache[zoom] = {}
 			mask = alpha_mask_from_surface(zoomed, alpha_color)
 			self._alpha_cache[zoom] = mask
 			for idx, light in enumerate(lights):
-				self._cache[zoom][idx] = relight_surface(zoomed, light)
+				self._cache[zoom, idx] = relight_surface(zoomed, light)
+			self._cache[zoom, None] = self._cache[zoom, self._default_light]
 
 	def _init_from_zoomed_surfaces(self, zoomed_surfaces, lights, alpha_color):
 		"""
@@ -95,19 +95,17 @@ class MultiSurface:
 		self._zooms = list(zoomed_surfaces.keys())
 		self._light_levels = lights
 		for zoom, surface in zoomed_surfaces.items():
-			self._cache[zoom] = {}
 			mask = alpha_mask_from_surface(surface, alpha_color)
 			self._alpha_cache[zoom] = mask
 			for idx, light in enumerate(lights):
-				self._cache[zoom][idx] = relight_surface(surface, light)
+				self._cache[zoom, idx] = relight_surface(surface, light)
+			self._cache[zoom, None] = self._cache[zoom, self._default_light]
 
 	def get(self, zoom=DEFAULT_ZOOM_FACTOR, light=None):
 		"""
 		Get the surface for the given zoom and light index.
 		"""
-		if not self._using_light or light is None:
-			return self._cache[zoom][self._default_light]
-		return self._cache[zoom][light]
+		return self._cache[zoom, light]
 
 	def get_by_light_level(self, zoom=DEFAULT_ZOOM_FACTOR, light_level=1.0):
 		"""
@@ -119,7 +117,7 @@ class MultiSurface:
 			range(len(self._light_levels)),
 			key=lambda i: abs(self._light_levels[i] - light_level)
 		)
-		return self._cache[zoom][closest_idx]
+		return self._cache[zoom, closest_idx]
 
 	def get_alpha(self, zoom=DEFAULT_ZOOM_FACTOR):
 		"""
