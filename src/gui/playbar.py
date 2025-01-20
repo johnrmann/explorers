@@ -2,6 +2,8 @@ import pygame
 
 from enum import Enum
 
+from src.gameobject.flora import DEBUG_TREE
+
 from src.gui.gui import GuiElement
 from src.gui.primitives import Panel
 from src.gui.anchor import Anchor
@@ -9,6 +11,7 @@ from src.gui.minimap import MiniMap
 from src.gui.actor_motives import ActorMotivesGui
 from src.gui.line_graph import LineGraph
 from src.gui.scanline import Scanline
+from src.gui.catalog import Catalog
 
 class PlaybarMode(Enum):
 	"""
@@ -32,11 +35,20 @@ class Playbar(GuiElement):
 
 	_change_mode_callback = None
 
-	def __init__(self, game, change_mode_callback=None, **kwargs):
+	def __init__(
+			self,
+			game,
+			change_mode_callback=None,
+			selected_build_object_callback=None,
+			deselected_build_object_callback=None,
+			**kwargs
+	):
 		self.game = game
 		self.world = game.world
 		self.viewport = game.renderer.vp
 		self._change_mode_callback = change_mode_callback
+		self._selected_build_object_callback = selected_build_object_callback
+		self._deselected_build_object_callback = deselected_build_object_callback
 		super().__init__(
 			origin=(0, 0),
 			dimensions=(self.viewport.window_dims[0], 200),
@@ -119,7 +131,15 @@ class Playbar(GuiElement):
 		return set([scanline])
 
 	def _make_build_mode(self):
-		return set()
+		catalog = Catalog(
+			origin=(0, 0),
+			parent=self,
+			dimensions=(500, 200),
+			on_select=self._selected_build_object_callback,
+			on_deselect=self._deselected_build_object_callback,
+			prototypes=[DEBUG_TREE],
+		)
+		return set([catalog])
 
 	def _make_options_mode(self):
 		return set()

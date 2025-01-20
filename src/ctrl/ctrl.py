@@ -35,6 +35,7 @@ class Control:
 
 	_can_move_game_objects = False
 	moving_game_object = None
+	build_object_prototype = None
 
 	def __init__(
 			self,
@@ -77,17 +78,49 @@ class Control:
 		game objects.
 		"""
 		if new_mode == PlaybarMode.BUILD:
-			# TODO(mannjohn) - initialize a plant at the current mouse
-			# coordinates.
 			self._can_move_game_objects = True
-			# self.moving_game_object = Flora(
-			# 	prototype=DEBUG_TREE,
-			# 	pos=self.cell_under_mouse
-			# )
-			# self.game_mgr.add_game_object(self.moving_game_object)
 		else:
 			self._can_move_game_objects = False
+			if self.build_object_prototype:
+				self._cancel_placing_new_game_object()
+			else:
+				self._place_moving_game_object()
+			self.build_object_prototype = None
+
+
+	def _place_moving_game_object(self):
+		if self.moving_game_object:
+			self.moving_game_object.pos = self.cell_under_mouse
 			self.moving_game_object = None
+
+
+	def _cancel_placing_new_game_object(self):
+		if self.moving_game_object and self.build_object_prototype:
+			self.game_mgr.remove_game_object(self.moving_game_object)
+			self.moving_game_object = None
+
+
+	def _new_game_object_from_prototype(self):
+		if self.build_object_prototype:
+			self.moving_game_object = self.build_object_prototype.make()
+			self.moving_game_object.pos = self.cell_under_mouse
+			self.game_mgr.add_game_object(self.moving_game_object)
+
+
+	def playbar_selected_build_object(self, build_object_prototype):
+		if not self._can_move_game_objects:
+			return
+		self.build_object_prototype = build_object_prototype
+		self._new_game_object_from_prototype()
+
+
+	def playbar_deselected_build_object(self):
+		if not self._can_move_game_objects:
+			return
+		if self.moving_game_object:
+			self.game_mgr.remove_game_object(self.moving_game_object)
+		self.moving_game_object = None
+		self.build_object_prototype = None
 
 
 	def _interpret_debug_console_command(self, event):
@@ -141,14 +174,25 @@ class Control:
 
 	def _interpret_build_mode_click_event(self):
 		click_pos = self._get_mouse_pos()
-		if not self.moving_game_object and not self.clickmap.is_terrain(click_pos):
+		clicked_terrain = self.clickmap.is_terrain(click_pos)
+
+		# Try to pick up an existing game object.
+		if not self.moving_game_object and not clicked_terrain:
 			gobj = self.clickmap.game_object_at(click_pos)
 			self.moving_game_object = gobj
 			return True
-		elif self.moving_game_object:
-			self.moving_game_object.pos = self.cell_under_mouse
-			self.moving_game_object = None
+
+		# Place a new game object.
+		elif self.moving_game_object and self.build_object_prototype:
+			self._place_moving_game_object()
+			self._new_game_object_from_prototype()
 			return True
+
+		# Place an existing game object.
+		elif self.moving_game_object and not self.build_object_prototype:
+			self._place_moving_game_object()
+			return True
+
 		return False
 
 

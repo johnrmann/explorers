@@ -19,3 +19,8 @@ class GameObjectPrototype:
 			raise ValueError("Expected name!")
 		self.name = name
 		self.preview_image = preview_image
+
+
+	def make(self):
+		"""Create a new GameObject from this prototype."""
+		raise NotImplementedError()

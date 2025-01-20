@@ -65,6 +65,10 @@ class FloraPrototype(GameObjectPrototype):
 		self.max_health = max_health
 
 
+	def make(self):
+		return Flora(prototype=self)
+
+
 	def tpr_health_delta(self, tpr):
 		"""
 		Input units: degrees kelvin.

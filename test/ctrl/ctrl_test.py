@@ -29,6 +29,8 @@ class TestControl(unittest.TestCase):
 		self.mock_game_mgr = Mock(spec=GameManager)
 		self.mock_game_mgr.evt_mgr = self.mock_evt_mgr
 		self.mock_game_mgr.gui_mgr = self.mock_gui_mgr
+		self.mock_game_mgr.remove_game_object = Mock()
+		self.mock_game_mgr.add_game_object = Mock()
 		mock_get_game_manager.return_value = self.mock_game_mgr
 
 		self.screen_to_tile = Mock()
@@ -64,6 +66,32 @@ class TestControl(unittest.TestCase):
 		cell_x, cell_y = self.control.cell_under_mouse
 		self.assertEqual(cell_x, 15)
 		self.assertEqual(cell_y, 16)
+
+
+	def test__playbar_mode_changed__to_character__places_existing_object(self):
+		new_object = MagicMock()
+
+		self.control.playbar_mode_changed(PlaybarMode.BUILD)
+		self.control.moving_game_object = new_object
+
+		self.control.playbar_mode_changed(PlaybarMode.CHARACTER)
+		self.assertIsNone(self.control.moving_game_object)
+		self.control.game_mgr.remove_game_object.assert_not_called()
+
+
+	def test__playbar_mode_changed__to_character__cancels_new_object(self):
+		new_prototype = MagicMock()
+		new_object = MagicMock()
+		new_prototype.make = Mock()
+		new_prototype.make.return_value = new_object
+
+		self.control.playbar_mode_changed(PlaybarMode.BUILD)
+		self.control.playbar_selected_build_object(new_prototype)
+		self.control.game_mgr.add_game_object.assert_called_once_with(new_object)
+
+		self.control.playbar_mode_changed(PlaybarMode.CHARACTER)
+		self.assertIsNone(self.control.moving_game_object)
+		self.control.game_mgr.remove_game_object.assert_called_once_with(new_object)
 
 
 	def test__playbar_mode_changed__to_build__doesnt_move_character(self):
@@ -143,6 +171,40 @@ class TestControl(unittest.TestCase):
 			) as mock_method:
 				self.control.interpret_pygame_input()
 				mock_method.assert_called_once_with(event)
+
+
+	def test__playbar_selected_build_object__no_move(self):
+		self.control.playbar_selected_build_object(MagicMock())
+		self.assertIsNone(self.control.moving_game_object)
+
+
+	def test__playbar_selected_build_object__makes_object(self):
+		mock_prototype = MagicMock()
+		mock_prototype.make = Mock()
+		mock_prototype.make.return_value = new_obj = MagicMock()
+
+		self.control.playbar_mode_changed(PlaybarMode.BUILD)
+		self.control.playbar_selected_build_object(mock_prototype)
+
+		self.assertEqual(self.control.moving_game_object, new_obj)
+
+
+	def test__playbar_deselected_build_object__no_move(self):
+		self.control.playbar_deselected_build_object()
+		self.assertIsNone(self.control.moving_game_object)
+
+
+	def test__playbar_deselected_build_object__removes_object(self):
+		mock_prototype = MagicMock()
+		mock_prototype.make = Mock()
+		mock_prototype.make.return_value = MagicMock()
+
+		self.control.playbar_mode_changed(PlaybarMode.BUILD)
+		self.control.playbar_selected_build_object(mock_prototype)
+
+		self.control.playbar_deselected_build_object()
+		self.assertEqual(self.control.moving_game_object, None)
+		self.mock_game_mgr.remove_game_object.assert_called_once()
 
 
 

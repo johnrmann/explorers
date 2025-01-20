@@ -42,7 +42,12 @@ class CoreGuiElements:
 	def __init__(self, game, change_mode_callback):
 		self.mission_clock = MissionClock()
 		self.fps = FpsCounter()
-		self.playbar = Playbar(game, change_mode_callback=change_mode_callback)
+		self.playbar = Playbar(
+			game,
+			change_mode_callback=change_mode_callback,
+			selected_build_object_callback = game.ctrl.playbar_selected_build_object,
+			deselected_build_object_callback = game.ctrl.playbar_deselected_build_object
+		)
 		self.colony_name = ColonyName()
 
 class GameManager(Listener):
