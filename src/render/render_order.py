@@ -46,6 +46,8 @@ class RenderOrder:
 	An array of RenderTuples that represent the order in which to draw things.
 	"""
 
+	__slots__ = ['_tuples', '_drawn_cells', '_drawn_game_objects', '_drawn_chunks']
+
 	_tuples: list[RenderTuple]
 
 	_drawn_cells: set[tuple[int, int]]

@@ -153,15 +153,27 @@ class Chunk:
 	rendering.	
 	"""
 
-	terrain: Terrain = None
-	bounds: ChunkBounds = None
+	__slots__ = [
+		"terrain",
+		"bounds",
+		"terrain_surfacer",
+		"_surfaces",
+		"_positions",
+		"_get_ridge_type",
+		"_max_height"
+	]
 
-	terrain_surfacer: TerrainSurfacer = None
+	terrain: Terrain
+	bounds: ChunkBounds
 
-	_surfaces: dict[ChunkSurfaceKey, pygame.Surface] = None
-	_positions: dict[ChunkSurfaceKey, Vector2] = None
+	terrain_surfacer: TerrainSurfacer
 
-	_get_ridge_type: callable = None
+	_surfaces: dict[ChunkSurfaceKey, pygame.Surface]
+	_positions: dict[ChunkSurfaceKey, Vector2]
+
+	_get_ridge_type: callable
+
+	_max_height: int
 
 	def __init__(
 			self,
@@ -395,7 +407,7 @@ class TerrainChunker:
 	_terrain: Terrain = None
 	_terrain_surfacer: TerrainSurfacer = None
 
-	_chunk_size: int = 16
+	chunk_size: int = 16
 
 	_chunks: dict[tuple[int, int], Chunk] = None
 
@@ -413,7 +425,7 @@ class TerrainChunker:
 	):
 		self._terrain = terrain
 		self._terrain_surfacer = surfacer
-		self._chunk_size = chunk_size
+		self.chunk_size = chunk_size
 		self._chunks = {}
 		self._dirty = set()
 		self._get_ridge_type = get_ridge_type
@@ -430,9 +442,9 @@ class TerrainChunker:
 		"""
 		Returns the origins of all the chunks in the chunker.
 		"""
-		for y in range(self._terrain.height // self._chunk_size):
-			for x in range(self._terrain.width // self._chunk_size):
-				yield Vector2(x * self._chunk_size, y * self._chunk_size)
+		for y in range(self._terrain.height // self.chunk_size):
+			for x in range(self._terrain.width // self.chunk_size):
+				yield Vector2(x * self.chunk_size, y * self.chunk_size)
 
 
 	def chunk_index_for_cell(self, cell_pos: Vector2) -> tuple[int, int]:
@@ -441,8 +453,8 @@ class TerrainChunker:
 		"""
 		x, y = cell_pos
 		return (
-			(x % self._terrain.width) // self._chunk_size,
-			y // self._chunk_size
+			(x % self._terrain.width) // self.chunk_size,
+			y // self.chunk_size
 		)
 
 
@@ -483,10 +495,10 @@ class TerrainChunker:
 		if chunk_index in self._chunks:
 			return self._chunks[chunk_index]
 		chunk_origin = Vector2(
-			chunk_index[0] * self._chunk_size,
-			chunk_index[1] * self._chunk_size
+			chunk_index[0] * self.chunk_size,
+			chunk_index[1] * self.chunk_size
 		)
-		chunk_bounds = ChunkBounds(chunk_origin, self._chunk_size)
+		chunk_bounds = ChunkBounds(chunk_origin, self.chunk_size)
 		chunk = Chunk(
 			terrain=self._terrain,
 			bounds=chunk_bounds,
@@ -515,12 +527,12 @@ class TerrainChunker:
 		origin, size = rect
 		ox, oy = origin
 		sx, sy = size
-		min_x_idx = ox // self._chunk_size
-		min_y_idx = oy // self._chunk_size
-		max_x_idx = ((ox + sx - 1) // self._chunk_size) + 1
-		max_y_idx = ((oy + sy - 1) // self._chunk_size) + 1
+		min_x_idx = ox // self.chunk_size
+		min_y_idx = oy // self.chunk_size
+		max_x_idx = ((ox + sx - 1) // self.chunk_size) + 1
+		max_y_idx = ((oy + sy - 1) // self.chunk_size) + 1
 		for x in range(min_x_idx, max_x_idx):
 			for y in range(min_y_idx, max_y_idx):
 				yield self.get_chunk(
-					(x * self._chunk_size, y * self._chunk_size)
+					(x * self.chunk_size, y * self.chunk_size)
 				)

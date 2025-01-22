@@ -1,6 +1,8 @@
 import line_profiler
 import pygame
 
+from collections import defaultdict
+
 from src.gameobject.gameobject import GameObject
 
 from src.rendermath.order import screen_draw_order
@@ -226,11 +228,7 @@ class Render:
 		}
 		draw_graph = DrawGraph(key_vals=pre_go_draw_graph)
 
-		gobjs_by_draw_pos = {
-			go.draw_point(self.vp.camera_orientation): go
-			for go in self.game_mgr.game_objects
-		}
-
+		cam_ori = self.vp.camera_orientation
 		game_mgr_utc = self.game_mgr.utc
 		horology = self.world.horology
 		terrain_width = self.vp.terrain_width
@@ -243,15 +241,23 @@ class Render:
 			x: _brightnesses[(x + time_offset) % terrain_width]
 			for x in range(-terrain_width, terrain_width * 3)
 		}
-		for chunk in clean_chunks.copy():
-			c_size = chunk.bounds.size
+		c_size = self._chunker.chunk_size
+
+		check_chunks = clean_chunks.copy()
+		for chunk in check_chunks:
 			light_west = time_offset_bnesses[chunk.bounds.origin.x]
 			light_east = time_offset_bnesses[chunk.bounds.origin.x + c_size]
 			if light_west != light_east:
 				clean_chunks.remove(chunk)
-		for gobj in self.game_mgr.game_objects:
-			inter = self._chunker.chunks_intersecting_rect(gobj.rect)
-			clean_chunks -= set(inter)
+
+		gobjs_by_draw_pos = {
+			go.draw_point(cam_ori): go
+			for go in self.game_mgr.game_objects
+		}
+		clean_chunks -= set(
+			self._chunker.chunks_intersecting_rect(gobj.rect)
+			for gobj in self.game_mgr.game_objects
+		)
 
 		for x, y in self.cells_to_draw():
 			p = (x, y)
