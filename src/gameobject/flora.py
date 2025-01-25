@@ -140,6 +140,18 @@ class Flora(GameObject):
 		})
 
 
+	def is_selectable(self, owner):
+		return True
+
+
+	def is_moveable(self, owner):
+		return True
+
+
+	def is_deleteable(self, owner):
+		return True
+
+
 	def on_init(self):
 		self.evt_mgr.pub(self._make_sequestration_event(1))
 

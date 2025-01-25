@@ -1,7 +1,6 @@
 import pygame
 
 from src.gameobject.actor import MoveActorEvent, Actor
-from src.gameobject.flora import Flora, DEBUG_TREE
 
 from src.gui.action_menu import ActionMenu
 from src.gui.playbar import PlaybarMode
@@ -25,6 +24,9 @@ class Control:
 	manager.
 	"""
 
+	# TODO(jm)
+	_player_id: int = 1
+
 	game_mgr = None
 	clickmap: ClickMap
 
@@ -33,8 +35,8 @@ class Control:
 	_screen_to_tile = None
 	cell_under_mouse = None
 
-	_can_move_game_objects = False
-	moving_game_object = None
+	_playbar_mode: PlaybarMode = PlaybarMode.CHARACTER
+	selected_game_object = None
 	build_object_prototype = None
 
 	def __init__(
@@ -67,8 +69,15 @@ class Control:
 			new_cell_under_mouse = self._screen_to_tile((mouse_x, mouse_y))
 			if new_cell_under_mouse is not None:
 				self.cell_under_mouse = new_cell_under_mouse
-			if self._can_move_game_objects and self.moving_game_object:
-				self.moving_game_object.pos = self.cell_under_mouse
+			if self._can_move_game_objects and self.selected_game_object:
+				can_move = self.selected_game_object.is_movable(self._player_id)
+				if can_move:
+					self.selected_game_object.pos = self.cell_under_mouse
+
+
+	@property
+	def _can_move_game_objects(self):
+		return self._playbar_mode == PlaybarMode.BUILD
 
 
 	def playbar_mode_changed(self, new_mode: PlaybarMode):
@@ -77,10 +86,8 @@ class Control:
 		disable character movement and allow for clicking and dragging
 		game objects.
 		"""
-		if new_mode == PlaybarMode.BUILD:
-			self._can_move_game_objects = True
-		else:
-			self._can_move_game_objects = False
+		self._playbar_mode = new_mode
+		if new_mode != PlaybarMode.BUILD:
 			if self.build_object_prototype:
 				self._cancel_placing_new_game_object()
 			else:
@@ -89,37 +96,38 @@ class Control:
 
 
 	def _place_moving_game_object(self):
-		if self.moving_game_object:
-			self.moving_game_object.pos = self.cell_under_mouse
-			self.moving_game_object = None
+		if self.selected_game_object:
+			self.selected_game_object.pos = self.cell_under_mouse
+			self.selected_game_object = None
 
 
 	def _cancel_placing_new_game_object(self):
-		if self.moving_game_object and self.build_object_prototype:
-			self.game_mgr.remove_game_object(self.moving_game_object)
-			self.moving_game_object = None
+		if self.selected_game_object and self.build_object_prototype:
+			self.game_mgr.remove_game_object(self.selected_game_object)
+			self.selected_game_object = None
+			self.build_object_prototype = None
 
 
 	def _new_game_object_from_prototype(self):
 		if self.build_object_prototype:
-			self.moving_game_object = self.build_object_prototype.make()
-			self.moving_game_object.pos = self.cell_under_mouse
-			self.game_mgr.add_game_object(self.moving_game_object)
+			self.selected_game_object = self.build_object_prototype.make()
+			self.selected_game_object.pos = self.cell_under_mouse
+			self.game_mgr.add_game_object(self.selected_game_object)
 
 
 	def playbar_selected_build_object(self, build_object_prototype):
-		if not self._can_move_game_objects:
+		if self._playbar_mode != PlaybarMode.BUILD:
 			return
 		self.build_object_prototype = build_object_prototype
 		self._new_game_object_from_prototype()
 
 
 	def playbar_deselected_build_object(self):
-		if not self._can_move_game_objects:
+		if self._playbar_mode != PlaybarMode.BUILD:
 			return
-		if self.moving_game_object:
-			self.game_mgr.remove_game_object(self.moving_game_object)
-		self.moving_game_object = None
+		if self.selected_game_object:
+			self.game_mgr.remove_game_object(self.selected_game_object)
+		self.selected_game_object = None
 		self.build_object_prototype = None
 
 
@@ -172,24 +180,41 @@ class Control:
 		return True
 
 
+	def _interpret_build_mode_key_event(self, event):
+		if event.key == pygame.K_BACKSPACE or event.key == pygame.K_DELETE:
+			moving_gobj = self.selected_game_object
+			if moving_gobj and moving_gobj.is_deleteable(self._player_id):
+				self.game_mgr.remove_game_object(self.selected_game_object)
+				self.selected_game_object = None
+				return True
+		
+		if event.key == pygame.K_ESCAPE:
+			if self.selected_game_object and self.build_object_prototype:
+				self._cancel_placing_new_game_object()
+				return True
+
+		return False
+
+
 	def _interpret_build_mode_click_event(self):
 		click_pos = self._get_mouse_pos()
 		clicked_terrain = self.clickmap.is_terrain(click_pos)
 
 		# Try to pick up an existing game object.
-		if not self.moving_game_object and not clicked_terrain:
+		if not self.selected_game_object and not clicked_terrain:
 			gobj = self.clickmap.game_object_at(click_pos)
-			self.moving_game_object = gobj
-			return True
+			if gobj and gobj.is_selectable(self._player_id):
+				self.selected_game_object = gobj
+				return True
 
 		# Place a new game object.
-		elif self.moving_game_object and self.build_object_prototype:
+		elif self.selected_game_object and self.build_object_prototype:
 			self._place_moving_game_object()
 			self._new_game_object_from_prototype()
 			return True
 
 		# Place an existing game object.
-		elif self.moving_game_object and not self.build_object_prototype:
+		elif self.selected_game_object and not self.build_object_prototype:
 			self._place_moving_game_object()
 			return True
 
@@ -205,11 +230,13 @@ class Control:
 		elif event.type == pygame.KEYDOWN:
 			self._interpret_debug_console_command(event)
 			self.interpret_pygame_camera_keyboard_event(event)
+			if self._playbar_mode == PlaybarMode.BUILD:
+				self._interpret_build_mode_key_event(event)
 			return True
 		elif event.type == pygame.MOUSEBUTTONDOWN:
-			if self._can_move_game_objects:
+			if self._playbar_mode == PlaybarMode.BUILD:
 				return self._interpret_build_mode_click_event()
-			else:
+			elif self._playbar_mode == PlaybarMode.CHARACTER:
 				return self._interpret_character_mode_click_event()
 		return False
 

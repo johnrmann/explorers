@@ -94,6 +94,26 @@ class GameObject(Tickable):
 		"""
 		pass
 
+	def is_selectable(self, owner):
+		"""
+		Returns True if the object can be selected by the given owner.
+		Selecting is a precursor to deleting.
+		"""
+		return False
+
+	def is_moveable(self, owner):
+		"""
+		Returns True if the object can be moved by the given owner _after_ it
+		has been placed in the game world.
+		"""
+		return False
+
+	def is_deleteable(self, owner):
+		"""
+		Returns True if the object can be deleted by the given owner.
+		"""
+		return False
+
 	def x_range(self):
 		"""
 		The x-range this object occupies.
@@ -156,4 +176,7 @@ class GameObject(Tickable):
 		Signal from the game manager that time has passed. dt is the time since
 		the last draw in seconds. UTC is time since mission start in seconds.
 		"""
+		return
+
+	def tick_second(self, dt, utc):
 		return

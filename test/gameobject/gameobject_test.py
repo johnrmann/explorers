@@ -76,5 +76,10 @@ class GameObjectTest(unittest.TestCase):
 		self.assertFalse(self.widget.occupies_cell((3,4)))
 		self.assertFalse(self.widget.occupies_cell((3,3)))
 
+	def test__not_manipulable_by_default(self):
+		self.assertFalse(self.widget.is_deleteable(1))
+		self.assertFalse(self.widget.is_moveable(1))
+		self.assertFalse(self.widget.is_selectable(1))
+
 if __name__ == '__main__':
 	unittest.main()

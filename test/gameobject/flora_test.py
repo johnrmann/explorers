@@ -154,6 +154,15 @@ class TestFlora(unittest.TestCase):
 		)
 
 
+	def test__is_manipulateable(self):
+		"""
+		Test that anyone can do anything to a flora object.
+		"""
+		self.assertEqual(self.flora.is_moveable(1), True)
+		self.assertEqual(self.flora.is_selectable(1), True)
+		self.assertEqual(self.flora.is_deleteable(1), True)
+
+
 
 class TestFloraDiedEvent(unittest.TestCase):
 	def test__init__requires_flora(self):

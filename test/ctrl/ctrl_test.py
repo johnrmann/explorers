@@ -19,6 +19,13 @@ def _make_click_event():
 	return event
 
 
+def _make_keydown_event(key):
+	event = Mock()
+	event.type = pygame.KEYDOWN
+	event.key = key
+	return event
+
+
 class TestControl(unittest.TestCase):
 
 	@patch('src.mgmt.singletons.get_game_manager')
@@ -26,6 +33,8 @@ class TestControl(unittest.TestCase):
 		self.mock_evt_mgr = MagicMock(spec=EventManager)
 		self.mock_evt_mgr.pub = Mock()
 		self.mock_gui_mgr = Mock()
+		self.mock_gui_mgr.process_event = Mock()
+		self.mock_gui_mgr.process_event.return_value = False
 		self.mock_game_mgr = Mock(spec=GameManager)
 		self.mock_game_mgr.evt_mgr = self.mock_evt_mgr
 		self.mock_game_mgr.gui_mgr = self.mock_gui_mgr
@@ -45,11 +54,14 @@ class TestControl(unittest.TestCase):
 		self.mock_get_mouse_pos = Mock()
 		self.mock_get_mouse_pos.return_value = (16, 16)
 
+		self.on_quit = Mock()
+
 		self.control = Control(
 			self.mock_game_mgr,
 			screen_to_tile=self.screen_to_tile,
 			get_mouse_pos=self.mock_get_mouse_pos,
 			clickmap=self.clickmap,
+			on_quit=self.on_quit
 		)
 
 
@@ -72,10 +84,10 @@ class TestControl(unittest.TestCase):
 		new_object = MagicMock()
 
 		self.control.playbar_mode_changed(PlaybarMode.BUILD)
-		self.control.moving_game_object = new_object
+		self.control.selected_game_object = new_object
 
 		self.control.playbar_mode_changed(PlaybarMode.CHARACTER)
-		self.assertIsNone(self.control.moving_game_object)
+		self.assertIsNone(self.control.selected_game_object)
 		self.control.game_mgr.remove_game_object.assert_not_called()
 
 
@@ -90,7 +102,7 @@ class TestControl(unittest.TestCase):
 		self.control.game_mgr.add_game_object.assert_called_once_with(new_object)
 
 		self.control.playbar_mode_changed(PlaybarMode.CHARACTER)
-		self.assertIsNone(self.control.moving_game_object)
+		self.assertIsNone(self.control.selected_game_object)
 		self.control.game_mgr.remove_game_object.assert_called_once_with(new_object)
 
 
@@ -107,7 +119,7 @@ class TestControl(unittest.TestCase):
 		self.mock_evt_mgr.pub.assert_not_called()
 
 
-	def test__playbar_mode_changed__to_build__moves_game_objects(self):
+	def test__playbar_mode_changed__to_build__selects_game_objects(self):
 		"""
 		Test that going to build mode allows us to select game objects.
 		"""
@@ -119,6 +131,7 @@ class TestControl(unittest.TestCase):
 		self.clickmap.game_object_at.return_value = mock_gobj
 		result = self.control.interpret_pygame_event(_make_click_event())
 		self.assertTrue(result)
+		self.assertEqual(self.control.selected_game_object, mock_gobj)
 
 
 	def test__interpret_pygame_camera_keyboard_event__move(self):
@@ -144,7 +157,7 @@ class TestControl(unittest.TestCase):
 			self.assertTrue(result)
 
 
-	def test_interpret_pygame_event_quit(self):
+	def test__interpret_pygame_event__quit(self):
 		event = Mock()
 		event.type = pygame.QUIT
 		self.control.on_quit = Mock()
@@ -153,7 +166,7 @@ class TestControl(unittest.TestCase):
 		self.assertTrue(result)
 
 
-	def test_interpret_pygame_event_gui(self):
+	def test__interpret_pygame_event__gui(self):
 		event = Mock()
 		self.mock_gui_mgr.process_event.return_value = True
 		result = self.control.interpret_pygame_event(event)
@@ -161,7 +174,7 @@ class TestControl(unittest.TestCase):
 		self.assertTrue(result)
 
 
-	def test_interpret_pygame_input(self):
+	def test__interpret_pygame_input(self):
 		event = Mock()
 		with patch('pygame.event.get', return_value=[event]):
 			with patch.object(
@@ -173,9 +186,20 @@ class TestControl(unittest.TestCase):
 				mock_method.assert_called_once_with(event)
 
 
+	def test__dispatch_character(self):
+		event = _make_click_event()
+		player_character = MagicMock()
+
+		self.control.clickmap.is_terrain.return_value = True
+		self.control.game_mgr.player_character = player_character
+
+		self.control.interpret_pygame_event(event)
+		self.control.game_mgr.evt_mgr.pub.assert_called_once()
+
+
 	def test__playbar_selected_build_object__no_move(self):
 		self.control.playbar_selected_build_object(MagicMock())
-		self.assertIsNone(self.control.moving_game_object)
+		self.assertIsNone(self.control.selected_game_object)
 
 
 	def test__playbar_selected_build_object__makes_object(self):
@@ -186,12 +210,12 @@ class TestControl(unittest.TestCase):
 		self.control.playbar_mode_changed(PlaybarMode.BUILD)
 		self.control.playbar_selected_build_object(mock_prototype)
 
-		self.assertEqual(self.control.moving_game_object, new_obj)
+		self.assertEqual(self.control.selected_game_object, new_obj)
 
 
 	def test__playbar_deselected_build_object__no_move(self):
 		self.control.playbar_deselected_build_object()
-		self.assertIsNone(self.control.moving_game_object)
+		self.assertIsNone(self.control.selected_game_object)
 
 
 	def test__playbar_deselected_build_object__removes_object(self):
@@ -203,8 +227,91 @@ class TestControl(unittest.TestCase):
 		self.control.playbar_selected_build_object(mock_prototype)
 
 		self.control.playbar_deselected_build_object()
-		self.assertEqual(self.control.moving_game_object, None)
+		self.assertEqual(self.control.selected_game_object, None)
 		self.mock_game_mgr.remove_game_object.assert_called_once()
+
+
+	def test__delete_deleteable_gameobject(self):
+		game_object = MagicMock()
+		game_object.is_deleteable = Mock()
+		game_object.is_deleteable.return_value = True
+		game_object.is_selectable = Mock()
+		game_object.is_selectable.return_value = True
+		
+		self.control.clickmap.is_terrain.return_value = False
+		self.control.clickmap.game_object_at.return_value = game_object
+
+		self.control.playbar_mode_changed(PlaybarMode.BUILD)
+		click = _make_click_event()
+		self.control.interpret_pygame_event(click)
+		self.control.interpret_pygame_event(_make_keydown_event(pygame.K_DELETE))
+
+		self.mock_game_mgr.remove_game_object.assert_called_once_with(game_object)
+
+
+	def test__delete_non_deleteable_gameobject(self):
+		game_object = MagicMock()
+		game_object.is_deleteable = Mock()
+		game_object.is_deleteable.return_value = False
+		game_object.is_selectable = Mock()
+		game_object.is_selectable.return_value = True
+		
+		self.control.clickmap.is_terrain.return_value = False
+		self.control.clickmap.game_object_at.return_value = game_object
+
+		self.control.playbar_mode_changed(PlaybarMode.BUILD)
+		click = _make_click_event()
+		self.control.interpret_pygame_event(click)
+		self.control.interpret_pygame_event(_make_keydown_event(pygame.K_DELETE))
+
+		self.mock_game_mgr.remove_game_object.assert_not_called()
+
+
+	def test__tick__updates_selected_game_object_position(self):
+		"""
+		Test that the control object updates the selected game object position
+		once per tick.
+		"""
+		game_object = MagicMock()
+		game_object.is_movable.return_value = True
+		game_object.is_selectable.return_value = True
+
+		self.control.clickmap.is_terrain.return_value = False
+		self.control.clickmap.game_object_at.return_value = game_object
+		self.control.playbar_mode_changed(PlaybarMode.BUILD)
+
+		click = _make_click_event()
+		self.screen_to_tile.return_value = (4, 8)
+		self.control.interpret_pygame_event(click)
+
+		self.control.tick(0.1)
+
+		self.assertEqual(self.control.selected_game_object, game_object)
+		self.assertEqual(game_object.pos, (4, 8))
+
+
+	def test__tick__doesnt_update_selected_game_object_position(self):
+		"""
+		Test that the control object doesn't update the selected game object
+		position if it's not movable.
+		"""
+		game_object = MagicMock()
+		game_object.pos = (0, 0)
+		game_object.is_movable.return_value = False
+		game_object.is_selectable.return_value = True
+
+		self.control.clickmap.is_terrain.return_value = False
+		self.control.clickmap.game_object_at.return_value = game_object
+		self.control.playbar_mode_changed(PlaybarMode.BUILD)
+
+		click = _make_click_event()
+		self.screen_to_tile.return_value = (4, 8)
+		self.control.interpret_pygame_event(click)
+
+		self.control.tick(0.1)
+
+		self.assertEqual(self.control.selected_game_object, game_object)
+		self.assertEqual(game_object.pos, (0, 0))
 
 
 
