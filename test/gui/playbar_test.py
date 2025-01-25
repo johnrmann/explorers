@@ -10,9 +10,13 @@ class TestPlaybar(unittest.TestCase):
 
 	@patch('src.gui.playbar.Scanline', autospec=True)
 	@patch('src.gui.playbar.LineGraph', autospec=True)
-	def setUp(self, MockScanline, MockLineGraph):
+	@patch('src.gui.playbar.ImageButtonGrid', autospec=True)
+	@patch('src.gui.playbar.Catalog', autospec=True)
+	def setUp(self, MockScanline, MockLineGraph, MockImageButtonGrid, MockCatalog):
 		MockScanline.return_value = Mock()
 		MockLineGraph.return_value = Mock()
+		MockImageButtonGrid.return_value = Mock()
+		MockCatalog.return_value = Mock()
 		self.change_mode_callback = Mock()
 		self.gui_mgr = make_mock_gui_manager()
 		self.playbar = Playbar(

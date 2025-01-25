@@ -50,6 +50,22 @@ class _BaseButton(GuiElement):
 		return False
 
 
+	def _draw_background(self, screen):
+		"""Final method - draw the button background."""
+		pygame.draw.rect(screen, (0, 255, 255), self.pygame_rect)
+		pygame.draw.rect(screen, (0, 0, 255), self._inner_pygame_rect)
+
+
+	def _button_draw_content(self, screen):
+		"""Abstract method - draw the button content."""
+		raise ValueError("Subclasses must implement this method.")
+
+
+	def my_draw(self, screen):
+		self._draw_background(screen)
+		self._button_draw_content(screen)
+
+
 
 class Button(_BaseButton):
 	"""This is a button with text."""
@@ -61,9 +77,7 @@ class Button(_BaseButton):
 		self.text = text
 
 
-	def my_draw(self, screen):
-		pygame.draw.rect(screen, (0, 255, 255), self.pygame_rect)
-		pygame.draw.rect(screen, (0, 0, 255), self._inner_pygame_rect)
+	def _button_draw_content(self, screen):
 		font = pygame.font.Font(None, 24)
 		text_surface = font.render(self.text, True, (255, 255, 255))
 		text_rect = text_surface.get_rect(center=self._inner_pygame_rect.center)
@@ -166,13 +180,11 @@ class ImageButton(_BaseButton):
 			self.image_surface = image_surface
 		else:
 			self.image_surface = pygame.image.load(image_path).convert_alpha()
+			self.image_surface = pygame.transform.scale(
+				self.image_surface,
+				self._inner_pygame_rect.size
+			)
 
 
-	def my_draw(self, screen):
-		pygame.draw.rect(screen, (0, 255, 255), self.pygame_rect)
-		pygame.draw.rect(screen, (0, 0, 255), self._inner_pygame_rect)
-		transformed_image = pygame.transform.scale(
-			self.image_surface,
-			self._inner_pygame_rect.size
-		)
-		screen.blit(transformed_image, self._inner_pygame_rect)
+	def _button_draw_content(self, screen):
+		screen.blit(self.image_surface, self._inner_pygame_rect)

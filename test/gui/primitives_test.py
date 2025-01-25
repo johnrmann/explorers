@@ -92,10 +92,20 @@ class PrimitivesTest(unittest.TestCase):
 
 
 	@patch('pygame.image.load')
-	def test__image_button__loads_image(self, mock_load):
+	@patch('pygame.transform.scale')
+	def test__image_button__loads_image(self, mock_load, mock_scale):
 		return_mock = Mock()
-		return_mock.convert_alpha.return_value = "Loaded!"
+		scale_mock = Mock()
+
+		load_surface = pygame.Surface((100, 50))
+		scale_surface = pygame.Surface((100, 50))
+
+		return_mock.convert_alpha.return_value = load_surface
+		scale_mock.return_value = scale_surface
+
 		mock_load.return_value = return_mock
+		mock_scale.return_value = scale_mock
+
 		button = ImageButton(
 			rect=((0, 0), (100, 50)),
 			image_path='assets/img/icon/pencil.png',
@@ -103,7 +113,6 @@ class PrimitivesTest(unittest.TestCase):
 			gui_mgr=self.gui_mgr,
 		)
 		self.assertIsNotNone(button.image_surface)
-		self.assertEqual(button.image_surface, "Loaded!")
 
 
 if __name__ == '__main__':

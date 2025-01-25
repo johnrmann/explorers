@@ -12,6 +12,11 @@ from src.gui.actor_motives import ActorMotivesGui
 from src.gui.line_graph import LineGraph
 from src.gui.scanline import Scanline
 from src.gui.catalog import Catalog
+from src.gui.button_grid import (
+	ImageButtonGrid,
+	ImageButtonGridItem,
+	ButtonGridSpacing
+)
 
 class PlaybarMode(Enum):
 	"""
@@ -22,6 +27,29 @@ class PlaybarMode(Enum):
 	BUILD = 2
 	OPTIONS = 3
 
+GRID_ITEMS = [
+	ImageButtonGridItem(
+		0,
+		"assets/img/icon/astronaut.png",
+		payload=PlaybarMode.CHARACTER
+	),
+	ImageButtonGridItem(
+		1,
+		"assets/img/icon/planet.png",
+		payload=PlaybarMode.PLANET
+	),
+	ImageButtonGridItem(
+		2,
+		"assets/img/icon/tool.png",
+		payload=PlaybarMode.BUILD
+	),
+	ImageButtonGridItem(
+		3,
+		"assets/img/icon/setting.png",
+		payload=PlaybarMode.OPTIONS
+	),
+]
+
 class Playbar(GuiElement):
 	"""
 	A bar at the bottom of the screen that contains the controls for the
@@ -30,10 +58,14 @@ class Playbar(GuiElement):
 
 	_mode: PlaybarMode
 
-	_mode_to_elements = None
-	_panel = None
+	_mode_to_elements: dict[PlaybarMode, set[GuiElement]] = None
+
+	_panel: Panel = None
+	_icons: ImageButtonGrid = None
 
 	_change_mode_callback = None
+	_selected_build_object_callback = None
+	_deselected_build_object_callback = None
 
 	def __init__(
 			self,
@@ -55,9 +87,21 @@ class Playbar(GuiElement):
 			anchor=Anchor.BOTTOM_LEFT,
 			**kwargs
 		)
-		self._panel = Panel(
+		self._icons = ImageButtonGrid(
+			items=GRID_ITEMS,
+			parent=self,
 			origin=(0, 0),
-			dimensions=(self.viewport.window_dims[0], 200),
+			spacing=ButtonGridSpacing(
+				button_dimensions=(50, 50),
+				button_margin=0,
+			),
+			dimensions=(50, 200),
+			callback=lambda mode: setattr(self, "mode", mode),
+			**kwargs,
+		)
+		self._panel = Panel(
+			origin=(50, 0),
+			dimensions=(self.viewport.window_dims[0] - 50, 200),
 			parent=self,
 		)
 		self._mode_to_elements = {
@@ -71,17 +115,22 @@ class Playbar(GuiElement):
 		self._mode = PlaybarMode.CHARACTER
 		self._unhide_current_mode()
 
+
 	def _hide_all(self):
-		for elem in self.elements:
-			elem.hidden = True
+		for elem_set in self._mode_to_elements.values():
+			for elem in elem_set:
+				elem.hidden = True
+
 
 	def _unhide_current_mode(self):
 		for elem in self._mode_to_elements[self._mode]:
 			elem.hidden = False
 
+
 	@property
 	def mode(self):
 		return self._mode
+
 
 	@mode.setter
 	def mode(self, new_mode):
@@ -94,6 +143,7 @@ class Playbar(GuiElement):
 		if self._change_mode_callback:
 			self._change_mode_callback(new_mode)
 
+
 	def _make_character_mode(self):
 		"""
 		Initialize actor motives and minimap.
@@ -102,7 +152,7 @@ class Playbar(GuiElement):
 			get_motives=lambda: self.game.player_character.motives,
 			origin=(0, 0),
 			anchor=Anchor.BOTTOM_LEFT,
-			parent=self,
+			parent=self._panel,
 		)
 		minimap = MiniMap(
 			origin=(0, 0),
@@ -110,14 +160,15 @@ class Playbar(GuiElement):
 			anchor=Anchor.BOTTOM_RIGHT,
 			world=self.world,
 			viewport=self.viewport,
-			parent=self,
+			parent=self._panel,
 		)
 		return set([motives, minimap])
+
 
 	def _make_planet_mode(self):
 		scanline = Scanline(
 			origin=(0, 0),
-			parent=self,
+			parent=self._panel,
 			start_color=(0, 255, 0, 0),
 			end_color=(0, 255, 0, 100),
 		)
@@ -130,10 +181,11 @@ class Playbar(GuiElement):
 		)
 		return set([scanline])
 
+
 	def _make_build_mode(self):
 		catalog = Catalog(
 			origin=(0, 0),
-			parent=self,
+			parent=self._panel,
 			dimensions=(500, 200),
 			on_select=self._selected_build_object_callback,
 			on_deselect=self._deselected_build_object_callback,
@@ -141,8 +193,10 @@ class Playbar(GuiElement):
 		)
 		return set([catalog])
 
+
 	def _make_options_mode(self):
 		return set()
+
 
 	def my_process_event(self, event):
 		if event.type == pygame.KEYDOWN:
