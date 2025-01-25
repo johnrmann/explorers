@@ -2,22 +2,29 @@ import pygame
 
 from src.gui.gui import GuiElement
 
-def minimap_image(world, surface_dimensions):
+_ICE_COLOR = (250, 250, 250)
+_OCEAN_COLOR = (0, 0, 200)
+
+def minimap_image(terrain, surface_dimensions):
 	"""
 	Render a minimap image of the world.
 	"""
 
-	surface = pygame.Surface(world.terrain.dimensions)
+	surface = pygame.Surface(terrain.dimensions)
 
-	d_height = world.terrain.max_tile_height - world.terrain.min_tile_height
-	min_tile_height = world.terrain.min_tile_height
+	d_height = terrain.max_tile_height - terrain.min_tile_height
+	min_tile_height = terrain.min_tile_height
 
-	for x in range(world.terrain.width):
-		for y in range(world.terrain.height):
-			cell = world.terrain.map[y][x]
+	for x in range(terrain.width):
+		for y in range(terrain.height):
+			cell = terrain.map[y][x]
 			cell_p = (cell - min_tile_height) / d_height
 			color_scale = int((cell_p * 128) + 127)
 			color = (color_scale, 0, 0)
+			if terrain.is_cell_ice((x, y)):
+				color = _ICE_COLOR
+			elif terrain.is_cell_water((x, y)):
+				color = _OCEAN_COLOR
 			surface.set_at((x, y), color)
 
 	surface = pygame.transform.scale(surface, surface_dimensions)
@@ -41,7 +48,7 @@ class MiniMap(GuiElement):
 		self._prepare_minimap()
 
 	def _prepare_minimap(self):
-		self._surface = minimap_image(self.world, self.dimensions)
+		self._surface = minimap_image(self.world.terrain, self.dimensions)
 		self._draw_surface = self._surface.copy()
 
 	def _draw_viewport(self):
