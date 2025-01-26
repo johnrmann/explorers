@@ -18,6 +18,40 @@ class DirectionTest(unittest.TestCase):
 		self.assertTrue(is_direction_diagonal(Direction.SOUTHEAST))
 		self.assertTrue(is_direction_diagonal(Direction.SOUTHWEST))
 	
+	def test__delta_to_direction(self):
+		self.assertEqual(
+			delta_to_direction(Vector2(0,1)),
+			Direction.SOUTH,
+		)
+		self.assertEqual(
+			delta_to_direction(Vector2(1,0)),
+			Direction.EAST,
+		)
+		self.assertEqual(
+			delta_to_direction(Vector2(0,-1)),
+			Direction.NORTH,
+		)
+		self.assertEqual(
+			delta_to_direction(Vector2(-1,0)),
+			Direction.WEST,
+		)
+		self.assertEqual(
+			delta_to_direction(Vector2(1,1)),
+			Direction.SOUTHEAST,
+		)
+		self.assertEqual(
+			delta_to_direction(Vector2(1,-1)),
+			Direction.NORTHEAST,
+		)
+		self.assertEqual(
+			delta_to_direction(Vector2(-1,-1)),
+			Direction.NORTHWEST,
+		)
+		self.assertEqual(
+			delta_to_direction(Vector2(-1,1)),
+			Direction.SOUTHWEST,
+		)
+
 	def test__delta_to_direction__rejects_weird(self):
 		"""Test that delta to direction rejects zero vectors, or vectors
 		that are not of the form k * (-1,0,1)^2"""
@@ -26,6 +60,10 @@ class DirectionTest(unittest.TestCase):
 
 	def test__direction_rotate_90(self):
 		"""Test that it can handle rotating 90deg."""
+		self.assertEqual(
+			direction_rotate_90(Direction.NORTH, quarter_turns=0),
+			Direction.NORTH,
+		)
 		self.assertEqual(
 			direction_rotate_90(Direction.NORTH, quarter_turns=1),
 			Direction.EAST,
@@ -197,6 +235,11 @@ class DirectionTest(unittest.TestCase):
 			quarter_turns_between_directions(
 				Direction.SOUTHWEST, Direction.EAST
 			)
+
+	def test__direction_to_delta__invalid(self):
+		"""Test that direction to delta rejects invalid directions."""
+		with self.assertRaises(AttributeError):
+			direction_to_delta(None)
 
 if __name__ == "__main__":
 	unittest.main()

@@ -46,9 +46,3 @@ class CameraRotateEvent(Event):
 
 	def __init__(self, delta: int):
 		self.delta = delta
-
-	def __eq__(self, other):
-		return (
-			isinstance(other, self.__class__) and
-			other.delta == self.delta
-		)

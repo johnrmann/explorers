@@ -106,15 +106,6 @@ class Render:
 			)
 
 
-	def game_object_at(self, p):
-		for go in self.game_mgr.game_objects:
-			gx, gy = go.pos
-			x, y = p
-			if x == gx and y == gy:
-				return go
-		return None
-
-
 	def _render_game_object(self, go: GameObject=None, light = None):
 		# Easy out if the gameobject is hidden
 		if go.hidden:

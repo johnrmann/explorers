@@ -69,5 +69,38 @@ class HorologyTest(unittest.TestCase):
 			0.5,
 		)
 
+
+	def test__brightness(self):
+		# At noon, it should be brightest.
+		self.assertEqual(
+			earth.brightness(0, 0),
+			7,
+		)
+
+		# At midnight, it should be darkest.
+		self.assertEqual(
+			earth.brightness(6 * 30, 0),
+			0,
+		)
+
+		# Noon on the prime meridian should be midnight on the dateline.
+		self.assertEqual(
+			centuria.brightness(0, 1),
+			0,
+		)
+
+		# Test transition between day and night.
+		self.assertEqual(
+			centuria.brightness(25, 0),
+			3,
+		)
+
+		# Test transition between night and day.
+		self.assertEqual(
+			centuria.brightness(75, 0),
+			3,
+		)
+
+
 if __name__ == "__main__":
 	unittest.main()

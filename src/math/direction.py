@@ -142,6 +142,14 @@ def delta_to_direction(v: Vector2) -> Direction:
 		return Direction.SOUTH
 	elif vx < 0 and vy == 0:
 		return Direction.WEST
+	elif vx < 0 and vy < 0 and abs(vx) == abs(vy):
+		return Direction.NORTHWEST
+	elif vx > 0 and vy < 0 and abs(vx) == abs(vy):
+		return Direction.NORTHEAST
+	elif vx > 0 and vy > 0 and abs(vx) == abs(vy):
+		return Direction.SOUTHEAST
+	elif vx < 0 and vy > 0 and abs(vx) == abs(vy):
+		return Direction.SOUTHWEST
 	raise ValueError("Unknown direction")
 
 @cache

@@ -2,6 +2,7 @@ import unittest
 
 from src.math.vector2 import Vector2
 from src.rendermath.tile import (
+	tile_height_for_width,
 	is_point_in_tile,
 	tile_polygon,
 	tile_top_y,
@@ -15,6 +16,13 @@ from src.rendermath.tile import (
 )
 
 class TestTileFunctions(unittest.TestCase):
+	def test__tile_height_for_width(self):
+		self.assertEqual(tile_height_for_width(4), 2)
+
+	def test__is_point_in_tile__none(self):
+		tile = None
+		self.assertFalse(is_point_in_tile((0, 0), tile))
+
 	def test__is_point_in_tile(self):
 		tile = tile_polygon((0, 0), (4, 4))
 		self.assertTrue(is_point_in_tile((0, 0), tile))
@@ -45,6 +53,11 @@ class TestTileFunctions(unittest.TestCase):
 	def test__tile_height(self):
 		tile = tile_polygon((0, 0), (4, 4))
 		self.assertEqual(tile_height(tile), 4)
+
+	def test__is_tile_in_rect__none(self):
+		tile = None
+		rect = (Vector2(-2, -2), Vector2(4, 4))
+		self.assertFalse(is_tile_in_rect(tile, rect))
 	
 	def test__is_tile_in_rect__center(self):
 		tile = tile_polygon((0, 0), (4, 4))
@@ -65,6 +78,11 @@ class TestTileFunctions(unittest.TestCase):
 		tile = tile_polygon((0, 0), (4, 4))
 		screen_dimensions = Vector2(10, 10)
 		self.assertTrue(is_tile_in_screen(tile, screen_dimensions))
+
+	def test__is_tile_in_screen__none(self):
+		tile = None
+		screen_dimensions = Vector2(10, 10)
+		self.assertFalse(is_tile_in_screen(tile, screen_dimensions))
 
 if __name__ == '__main__':
 	unittest.main()
