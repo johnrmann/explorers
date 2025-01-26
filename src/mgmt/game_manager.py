@@ -198,9 +198,24 @@ class GameManager(Listener):
 
 	@line_profiler.profile
 	def render(self):
+		self.renderer.clear()
 		self.clickmap.clear()
+		self.renderer.highlight_tile(
+			self.ctrl.cell_under_mouse,
+			priority=99
+		)
+		self.renderer.highlight_tile(
+			self.player_character.pos,
+			priority=2,
+			color=(0, 0, 255)
+		)
+		if self.player_character.path_target:
+			self.renderer.highlight_tile(
+				self.player_character.path_target,
+				priority=1,
+				color=(255, 0, 0)
+			)
 		self.renderer.render()
-		self.renderer.highlight_tile(self.ctrl.cell_under_mouse)
 
 	def select_actor(self, player_id=1, actor=None):
 		if not actor:

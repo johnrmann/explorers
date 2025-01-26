@@ -12,7 +12,7 @@ class PathRunner:
 	"""
 
 	_position: Vector2
-	_path: list[Vector2] = []
+	_path: list[Vector2] = None
 	_idx = -1
 	_direction: Direction
 	_on_done = None
@@ -124,6 +124,16 @@ class PathRunner:
 			last, prev_last = value[-1], value[-2]
 			dir_delta = last - prev_last
 			self._direction = delta_to_direction(dir_delta)
+
+	@property
+	def target(self):
+		"""
+		Returns the target cell of the path.
+		"""
+		if self.is_moving:
+			return self._path[-1]
+		else:
+			return None
 
 	def tick(self, dk: float):
 		"""

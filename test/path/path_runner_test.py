@@ -62,6 +62,14 @@ class PathRunnerTest(unittest.TestCase):
 		self.assertTrue(runner.is_moving)
 		runner.tick(0.5)
 		self.assertFalse(runner.is_moving)
+
+	def test__target(self):
+		runner = PathRunner(path = BASIC_PATH)
+		self.assertEqual(runner.target, Vector2(1,1))
+
+	def test__target__not_moving(self):
+		runner = PathRunner()
+		self.assertEqual(runner.target, None)
 	
 	def test__direction__default(self):
 		runner = PathRunner()

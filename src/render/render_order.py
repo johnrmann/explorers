@@ -16,9 +16,10 @@ class RenderTuple:
 	Represents something to draw on the screen.
 	"""
 
-	__slots__ = ['cell', 'game_object', 'brightness', 'chunk']
+	__slots__ = ['cell', 'highlight_cell', 'game_object', 'brightness', 'chunk']
 
 	cell: tuple[int, int]
+	highlight_cell: tuple[int, int]
 	game_object: GameObject
 	chunk: Chunk
 
@@ -27,6 +28,7 @@ class RenderTuple:
 	def __init__(
 			self,
 			tile: tuple[int, int] = None,
+			highlight_cell: tuple[int, int] = None,
 			game_object: GameObject = None,
 			chunk: Chunk = None,
 			brightness: int = MAX_LIGHT_LEVEL_IDX
@@ -35,6 +37,7 @@ class RenderTuple:
 		It's recommended that you only set tile XOR game_object.
 		"""
 		self.cell = tile
+		self.highlight_cell = highlight_cell
 		self.game_object = game_object
 		self.chunk = chunk
 		self.brightness = brightness
@@ -85,6 +88,11 @@ class RenderOrder:
 		"""Marks the tile at the given position as drawn."""
 		self._drawn_cells.add(tile)
 		self._tuples.append(RenderTuple(tile=tile, brightness=brightness))
+
+
+	def add_highlight_cell(self, cell):
+		"""Marks the tile at the given position as highlighted."""
+		self._tuples.append(RenderTuple(highlight_cell=cell))
 
 
 	def add_cells(self, cells, brightness: int = None):

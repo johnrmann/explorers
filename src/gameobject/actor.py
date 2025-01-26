@@ -75,6 +75,11 @@ class Actor(GameObject, Listener):
 		"""Is the actor currently running a path?"""
 		return self._path_runner.is_moving
 
+	@property
+	def path_target(self):
+		"""The target position of the actor's current path."""
+		return self._path_runner.target
+
 	def is_dead(self):
 		"""Is the actor dead?"""
 		return self.motives.is_dead()

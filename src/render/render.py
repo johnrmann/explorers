@@ -48,6 +48,8 @@ class Render:
 
 	_last_zoom = 0
 
+	_highlight_colors: dict[tuple[int, int], tuple[int, tuple]] = None
+
 	_brightnesses = None
 
 	_chunker: TerrainChunker
@@ -58,6 +60,7 @@ class Render:
 		self.world = world
 		self.vp = vp
 		self.render_terrain = TerrainHelper(world.terrain, vp)
+		self._highlight_colors = defaultdict(lambda: None)
 		self._chunker = TerrainChunker(
 			terrain=world.terrain,
 			surfacer=self.render_terrain.terrain_surfacer,
@@ -277,6 +280,9 @@ class Render:
 				for draw_gobj in to_draw:
 					order.add_game_object(draw_gobj, brightness=brightness)
 					draw_graph.mark_drawn(draw_gobj)
+			
+			if tuple(p) in self._highlight_colors:
+				order.add_highlight_cell(p)
 
 		return order
 
@@ -296,30 +302,60 @@ class Render:
 		for to_draw in order:
 			if to_draw.cell:
 				render_tile(to_draw.cell, light=to_draw.brightness)
+			elif to_draw.highlight_cell:
+				self._draw_highlight_tile(to_draw.highlight_cell)
 			elif to_draw.game_object:
 				render_gobj(to_draw.game_object, light=to_draw.brightness)
 			elif to_draw.chunk:
 				render_chunk(to_draw.chunk, light=to_draw.brightness)
 
 
-	def highlight_tile(self, tile_p):
-		"""
-		Draws a green border around the tile at the given position.
-		"""
-		if not tile_p:
+	def _draw_highlight_tile(
+			self,
+			tile_p: tuple[int, int] = None,
+	):
+		if tile_p not in self._highlight_colors:
 			return
+		_, color = self._highlight_colors[tile_p]
 		top = self.render_terrain.tile_top_polygon(tile_p)
 		for p1_idx in range(4):
 			p2_idx = (p1_idx + 1) % 4
 			p1 = top[p1_idx]
 			p2 = top[p2_idx]
-			pygame.draw.line(self.window, HIGHLIGHT_COLOR, p1, p2)
+			pygame.draw.line(self.window, color, p1, p2)
 
 
-	def highlight_tile_at_screen_pos(self, screen_pos):
+	def highlight_tile(
+			self,
+			tile_p: tuple[int, int] = None,
+			color=HIGHLIGHT_COLOR,
+			priority=1
+	):
+		"""
+		Draws a green border around the tile at the given position.
+		"""
+		if not tile_p:
+			return
+		pair = self._highlight_colors[tile_p]
+		if not pair:
+			self._highlight_colors[tile_p] = (priority, color)
+		else:
+			curr_priority, _ = pair
+			if priority > curr_priority:
+				self._highlight_colors[tile_p] = (priority, color)
+
+
+	def highlight_tile_at_screen_pos(self, screen_pos: tuple[int, int] = None):
 		"""
 		Highlights the tile at the given position.
 		"""
 		return self.highlight_tile(
-			self.render_terrain.tile_at_screen_pos(screen_pos)
+			tile_p=self.render_terrain.tile_at_screen_pos(screen_pos),
 		)
+
+
+	def clear(self):
+		"""
+		Call once per frame.
+		"""
+		self._highlight_colors.clear()

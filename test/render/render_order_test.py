@@ -19,10 +19,16 @@ class RenderTupleTest(unittest.TestCase):
 	def test__init(self):
 		gobj = MagicMock()
 		chunk = MagicMock()
-		rtuple = RenderTuple(tile=(4, 8), game_object=gobj, chunk=chunk)
+		rtuple = RenderTuple(
+			tile=(4, 8),
+			game_object=gobj,
+			chunk=chunk,
+			highlight_cell=(15, 16)
+		)
 		self.assertEqual(rtuple.cell, (4, 8))
 		self.assertEqual(rtuple.game_object, gobj)
 		self.assertEqual(rtuple.chunk, chunk)
+		self.assertEqual(rtuple.highlight_cell, (15, 16))
 
 
 
@@ -50,6 +56,15 @@ class RenderOrderTest(unittest.TestCase):
 		ro = list(render_order)
 		self.assertEqual(len(ro), 1)
 		self.assertEqual(ro[0].cell, (4, 8))
+
+
+	def test__add_cell_highlight__single(self):
+		render_order = RenderOrder()
+		render_order.add_highlight_cell((4, 8))
+		ro = list(render_order)
+		self.assertEqual(len(ro), 1)
+		self.assertEqual(ro[0].highlight_cell, (4, 8))
+		self.assertFalse((4, 8) in render_order)
 
 
 	def test__add_cell__many(self):
