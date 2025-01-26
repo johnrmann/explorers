@@ -19,12 +19,14 @@ from src.rendermath.tile import (
 )
 from src.rendermath.order import offset_tile_by_draw_order_vector
 from src.rendermath.geometry import is_point_in_screen
+from src.utility.singleton import singleton
 
 from src.render.tile_surface import NO_RIDGES, TileSurfaceCache, TileColors
 from src.render.multisurface import MAX_LIGHT_LEVEL_IDX
 from src.render.viewport import Viewport
 from src.render.utils import height_offset_tile
 
+@singleton
 class TerrainSurfacer:
 	"""
 	This class is responsible for returning the surfaces for the terrain, and

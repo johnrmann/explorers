@@ -5,7 +5,6 @@ from dataclasses import dataclass
 from src.math.line import extrude_line_segment_y
 
 from src.render.multisurface import MultiSurface
-from src.utility.singleton import singleton
 
 from src.rendermath.terrain import terrain_step_z_for_tile_width
 from src.rendermath.tile import tile_polygon
@@ -42,7 +41,6 @@ class TileColors:
 	right_color: tuple[int, int, int]
 
 
-@singleton
 class TileSurfaceCache:
 	"""
 	Pre-render diagonal tiles and their walls at different zooms and heights

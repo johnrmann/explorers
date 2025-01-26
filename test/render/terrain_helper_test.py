@@ -16,12 +16,19 @@ class MockTileSurfaceCache:
 
 
 class TerrainSurfacerTest(unittest.TestCase):
+	@classmethod
 	@patch('src.render.terrain_helper.TileSurfaceCache')
-	def setUp(self, _MockTileSurfaceCache):
+	def setUpClass(cls, _MockTileSurfaceCache):
+		cls.original_surfacer = TerrainSurfacer()
+		TerrainSurfacer.reset_instance()
 		_MockTileSurfaceCache.return_value = MockTileSurfaceCache()
+		cls.terrain_surfacer = TerrainSurfacer()
+		cls.tile_size = 64
 
-		self.terrain_surfacer = TerrainSurfacer()
-		self.tile_size = 64
+
+	@classmethod
+	def tearDownClass(cls):
+		TerrainSurfacer.set_instance(cls.original_surfacer)
 
 
 	def test__draws__land_visible(self):
