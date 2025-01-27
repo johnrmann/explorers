@@ -188,10 +188,10 @@ class TestControl(unittest.TestCase):
 
 	def test__dispatch_character(self):
 		event = _make_click_event()
-		player_character = MagicMock()
+		selected_actor = MagicMock()
 
 		self.control.clickmap.is_terrain.return_value = True
-		self.control.game_mgr.player_character = player_character
+		self.control.game_mgr.selected_actor = selected_actor
 
 		self.control.interpret_pygame_event(event)
 		self.control.game_mgr.evt_mgr.pub.assert_called_once()

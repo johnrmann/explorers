@@ -149,7 +149,7 @@ class Playbar(GuiElement):
 		Initialize actor motives and minimap.
 		"""
 		motives = ActorMotivesGui(
-			get_motives=lambda: self.game.player_character.motives,
+			get_motives=lambda: self.game.selected_actor.motives,
 			origin=(0, 0),
 			anchor=Anchor.BOTTOM_LEFT,
 			parent=self._panel,

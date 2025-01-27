@@ -161,8 +161,8 @@ class Control:
 		click_x, click_y = self._get_mouse_pos()
 		if not self.clickmap.is_terrain((click_x, click_y)):
 			gobj = self.clickmap.game_object_at((click_x, click_y))
-			if isinstance(gobj, Actor):
-				self.game_mgr.select_actor(actor=gobj)
+			if isinstance(gobj, Actor) and gobj.owner == self._player_id:
+				self.game_mgr.selected_actor = gobj
 			else:
 				ActionMenu(
 					origin=(click_x, click_y),
@@ -170,10 +170,10 @@ class Control:
 				)
 			return True
 		else:
-			player_character = self.game_mgr.player_character
+			selected_actor = self.game_mgr.selected_actor
 			self.game_mgr.evt_mgr.pub(
 				MoveActorEvent(
-					actor=player_character,
+					actor=selected_actor,
 					to_position=self.cell_under_mouse,
 				)
 			)

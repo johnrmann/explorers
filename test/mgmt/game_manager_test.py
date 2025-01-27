@@ -32,27 +32,6 @@ class GameManagerTest(unittest.TestCase):
 		gm.tick(49 / 50)
 		self.assertEqual(gm.utc, 1)
 
-	def test__select_actor(self):
-		"""Test that we can select an actor."""
-		gm = GameManager(self.world, self.viewport, no_gui=True)
-		actor1 = gm.new_player_character((0, 0))
-		actor2 = gm.new_player_character((1, 1))
-		self.assertEqual(gm.selected_actors[1], actor1)
-		gm.select_actor(1, actor2)
-		self.assertEqual(gm.selected_actors[1], actor2)
-
-	def test__select_actor__multiplayer(self):
-		"""Test that we can select an actor in multiplayer mode."""
-		gm = GameManager(self.world, self.viewport, no_gui=True)
-		actor1 = gm.new_player_character((0, 0), owner=1)
-		actor2 = gm.new_player_character((1, 1), owner=2)
-		actor3 = gm.new_player_character((2, 2), owner=2)
-		self.assertEqual(gm.selected_actors[1], actor1)
-		self.assertEqual(gm.selected_actors[2], actor2)
-		gm.select_actor(2, actor3)
-		self.assertEqual(gm.selected_actors[1], actor1)
-		self.assertEqual(gm.selected_actors[2], actor3)
-
 	def test__tick__noop_when_paused(self):
 		"""
 		Ensure that pausing the game does not render events or tick objects.
@@ -99,6 +78,32 @@ class GameManagerTest(unittest.TestCase):
 		gm.world.tick_second = MagicMock()
 		gm.tick(2)
 		gm.world.tick_second.assert_called_once_with(2, 0.0)
+
+	def test__new_player_character__error_if_no_player(self):
+		"""Test that new_player_character raises an error if there is no
+		player. This should never happen as a player is always created at the
+		game manager init."""
+		gm = GameManager(self.world, self.viewport, no_gui=True)
+		gm.player = None
+		self.assertRaises(ValueError, lambda: gm.new_player_character((0, 0)))
+
+	def test__new_player_character__adds_player__first(self):
+		"""Test that new_player_character adds a player to the game manager."""
+		player = MagicMock()
+		player.uid = 2
+		gm = GameManager(self.world, self.viewport, no_gui=True, player=player)
+		gm.new_player_character((0, 0))
+		self.assertEqual(gm.selected_actor.owner, 2)
+
+	def test__new_player_character__adds_player__second(self):
+		"""Test that new_player_character adds a player to the game manager."""
+		player = MagicMock()
+		player.uid = 2
+		gm = GameManager(self.world, self.viewport, no_gui=True, player=player)
+		first = gm.new_player_character((0, 0))
+		gm.new_player_character((1, 1))
+		self.assertEqual(gm.selected_actor.owner, 2)
+		self.assertEqual(gm.selected_actor, first)
 
 	def test__add_game_object__calls_init(self):
 		"""Test that add_game_object calls the object's init method."""

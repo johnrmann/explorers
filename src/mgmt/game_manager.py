@@ -1,6 +1,7 @@
 import line_profiler
 import random
 
+from src.player.player import Player
 from src.gameobject.gameobject import GameObject
 from src.gameobject.actor import Actor
 from src.gameobject.structure import Structure
@@ -55,6 +56,10 @@ class GameManager(Listener):
 	Primarily responsible for managing game state and the passage of time.
 	"""
 
+	# A player represents a human playing the game. A player owns actors,
+	# game objects (structures, etc.), colonies, and a "wallet" of resource.
+	player: Player
+
 	evt_mgr: EventManager
 	gui_mgr: _GuiManager
 	core_gui_elements: CoreGuiElements
@@ -76,7 +81,7 @@ class GameManager(Listener):
 	world: World
 	vp = None
 
-	selected_actors: dict[int, Actor] = None
+	selected_actor: Actor = None
 
 	is_single_player = True
 
@@ -85,6 +90,7 @@ class GameManager(Listener):
 			world: World,
 			viewport,
 			epoch=0,
+			player=None,
 			on_quit=None,
 			evt_mgr=None,
 			screen=None,
@@ -99,7 +105,7 @@ class GameManager(Listener):
 		self.world.game_mgr = self
 		self.vp = viewport
 		self.on_quit = on_quit
-		self.selected_actors = {}
+		self.selected_actor = None
 		if screen:
 			self.prepare_render()
 		self._init_managers(evt_mgr, no_gui)
@@ -108,6 +114,9 @@ class GameManager(Listener):
 		if not no_gui:
 			self.core_gui_elements = CoreGuiElements(self, self.ctrl.playbar_mode_changed)
 		self.world.evt_mgr = self.evt_mgr
+		if not player:
+			player = Player(uid=1)
+		self.player = player
 
 	def _init_managers(self, evt_mgr, no_gui):
 		if evt_mgr is not None:
@@ -205,40 +214,30 @@ class GameManager(Listener):
 			priority=99
 		)
 		self.renderer.highlight_tile(
-			self.player_character.pos,
+			self.selected_actor.pos,
 			priority=2,
 			color=(0, 0, 255)
 		)
-		if self.player_character.path_target:
+		if self.selected_actor.path_target:
 			self.renderer.highlight_tile(
-				self.player_character.path_target,
+				self.selected_actor.path_target,
 				priority=1,
 				color=(255, 0, 0)
 			)
 		self.renderer.render()
 
-	def select_actor(self, player_id=1, actor=None):
-		if not actor:
-			raise ValueError("Expected actor!")
-		self.selected_actors[player_id] = actor
-
-	@property
-	def player_character(self):
+	def new_player_character(self, position):
 		"""
-		Returns the currently selected player character. DEPRECATED - because
-		of future multiplayer.
+		Creates a new player character at the given position. Sets it to be the
+		current character if there is no current character.
 		"""
-		pc = self.selected_actors.get(1)
-		if not pc:
-			raise ValueError("No player character - should never happen!")
-		return pc
-
-	def new_player_character(self, position, owner: int = 1):
-		new_character = Actor(self, pos=position, owner=owner)
+		if not self.player:
+			raise ValueError("No player to create character for")
+		new_character = Actor(self, pos=position, owner=self.player.uid)
 		new_character.motives.set_all(100)
 		self.game_objects.add(new_character)
-		if self.selected_actors.get(owner) is None:
-			self.selected_actors[owner] = new_character
+		if self.selected_actor is None:
+			self.selected_actor = new_character
 		return new_character
 
 	def add_game_object(self, go: GameObject):
