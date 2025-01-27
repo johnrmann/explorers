@@ -50,6 +50,57 @@ class WalletTest(unittest.TestCase):
 			self.assertEqual(wallet.get_maximum(resource), maximum)
 
 
+	def test__get_values(self):
+		"""Test that we can get the values."""
+		wallet = Wallet(values={Resource.ENERGY: 1})
+		self.assertEqual(wallet.values, {Resource.ENERGY: 1})
+
+
+	def test__get_maximums(self):
+		"""Test that we can get the maximums."""
+		wallet = Wallet(maximums={Resource.ENERGY: 10})
+		self.assertEqual(wallet.maximums, {Resource.ENERGY: 10})
+
+
+	def test__join_two_wallets(self):
+		"""Test that we can join two wallets together."""
+		wallet1 = Wallet(values={Resource.ENERGY: 1})
+		wallet2 = Wallet(values={Resource.ENERGY: 2})
+		result = wallet1 | wallet2
+		self.assertEqual(result.get(Resource.ENERGY), 3)
+
+
+	def test__join_wallet_to_non_wallet(self):
+		"""Test that we cannot join a wallet to a non-wallet."""
+		wallet = Wallet(values={Resource.ENERGY: 1})
+		with self.assertRaises(ValueError):
+			wallet | 1
+
+
+	def test__join_two_wallets_maximums(self):
+		"""Test that we can join two wallets together with maximums."""
+		wallet1 = Wallet(
+			values={Resource.ENERGY: 1},
+			maximums={Resource.ENERGY: 10}
+		)
+		wallet2 = Wallet(
+			values={Resource.ENERGY: 2},
+			maximums={Resource.ENERGY: 10}
+		)
+		result = wallet1 | wallet2
+		self.assertEqual(result.get(Resource.ENERGY), 3)
+		self.assertEqual(result.get_maximum(Resource.ENERGY), 20)
+
+
+	def test__capacity(self):
+		"""Test that we can get the capacity of a resource."""
+		wallet = Wallet(
+			values={Resource.ENERGY: 1},
+			maximums={Resource.ENERGY: 10}
+		)
+		self.assertEqual(wallet.capacity(Resource.ENERGY), 9)
+
+
 	def test__set__single(self):
 		"""Test that we can set a single resource."""
 		wallet = Wallet()
@@ -73,8 +124,20 @@ class WalletTest(unittest.TestCase):
 	def test__add__single(self):
 		"""Test that we can add a single resource."""
 		wallet = Wallet(values={Resource.ENERGY: 1})
-		wallet.add(Resource.ENERGY, 1)
+		overflow = wallet.add(Resource.ENERGY, 1)
 		self.assertEqual(wallet.get(Resource.ENERGY), 2)
+		self.assertEqual(overflow, 0)
+
+
+	def test__add__single_overflow(self):
+		"""Test that if we go over capacity, the overflow is returned to us."""
+		wallet = Wallet(
+			values={Resource.ENERGY: 9},
+			maximums={Resource.ENERGY: 10}
+		)
+		overflow = wallet.add(Resource.ENERGY, 2)
+		self.assertEqual(wallet.get(Resource.ENERGY), 10)
+		self.assertEqual(overflow, 1)
 
 
 	def test__add__multiple(self):
@@ -88,6 +151,22 @@ class WalletTest(unittest.TestCase):
 		wallet.add(values=values)
 		for resource in Resource:
 			self.assertEqual(wallet.get(resource), values.get(resource))
+
+
+	def test__add__multiple_overflow(self):
+		"""Test that we can add multiple resources with overflow."""
+		wallet = Wallet(
+			values={Resource.ENERGY: 9},
+			maximums={Resource.ENERGY: 10}
+		)
+		values = {
+			Resource.ENERGY: 2,
+			Resource.WATER: 3,
+			Resource.FOOD: 4
+		}
+		overflow = wallet.add(values=values)
+		self.assertEqual(wallet.get(Resource.ENERGY), 10)
+		self.assertEqual(overflow, {Resource.ENERGY: 1})
 
 
 	def test__add__rejects_negative(self):
