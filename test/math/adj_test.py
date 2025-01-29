@@ -9,7 +9,8 @@ from src.math.adj import (
 	select_adj_degree,
 	are_cells_adj_cardinally,
 	are_cells_adj,
-	are_cells_adj_diagonally
+	are_cells_adj_diagonally,
+	cells_n_steps_from_cell
 )
 
 EXAMPLE_ADJ = [
@@ -173,6 +174,38 @@ class AdjTest(unittest.TestCase):
 		self.assertFalse(are_cells_adj(p, q))
 		q = Vector2(-4, 2)
 		self.assertFalse(are_cells_adj(p, q))
+
+
+	def test__cells_n_steps_from_cell__zero(self):
+		origin = Vector2(1, 1)
+		dimensions = Vector2(3, 3)
+		n_steps = 0
+		loop_x = True
+		loop_y = False
+		result = list(
+			cells_n_steps_from_cell(origin, n_steps, dimensions, loop_x, loop_y)
+		)
+		self.assertEqual(tuple(result[0]), tuple(origin))
+
+
+	def test__cells_n_steps_from_cell__one(self):
+		origin = Vector2(1, 1)
+		dimensions = Vector2(3, 3)
+		n_steps = 1
+		loop_x = True
+		loop_y = False
+		result = list(
+			cells_n_steps_from_cell(origin, n_steps, dimensions, loop_x, loop_y)
+		)
+		self.assertEqual(
+			set(result),
+			{
+				Vector2(0, 1),
+				Vector2(1, 0),
+				Vector2(2, 1),
+				Vector2(1, 2),
+			}
+		)
 
 if __name__ == "__main__":
 	unittest.main()

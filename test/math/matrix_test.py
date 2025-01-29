@@ -6,6 +6,7 @@ from src.math.matrix import (
 	smooth_matrix,
 	round_matrix_to_int,
 	matrix_double_width,
+	matrix_fold_width,
 	matrix_minfold_width,
 	distances_to_nonzero_values,
 )
@@ -88,6 +89,42 @@ class SmoothMatrixTest(unittest.TestCase):
 		self.assertEqual(result[2][0], 0)
 		self.assertEqual(result[2][1], 1)
 		self.assertEqual(result[2][2], 0)
+
+
+	def test__matrix_double_width__basic(self):
+		result = matrix_double_width(TEST_MAT)
+		for y in range(3):
+			for x in range(3):
+				self.assertEqual(result[y][x], TEST_MAT[y][x])
+				self.assertEqual(result[y][x + 3], TEST_MAT[y][x])
+
+
+	def test__matrix_fold_width__basic(self):
+		test = [
+			[1] * 6,
+			[1] * 6,
+			[1] * 6,
+		]
+		result = matrix_fold_width(test, lambda a,b: a + b)
+		self.assertEqual(len(result), 3)
+		self.assertEqual(len(result[0]), 3)
+		for y in range(3):
+			for x in range(3):
+				self.assertEqual(result[y][x], 3)
+
+
+	def test__matrix_minfold_width__basic(self):
+		test = [
+			[0, 9, 0, 9, 0, 9],
+			[9, 0, 9, 0, 9, 0],
+			[0, 9, 0, 9, 0, 9],
+		]
+		result = matrix_minfold_width(test)
+		self.assertEqual(len(result), 3)
+		self.assertEqual(len(result[0]), 3)
+		for y in range(3):
+			for x in range(3):
+				self.assertEqual(result[y][x], 0)
 
 
 	def test__matrix_double_width__basic(self):

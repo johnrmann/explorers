@@ -79,6 +79,20 @@ def matrix_double_width(matrix):
 	return new_matrix
 
 
+def matrix_fold_width(matrix, fold_fun):
+	"""
+	Folds a matrix in half along the x-axis, using the given fold function
+	to combine each pair of cells.
+	"""
+	h = len(matrix)
+	w = len(matrix[0])
+	new_matrix = [[0] * (w // 2) for _ in range(h)]
+	for y in range(h):
+		for x in range(w // 2):
+			new_matrix[y][x] = fold_fun(matrix[y][x], matrix[y][x + w // 2])
+	return new_matrix
+
+
 def matrix_minfold_width(matrix):
 	"""
 	Folds a matrix in half along the x-axis, taking the minimum value of
