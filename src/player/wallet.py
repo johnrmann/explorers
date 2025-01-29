@@ -1,10 +1,13 @@
 import math
 
 from collections import defaultdict
+from abc import abstractmethod
 
 from src.player.resources import Resource
 
-class Wallet:
+
+
+class _BaseWallet: # pragma: no cover
 	"""
 	A Wallet is a collection of liquid resources that the player can spend.
 
@@ -19,6 +22,65 @@ class Wallet:
 	values _and_ maximums.	
 	"""
 
+	@property
+	@abstractmethod
+	def values(self) -> dict[Resource, int]:
+		pass
+
+
+	@property
+	@abstractmethod
+	def maximums(self) -> dict[Resource, int]:
+		pass
+	
+
+	@abstractmethod
+	def get(self, resource: Resource) -> int:
+		pass
+
+
+	@abstractmethod
+	def get_maximum(self, resource: Resource) -> int:
+		pass
+
+
+	@abstractmethod
+	def capacity(self, resource: Resource) -> int:
+		pass
+	
+	
+	@abstractmethod
+	def add(
+			self,
+			resource: Resource = None,
+			value: int = None,
+			values: dict[Resource, int] = None
+	):
+		pass
+
+
+	@abstractmethod
+	def subtract(
+			self,
+			resource: Resource = None,
+			value: int = None,
+			values: dict[Resource, int] = None
+	):
+		pass
+
+
+	@abstractmethod
+	def safe_subtract(
+			self,
+			resource: Resource = None,
+			value: int = None,
+			values: dict[Resource, int] = None
+	) -> bool:
+		pass
+
+
+
+class Wallet(_BaseWallet):
 	_values: dict[Resource, int]
 
 	_maximums: dict[Resource, int]
@@ -35,9 +97,11 @@ class Wallet:
 		if isinstance(maximums, int):
 			self._maximums = defaultdict(lambda: maximums)
 		else:
-			self._maximums = defaultdict(lambda: math.inf)
+			self._maximums = defaultdict(int)
 			if maximums:
 				self._maximums.update(maximums)
+			elif values:
+				self._maximums.update(values)
 
 
 	@property
@@ -101,12 +165,35 @@ class Wallet:
 				self._values[resource] = self._maximums[resource]
 				return overflow
 			return 0
-		elif values:
+		elif values and not resource:
 			overflow = {}
 			for resource, value in values.items():
-				if value < 0:
-					raise ValueError("Cannot add negative values.")
 				this_overflow = self.add(resource, value)
+				if this_overflow:
+					overflow[resource] = this_overflow
+			return overflow
+
+
+	def subtract(
+			self,
+			resource: Resource = None,
+			value: int = None,
+			values: dict[Resource, int] = None
+	):
+		if resource and value:
+			if value < 0:
+				raise ValueError("Cannot subtract negative values.")
+			if self._values[resource] >= value:
+				self._values[resource] -= value
+				return 0
+			else:
+				diff = value - self._values[resource]
+				self._values[resource] = 0
+				return diff
+		elif values and not resource:
+			overflow = {}
+			for resource, value in values.items():
+				this_overflow = self.subtract(resource, value)
 				if this_overflow:
 					overflow[resource] = this_overflow
 			return overflow
@@ -116,7 +203,7 @@ class Wallet:
 		return self._values[resource] >= value
 
 
-	def subtract(
+	def safe_subtract(
 			self,
 			resource: Resource = None,
 			value: int = None,
@@ -135,3 +222,116 @@ class Wallet:
 				for resource, value in values.items():
 					self._values[resource] -= value
 			return can_do
+
+
+
+class SuperWallet(_BaseWallet):
+	_wallets: set[_BaseWallet]
+
+	def __init__(self, wallets: set[_BaseWallet] = None):
+		self._wallets = set()
+		if wallets:
+			self._wallets.update(wallets)
+
+
+	def add_wallet(self, wallet: _BaseWallet):
+		self._wallets.add(wallet)
+
+
+	def remove_wallet(self, wallet: _BaseWallet):
+		self._wallets.remove(wallet)
+
+
+	@property
+	def values(self) -> dict[Resource, int]:
+		values = defaultdict(int)
+		for wallet in self._wallets:
+			for resource, value in wallet.values.items():
+				values[resource] += value
+		return values
+
+
+	@property
+	def maximums(self) -> dict[Resource, int]:
+		maximums = defaultdict(int)
+		for wallet in self._wallets:
+			for resource, value in wallet.maximums.items():
+				maximums[resource] += value
+		return maximums
+
+
+	def get(self, resource: Resource) -> int:
+		return sum(wallet.get(resource) for wallet in self._wallets)
+
+
+	def get_maximum(self, resource: Resource) -> int:
+		return sum(wallet.get_maximum(resource) for wallet in self._wallets)
+
+
+	def capacity(self, resource: Resource) -> int:
+		return sum(wallet.capacity(resource) for wallet in self._wallets)
+
+
+	def add(
+			self,
+			resource: Resource = None,
+			value: int = None,
+			values: dict[Resource, int] = None
+	):
+		if resource and value:
+			left = value
+			for wallet in self._wallets:
+				left = wallet.add(resource, left)
+				if not left:
+					break
+			return left
+		elif values:
+			left = values.copy()
+			for wallet in self._wallets:
+				left = wallet.add(values=left)
+				if not left:
+					break
+			return left
+
+
+	def subtract(
+			self,
+			resource: Resource = None,
+			value: int = None,
+			values: dict[Resource, int] = None
+	):
+		if resource and value:
+			left = value
+			for wallet in self._wallets:
+				left = wallet.subtract(resource, left)
+				if not left:
+					break
+			return left
+		elif values:
+			left = values.copy()
+			for wallet in self._wallets:
+				left = wallet.subtract(values=left)
+				if not left:
+					break
+			return left
+
+
+	def safe_subtract(
+			self,
+			resource: Resource = None,
+			value: int = None,
+			values: dict[Resource, int] = None
+	) -> bool:
+		if resource and value:
+			amount = self.get(resource)
+			if amount < value:
+				return False
+			self.subtract(resource, value)
+			return True
+		elif values:
+			for resource, value in values.items():
+				amount = self.get(resource)
+				if amount < value:
+					return False
+			self.subtract(values=values)
+			return True
