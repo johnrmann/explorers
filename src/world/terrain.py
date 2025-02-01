@@ -26,9 +26,11 @@ class Terrain:
 	water: list[list[int]]
 	ice: list[list[int]]
 
-	_width: int
-	_height: int
-	_area: int
+	width: int
+	height: int
+	area: int
+	dimensions: tuple[int, int]
+
 	_water_area = 0
 	_ice_area = 0
 
@@ -42,9 +44,10 @@ class Terrain:
 		self.map = heightmap
 		w = len(self.map[0])
 		h = len(self.map)
-		self._width = w
-		self._height = h
-		self._area = w * h
+		self.width = w
+		self.height = h
+		self.area = w * h
+		self.dimensions = (w, h)
 		if watermap is None:
 			self.water = [[0] * w for _ in range(h)]
 			self._water_area = 0
@@ -70,6 +73,7 @@ class Terrain:
 		self._calc_max_min_tile_heights()
 		self._calc_lat_longs()
 
+
 	def _calc_height_deltas(self):
 		for y in range(self.height):
 			for x in range(self.width):
@@ -82,6 +86,7 @@ class Terrain:
 					delta = h1 - h2
 					self._height_deltas[y][x][i] = delta
 
+
 	def _calc_max_min_tile_heights(self):
 		self.max_tile_height = max(
 			max(row) for row in self.map
@@ -90,10 +95,12 @@ class Terrain:
 			min(row) for row in self.map
 		)
 
+
 	def _calc_lat_longs(self):
 		w, h = self.dimensions
 		self.lats = [lat(y, h) for y in range(h)]
 		self.longs = [long(x, w) for x in range(w)]
+
 
 	def lat_long(self, p):
 		"""
@@ -103,45 +110,30 @@ class Terrain:
 		x, y = p
 		return (self.lats[y], self.longs[x % self.width])
 
-	@property
-	def dimensions(self):
-		"""How big is the terrain?"""
-		return (self._width, self._height)
-
-	@property
-	def width(self):
-		"""The width of the terrain in cells."""
-		return self._width
-
-	@property
-	def height(self):
-		"""The height of the terrain in cells."""
-		return self._height
-
-	@property
-	def area(self):
-		"""The total area of the terrain in cells."""
-		return self._area
 
 	@property
 	def land_area(self):
 		"""The area of the terrain that is land."""
-		return self._area - self._water_area - self._ice_area
+		return self.area - self._water_area - self._ice_area
+
 
 	@property
 	def water_area(self):
 		"""The area of the terrain that is water."""
 		return self._water_area
 
+
 	@property
 	def ice_area(self):
 		"""The area of the terrain that is ice."""
 		return self._ice_area
 
+
 	@property
 	def center(self):
 		"""The intersection of the prime meridian and equator."""
-		return Vector2(self._width // 2, self._height // 2)
+		return Vector2(self.width // 2, self.height // 2)
+
 
 	def is_valid_coordinates(self, p):
 		"""
@@ -156,6 +148,7 @@ class Terrain:
 		"""
 		_, y = p
 		return 0 <= y < self.height
+
 
 	def is_valid_index(self, p):
 		"""
@@ -173,12 +166,14 @@ class Terrain:
 		y_valid = 0 <= y < self.height
 		return x_valid and y_valid
 
+
 	def coordinates_to_index(self, p):
 		"""
 		Converts coordinates to indeces.
 		"""
 		x, y = p
 		return (x % self.width, y)
+
 
 	def is_area_flat(self, origin, size):
 		"""
@@ -194,9 +189,11 @@ class Terrain:
 					return False
 		return True
 
+
 	def is_cell_land(self, p):
 		"""Is the given cell position land?"""
 		return not self.is_cell_water(p) and not self.is_cell_ice(p)
+
 
 	def is_area_land(self, origin, size):
 		"""Are all points in the given area land?"""
@@ -208,15 +205,18 @@ class Terrain:
 					return False
 		return True
 
+
 	def is_cell_water(self, p):
 		"""Is the given cell position water?"""
 		x, y = p
 		return self.water[y][x % self.width] > 0
 
+
 	def is_cell_ice(self, p):
 		"""Is the given cell position ice?"""
 		x, y = p
 		return self.ice[y][x % self.width] > 0
+
 
 	def is_cell_ice_edge(self, p):
 		"""Is the given cell position an edge of an ice cap?"""
@@ -229,10 +229,12 @@ class Terrain:
 				return True
 		return False
 
+
 	def land_height_at(self, p):
 		"""Returns the height at the given cell position, ignoring water."""
 		x, y = p
 		return self.map[y][x % self.width]
+
 
 	def height_at(self, p):
 		"""Returns the height at the given cell position, including water."""
@@ -240,10 +242,12 @@ class Terrain:
 		x_mod = x % self.width
 		return self.map[y][x_mod] + self.water[y][x_mod] + self.ice[y][x_mod]
 
+
 	def height_delta(self, p, direction: Direction):
 		x, y = p
 		dv = direction.value
 		return self._height_deltas[y][x][dv]
+
 
 	def sea_level(self):
 		"""
@@ -265,6 +269,7 @@ class Terrain:
 				height = i
 		return height
 
+
 	def _choose_cell_to_put_melted_ice(self, p):
 		"""
 		The cell to put melted ice is the cell adjacent to `p` with the lowest
@@ -282,6 +287,7 @@ class Terrain:
 				min_h = self.height_at((x2, y2))
 				ret_x, ret_y = x2, y2
 		return ret_x, ret_y
+
 
 	def melt_ice_cell(self, p):
 		"""
@@ -307,6 +313,7 @@ class Terrain:
 				self._water_area += 1
 			self.water[y2][x2] += 1
 			return x2, y2
+
 
 	def is_water_cell_balanced(self, p):
 		"""
@@ -342,6 +349,7 @@ class Terrain:
 		# Water cell is not balanced.
 		return False
 
+
 	def is_puddle_valley_at_cell(self, p):
 		"""
 		This method returns true if the given cell is a puddle valley.
@@ -359,6 +367,7 @@ class Terrain:
 			return True
 		return False
 
+
 	def is_puddle_hill_at_cell(self, p):
 		"""
 		This method returns true if the given cell is a puddle hill.
@@ -375,6 +384,7 @@ class Terrain:
 		if all(lower_water_adj):
 			return True
 		return False
+
 
 	def _postbalance_water(self):
 		"""
@@ -401,6 +411,7 @@ class Terrain:
 			hx, hy = hill_p
 			self.water[vy][vx] += 1
 			self.water[hy][hx] -= 1
+
 
 	def balance_water(self):
 		"""
@@ -431,6 +442,7 @@ class Terrain:
 						self.water[y2][x2] += 1
 		self._postbalance_water()
 
+
 	def freeze_water_cell(self, cell_pos):
 		"""Turns the water at the given cell position into ice."""
 		x, y = cell_pos
@@ -441,6 +453,7 @@ class Terrain:
 		self.ice[y][x] = water_level
 		self._water_area -= 1
 		self._ice_area += 1
+
 
 	def freeze_water_row(self, y_coord):
 		"""Turns all water in the given row into ice."""
