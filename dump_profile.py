@@ -1,4 +1,4 @@
 import pstats
 
 p = pstats.Stats('prof.prof')
-p.sort_stats('cumtime').print_stats(100)
+p.sort_stats('tottime').print_stats(100)

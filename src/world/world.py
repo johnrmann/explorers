@@ -86,6 +86,9 @@ class World(Tickable):
 			latitude = self.terrain.lats[y]
 			if self.atmosphere.is_frozen_at(latitude):
 				self.terrain.freeze_water_row(y)
+		# Recompute biomes.
+		biome_tprs = self.atmosphere.biome_tprs(self.terrain.lats)
+		self.terrain.update_biomes(biome_tprs)
 
 
 	def habitability(self):

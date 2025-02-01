@@ -4,6 +4,7 @@ the game world, as well as calculating the biome type of a given tile.
 """
 
 import math
+import line_profiler
 
 from enum import Enum
 
@@ -17,6 +18,8 @@ from src.utility.temperature import kelvin_to_fahrenheit
 #
 # Use (-1, -1) to represent no water on the planet or too far away to matter.
 WaterDistance = tuple[int, int]
+
+WaterDistanceMatrix = list[list[WaterDistance]]
 
 
 
@@ -71,6 +74,25 @@ class Biome(Enum):
 	# Biomes with a cold temperature, from most to least wet.
 	SNOW = 8
 	TUNDRA = 9
+
+
+_BIOME_LOOKUP: dict[tuple[BiomeTemperature, BiomeWetness], Biome] = {
+	(BiomeTemperature.BARREN, BiomeWetness.BARREN): Biome.BARREN,
+	(BiomeTemperature.BARREN, BiomeWetness.WET): Biome.BARREN,
+	(BiomeTemperature.BARREN, BiomeWetness.DRY): Biome.BARREN,
+
+	(BiomeTemperature.HOT, BiomeWetness.BARREN): Biome.DESERT,
+	(BiomeTemperature.HOT, BiomeWetness.WET): Biome.TROPICAL,
+	(BiomeTemperature.HOT, BiomeWetness.DRY): Biome.DESERT,
+
+	(BiomeTemperature.TEMPERATE, BiomeWetness.BARREN): Biome.SAVANNAH,
+	(BiomeTemperature.TEMPERATE, BiomeWetness.WET): Biome.LUSH,
+	(BiomeTemperature.TEMPERATE, BiomeWetness.DRY): Biome.SAVANNAH,
+
+	(BiomeTemperature.COLD, BiomeWetness.BARREN): Biome.TUNDRA,
+	(BiomeTemperature.COLD, BiomeWetness.WET): Biome.SNOW,
+	(BiomeTemperature.COLD, BiomeWetness.DRY): Biome.TUNDRA,
+}
 
 
 
@@ -143,37 +165,19 @@ def get_biome(
 	wd_xy, _ = water_distance
 	if wd_xy == 0:
 		return Biome.OCEAN
-
 	if tpr == BiomeTemperature.BARREN or wet == BiomeWetness.BARREN:
 		return Biome.BARREN
 
 	if get_is_beach(water_distance):
 		return Biome.BEACH
 
-	if tpr == BiomeTemperature.HOT:
-		if wet == BiomeWetness.WET:
-			return Biome.TROPICAL
-		else:
-			return Biome.DESERT
-
-	elif tpr == BiomeTemperature.TEMPERATE:
-		if wet == BiomeWetness.WET:
-			return Biome.LUSH
-		else:
-			return Biome.SAVANNAH
-
-	else:
-		# Cold.
-		if wet == BiomeWetness.WET:
-			return Biome.SNOW
-		else:
-			return Biome.TUNDRA
+	return _BIOME_LOOKUP[(tpr, wet)]
 
 
 def _water_distances(
 		land_height: list[list[int]],
 		water_level: list[list[int]],
-):
+) -> WaterDistanceMatrix:
 	width = len(land_height[0])
 	height = len(land_height)
 
@@ -258,6 +262,23 @@ def _water_distances(
 	]
 
 
+def water_distances(
+		land_height: list[list[int]],
+		water_level: list[list[int]],
+		loop_x: bool = True
+) -> WaterDistanceMatrix:
+	"""
+	Calculates the water distances for each tile in the land_height matrix.
+	"""
+	if not loop_x:
+		return _water_distances(land_height, water_level)
+	else:
+		doubled_land = matrix_double_width(land_height)
+		doubled_water = matrix_double_width(water_level)
+		unfolded = _water_distances(doubled_land, doubled_water)
+		return matrix_fold_width(unfolded, _min_water_dist)
+
+
 def _min_water_dist(pair1, pair2):
 	"""
 	Given two water distance pairs, returns the one that's smaller.
@@ -270,13 +291,12 @@ def _min_water_dist(pair1, pair2):
 		return pair2
 
 
+@line_profiler.profile
 def calculate_biomes(
-		land_height: list[list[int]] = None,
-		water_height: list[list[int]] = None,
+		water_distances: WaterDistanceMatrix = None,
 		tpr_deg_fs: dict[int, float] = None,
 		tpr_kelvins: dict[int, float] = None,
 		wet_cutoff: int = 64,
-		loop_x = True,
 ):
 	"""
 	Calculate the biomes for a terrain map given the land heightmap, water
@@ -290,10 +310,8 @@ def calculate_biomes(
 	"""
 
 	# First, ensure that required params are passed.
-	if land_height is None:
-		raise ValueError("Land height must be provided.")
-	if water_height is None:
-		raise ValueError("Water level must be provided.")
+	if water_distances is None:
+		raise ValueError("Water distances must be provided.")
 	if tpr_deg_fs is None and tpr_kelvins is None:
 		raise ValueError("Temperatures must be provided.")
 
@@ -310,31 +328,16 @@ def calculate_biomes(
 				for idx, tpr in enumerate(tpr_kelvins)
 			}
 
-	width = len(land_height[0])
-	height = len(land_height)
+	height = len(water_distances)
 
-	biomes = [
-		[Biome.BARREN for _ in range(width)]
-		for _ in range(height)
-	]
-
-	# Calculate the water distance matrix.
-	water_distances = [[]]
-	if not loop_x:
-		water_distances = _water_distances(
-			land_height, water_height
-		)
-	else:
-		doubled_land = matrix_double_width(land_height)
-		doubled_water = matrix_double_width(water_height)
-		unfolded = _water_distances(doubled_land, doubled_water)
-		water_distances = matrix_fold_width(unfolded, _min_water_dist)
-
+	biomes = []
 	for y in range(height):
-		water_dist_row = water_distances[y]
 		tpr = tpr_deg_fs[y]
-		for x in range(width):
-			wd = water_dist_row[x]
-			biomes[y][x] = get_biome(tpr, wd, wet_cutoff=wet_cutoff)
+		wd_row = water_distances[y]
+		row = list(map(
+			lambda wd: get_biome(tpr, wd, wet_cutoff=wet_cutoff),
+			wd_row
+		))
+		biomes.append(row)
 	
 	return biomes

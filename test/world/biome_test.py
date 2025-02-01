@@ -10,6 +10,7 @@ from src.world.biome import (
 	get_biome_wetness,
 	get_is_beach,
 	get_biome,
+	water_distances,
 	calculate_biomes,
 )
 
@@ -92,18 +93,9 @@ class BiomeTest(unittest.TestCase):
 		self.assertEqual(get_biome(0, (256, 0)), Biome.TUNDRA)
 
 
-	def test__calculate_biomes__no_land(self):
+	def test__calculate_biomes__no_wds(self):
 		with self.assertRaises(ValueError):
 			calculate_biomes(
-				water_height=[[1]],
-				tpr_deg_fs=[1],
-			)
-
-
-	def test__calculate_biomes__no_water(self):
-		with self.assertRaises(ValueError):
-			calculate_biomes(
-				land_height=[[1]],
 				tpr_deg_fs=[1],
 			)
 
@@ -111,8 +103,7 @@ class BiomeTest(unittest.TestCase):
 	def test__calculate_biomes__no_tpr(self):
 		with self.assertRaises(ValueError):
 			calculate_biomes(
-				land_height=[[1]],
-				water_height=[[1]],
+				water_distances=[[(1, 1)]],
 			)
 
 
@@ -128,8 +119,9 @@ class BiomeTest(unittest.TestCase):
 		land_height[0] = [0] * 24
 		water_height[0] = [1] * 24
 		tprs = [95] * 24
+		wds = water_distances(land_height, water_height)
 		biomes = calculate_biomes(
-			land_height, water_height, tpr_deg_fs=tprs, wet_cutoff=8
+			water_distances=wds, tpr_deg_fs=tprs, wet_cutoff=8
 		)
 		self.assertEqual(biomes[0][0], Biome.OCEAN)
 		self.assertEqual(biomes[1][0], Biome.BEACH)
@@ -152,12 +144,13 @@ class BiomeTest(unittest.TestCase):
 		tprs_dict = {
 			idx: 308 for idx in range(24)
 		}
+		wds = water_distances(land_height, water_height)
 		biomes_dict = calculate_biomes(
-			land_height, water_height, tpr_kelvins=tprs_dict, wet_cutoff=8
+			wds, tpr_kelvins=tprs_dict, wet_cutoff=8
 		)
 		tprs_list = [308] * 24
 		biomes_list = calculate_biomes(
-			land_height, water_height, tpr_kelvins=tprs_list, wet_cutoff=8
+			wds, tpr_kelvins=tprs_list, wet_cutoff=8
 		)
 
 		self.assertEqual(biomes_dict[0][0], Biome.OCEAN)
@@ -175,12 +168,11 @@ class BiomeTest(unittest.TestCase):
 
 	def test__calculate_biomes__loop_x(self):
 		tprs = [95] * 5
+		wds = water_distances(CRATER_EAST_LAND, CRATER_EAST_WATER)
 		biomes = calculate_biomes(
-			CRATER_EAST_LAND,
-			CRATER_EAST_WATER,
+			wds,
 			tpr_deg_fs=tprs,
 			wet_cutoff=8,
-			loop_x=True
 		)
 		self.assertEqual(biomes[2][4], Biome.OCEAN)
 		self.assertEqual(biomes[2][3], Biome.BEACH)
@@ -189,12 +181,11 @@ class BiomeTest(unittest.TestCase):
 
 	def test__calculate_biomes__no_loop_x(self):
 		tprs = [95] * 5
+		wds = water_distances(CRATER_EAST_LAND, CRATER_EAST_WATER, loop_x=False)
 		biomes = calculate_biomes(
-			CRATER_EAST_LAND,
-			CRATER_EAST_WATER,
+			wds,
 			tpr_deg_fs=tprs,
-			wet_cutoff=8,
-			loop_x=False
+			wet_cutoff=8
 		)
 		self.assertEqual(biomes[2][4], Biome.OCEAN)
 		self.assertEqual(biomes[2][3], Biome.BEACH)

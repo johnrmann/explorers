@@ -361,6 +361,25 @@ class AtmosphereTest(unittest.TestCase):
 		self.assertEqual(self.earth.tpr_at(0.5, 0), 288 + 15 - 10)
 
 
+	def test__biome_tpr_at__poles(self):
+		self.earth.tpr_surface = lambda: 288
+		self.assertEqual(self.earth.biome_tpr_at(1), 288 - 15)
+		self.assertEqual(self.earth.biome_tpr_at(-1), 288 - 15)
+
+
+	def test__biome_tpr_at__equator(self):
+		self.earth.tpr_surface = lambda: 288
+		self.assertEqual(self.earth.biome_tpr_at(0), 288 + 15)
+
+
+	def test__biome_tprs(self):
+		self.earth.tpr_surface = lambda: 288
+		lats = [-1, -0.5, 0, 0.5, 1]
+		self.assertEqual(self.earth.biome_tprs(lats), [
+			288 - 15, 288, 288 + 15, 288, 288 - 15
+		])
+
+
 	def test__is_frozen_at__earth_poles_true(self):
 		self.earth.tpr_surface = lambda: 275
 		self.assertTrue(self.earth.is_frozen_at(1))

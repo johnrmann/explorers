@@ -501,6 +501,21 @@ class Atmosphere(Listener, Tickable):
 		return self.tpr_surface() + delta_daily + delta_lat
 
 
+	def biome_tpr_at(self, latitude):
+		"""
+		Returns the temperature used for calculating what the biome is.
+		"""
+		delta_lat = self.delta_tpr_latitude(latitude)
+		return self.tpr_surface() + delta_lat
+
+
+	def biome_tprs(self, latitudes):
+		"""
+		Returns a list of the temperatures at the given latitudes.
+		"""
+		return [self.biome_tpr_at(lat) for lat in latitudes]
+
+
 	def is_frozen_at(self, latitude):
 		"""
 		Returns True if the planet is frozen at the given latitude at any time

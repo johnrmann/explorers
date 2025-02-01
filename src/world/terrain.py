@@ -1,20 +1,33 @@
 from collections import defaultdict
+
 from src.math.adj import adj_cells
 from src.math.direction import *
 from src.math.vector2 import Vector2
 
+from src.world.biome import (
+	Biome,
+	calculate_biomes,
+	WaterDistanceMatrix,
+	water_distances
+)
+
+
 def make_height_delta():
 	return [0] * 4
+
 
 def lat(y, h):
 	center_y = h // 2
 	dy = center_y - y
 	return dy / h
 
+
 def long(x, w):
 	center_x = w // 2
 	dx = x - center_x
 	return (dx / w) * 2
+
+
 
 class Terrain:
 	"""
@@ -25,6 +38,8 @@ class Terrain:
 	map: list[list[int]]
 	water: list[list[int]]
 	ice: list[list[int]]
+	biomes: list[list[Biome]]
+	_water_distances: WaterDistanceMatrix
 
 	width: int
 	height: int
@@ -42,12 +57,14 @@ class Terrain:
 
 	def __init__(self, heightmap: list[list[int]], watermap=None, icemap=None):
 		self.map = heightmap
+
 		w = len(self.map[0])
 		h = len(self.map)
 		self.width = w
 		self.height = h
 		self.area = w * h
 		self.dimensions = (w, h)
+
 		if watermap is None:
 			self.water = [[0] * w for _ in range(h)]
 			self._water_area = 0
@@ -66,6 +83,13 @@ class Terrain:
 				sum(cell > 0 for cell in row)
 				for row in icemap
 			)
+
+		self._water_distances = water_distances(self.map, self.water)
+		self.biomes = [
+			[Biome.BARREN for _ in range(w)]
+			for _ in range(h)
+		]
+
 		self._height_deltas = [
 			[make_height_delta() for _ in range(w)] for _ in range(h)
 		]
@@ -460,3 +484,13 @@ class Terrain:
 		for x in range(self.width):
 			if self.is_cell_water((x, y_coord)):
 				self.freeze_water_cell((x, y_coord))
+
+
+	def update_biomes(self, tprs=None):
+		"""Updates the biomes of the terrain."""
+		if tprs is None:
+			raise ValueError("Temperatures must be provided.")
+		self.biomes = calculate_biomes(
+			water_distances=self._water_distances,
+			tpr_kelvins=tprs,
+		)
