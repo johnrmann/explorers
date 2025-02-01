@@ -1,4 +1,5 @@
 from src.world.terrain import Terrain
+from src.world.biome import Biome
 
 from src.math.direction import (
 	DIAGONAL_DIRECTIONS,
@@ -25,6 +26,9 @@ from src.render.tile_surface import NO_RIDGES, TileSurfaceCache, TileColors
 from src.render.multisurface import MAX_LIGHT_LEVEL_IDX
 from src.render.viewport import Viewport
 from src.render.utils import height_offset_tile
+from src.render.colors import BiomeColorScheme
+
+
 
 @singleton
 class TerrainSurfacer:
@@ -36,13 +40,23 @@ class TerrainSurfacer:
 	caches is expensive (four sizes times eight light levels).
 	"""
 
-	land_cache: TileSurfaceCache
+	land_caches: dict[Biome, TileSurfaceCache] = None
 	water_cache: TileSurfaceCache
 	ice_cache: TileSurfaceCache
 
 	_terrain_thicknesses: dict[int, int] = None
 
-	def __init__(self):
+	def __init__(self, color_scheme: BiomeColorScheme = None):
+		self.land_caches = {}
+
+		if color_scheme is None:
+			color_scheme = BiomeColorScheme()
+		for biome, color in color_scheme.items():
+			self.land_caches[biome] = TileSurfaceCache(
+				colors=TileColors(top_color=color),
+				name=f'land_{biome}'
+			)
+
 		self._terrain_thicknesses = {
 			128: tile_z_for_width(128) / 8,
 			64: tile_z_for_width(64) / 8,
@@ -73,6 +87,7 @@ class TerrainSurfacer:
 			land_height: int = 0,
 			land_visible: bool = True,
 			water_height: int = 0,
+			biome: Biome = Biome.BARREN,
 			is_frozen: bool = False,
 			light: int = MAX_LIGHT_LEVEL_IDX,
 			tile_size: int = 64,
@@ -85,8 +100,9 @@ class TerrainSurfacer:
 		"""
 		terrain_thickness = self._terrain_thicknesses[tile_size]
 		h = -land_height * terrain_thickness
+		land_cache = self.land_caches[biome]
 		if land_visible:
-			land_surface = self.land_cache.tile_surface(
+			land_surface = land_cache.tile_surface(
 				tile_width=tile_size, ridges=ridges, light=light, thickness=min(delta_height, 8)
 			)
 			yield h, land_surface
@@ -245,12 +261,14 @@ class TerrainHelper:
 		self_terrain = self.terrain
 
 		x, y = cell_pos
-		cell_pos_mod = (x % self_terrain.width, y)
+		x_mod = x % self_terrain.width
+		cell_pos_mod = (x_mod, y)
 		zoom = self.vp.tile_width
 		screen_x, screen_y = self.vp.cell_position_on_global_screen(cell_pos)
 		screen_x -= (self.vp.tile_width // 2)
 		screen_y -= (self.vp.tile_height // 2)
 		ridges = self._ridge_draws[cell_pos_mod]
+		biome = self_terrain.biomes[y][x_mod]
 
 		land_height = self_terrain.land_height_at(cell_pos)
 		delta_height = self._wall_thicknesses[self.vp.camera_orientation][cell_pos_mod]
@@ -259,6 +277,7 @@ class TerrainHelper:
 			land_visible=self._land_visibility[cell_pos_mod],
 			water_height=self_terrain.height_at(cell_pos) - land_height,
 			is_frozen=self_terrain.is_cell_ice(cell_pos),
+			biome=biome,
 			light=light,
 			tile_size=zoom,
 			ridges=ridges,

@@ -3,6 +3,7 @@ import unittest
 
 from src.render.utils import (
 	scale_color,
+	average_color,
 	alpha_mask_from_surface,
 	resize_surface,
 	relight_surface
@@ -32,6 +33,24 @@ class UtilsTest(unittest.TestCase):
 		bad = (4, 8)
 		with self.assertRaises(ValueError):
 			scale_color(bad, 0.5)
+
+	def test__average_color__rgb(self):
+		color1 = (255, 0, 0)
+		color2 = (0, 255, 0)
+
+		result = average_color(color1, color2)
+		expected_color = (127, 127, 0)
+
+		self.assertEqual(result, expected_color)
+
+	def test__average_color__rgba(self):
+		color1 = (255, 0, 0, 255)
+		color2 = (0, 255, 0, 255)
+
+		result = average_color(color1, color2)
+		expected_color = (127, 127, 0, 255)
+
+		self.assertEqual(result, expected_color)
 
 	def test__alpha_mask_from_surface__valid_fill_color(self):
 		pygame.init()

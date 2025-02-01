@@ -38,6 +38,14 @@ def scale_color(color, k):
 		raise ValueError("Color must be a 3-tuple or 4-tuple.")
 
 
+def average_color(color1, color2):
+	"""
+	Take the average of two colors.
+	"""
+	pairs = zip(color1, color2)
+	return tuple((a + b) // 2 for a, b in pairs)
+
+
 def alpha_mask_from_surface(surface, fill_color=None):
 	"""
 	Returns a copy of the given surface such that all non-transparent pixels

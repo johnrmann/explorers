@@ -338,7 +338,8 @@ class Chunk:
 				tile_size=key.tile_width,
 				light=key.light,
 				ridges=self._get_ridge_type((x,y), key.orientation),
-				delta_height=wall_thickness
+				delta_height=wall_thickness,
+				biome=self.terrain.biome_at(position)
 			)
 			for h, surface in draws:
 				yield (ox, oy + h), surface

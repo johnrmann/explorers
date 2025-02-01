@@ -254,6 +254,12 @@ class Terrain:
 		return False
 
 
+	def biome_at(self, p):
+		"""Returns the biome at the given cell position."""
+		x, y = p
+		return self.biomes[y][x % self.width]
+
+
 	def land_height_at(self, p):
 		"""Returns the height at the given cell position, ignoring water."""
 		x, y = p

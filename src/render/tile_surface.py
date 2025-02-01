@@ -6,6 +6,7 @@ from src.math.line import extrude_line_segment_y
 
 from src.render.multisurface import MultiSurface
 
+from src.render.utils import scale_color
 from src.rendermath.terrain import terrain_step_z_for_tile_width
 from src.rendermath.tile import tile_polygon
 from src.render.viewport import ZOOMS
@@ -34,11 +35,23 @@ def _wall_for_direction_height_zoom(direction, z, zoom):
 	return extrude_line_segment_y(lineseg, tile_z)
 
 
-@dataclass
 class TileColors:
+	__slots__ = ('top_color', 'left_color', 'right_color')
+
 	top_color: tuple[int, int, int]
 	left_color: tuple[int, int, int]
 	right_color: tuple[int, int, int]
+
+	def __init__(self, top_color=None, left_color=None, right_color=None):
+		if top_color is None:
+			raise ValueError('Top color must be provided.')
+		if left_color is None:
+			left_color = scale_color(top_color, 0.5)
+		if right_color is None:
+			right_color = scale_color(top_color, 0.25)
+		self.top_color = top_color
+		self.left_color = left_color
+		self.right_color = right_color
 
 
 class TileSurfaceCache:
