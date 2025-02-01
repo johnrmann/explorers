@@ -11,6 +11,7 @@ from src.world.atmosphere import (
 	AtmosphereChangeEvent,
 	AtmosphereChangeDeltaEvent,
 	AtmosphereChangeTransformEvent,
+	AtmosphereOverrideEvent,
 	compare_atmosphere_dicts,
 )
 from src.world.astronomy import Astronomy
@@ -437,6 +438,52 @@ class AtmosphereTest(unittest.TestCase):
 		self.assertEqual(new_carbon, 900)
 		new_oxygen = self.basic.total[AtmosphereElement.OXYGEN]
 		self.assertEqual(new_oxygen, 1100)
+
+
+	def test__override_and_unoverride__temperature(self):
+		evt_mgr = EventManager()
+		self.earth.evt_mgr = evt_mgr
+		init_surface_tpr = self.earth.tpr_surface()
+
+		override_tpr_event = AtmosphereOverrideEvent(
+			property="temperature",
+			value=100,
+			override=True
+		)
+		self.earth.evt_mgr.pub(override_tpr_event)
+		self.earth.evt_mgr.tick(0, 0)
+		self.assertEqual(self.earth.tpr_surface(), 100)
+
+		unoverride_tpr_event = AtmosphereOverrideEvent(
+			property="temperature",
+			override=False
+		)
+		self.earth.evt_mgr.pub(unoverride_tpr_event)
+		self.earth.evt_mgr.tick(0, 0)
+		self.assertEqual(self.earth.tpr_surface(), init_surface_tpr)
+
+
+	def test__override_and_unoverride__pressure(self):
+		evt_mgr = EventManager()
+		self.earth.evt_mgr = evt_mgr
+		init_density = self.earth.density()
+
+		override_tpr_event = AtmosphereOverrideEvent(
+			property="pressure",
+			value=100,
+			override=True
+		)
+		self.earth.evt_mgr.pub(override_tpr_event)
+		self.earth.evt_mgr.tick(0, 0)
+		self.assertEqual(self.earth.density(), 100)
+
+		unoverride_tpr_event = AtmosphereOverrideEvent(
+			property="pressure",
+			override=False
+		)
+		self.earth.evt_mgr.pub(unoverride_tpr_event)
+		self.earth.evt_mgr.tick(0, 0)
+		self.assertEqual(self.earth.density(), init_density)
 
 
 	def test__atmosphere_change_event__str(self):

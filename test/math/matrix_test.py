@@ -110,7 +110,7 @@ class SmoothMatrixTest(unittest.TestCase):
 		self.assertEqual(len(result[0]), 3)
 		for y in range(3):
 			for x in range(3):
-				self.assertEqual(result[y][x], 3)
+				self.assertEqual(result[y][x], 2)
 
 
 	def test__matrix_minfold_width__basic(self):

@@ -150,6 +150,10 @@ class Atmosphere(Listener, Tickable):
 
 	planet_area = 1024 * 512
 
+	# Debug overrides
+	_tpr_surface_override: float = None
+	_density_override: float = None
+
 	def __init__(
 			self,
 			total=None,
@@ -242,6 +246,7 @@ class Atmosphere(Listener, Tickable):
 		self._evt_mgr.sub(AtmosphereChangeEvent, self)
 		self._evt_mgr.sub(AtmosphereChangeDeltaEvent, self)
 		self._evt_mgr.sub(AtmosphereChangeTransformEvent, self)
+		self._evt_mgr.sub(AtmosphereOverrideEvent, self)
 
 
 	@property
@@ -276,6 +281,17 @@ class Atmosphere(Listener, Tickable):
 					(consumed_elem, consumed_amount),
 					(produced_elem, produced_amount)
 				)
+		elif isinstance(event, AtmosphereOverrideEvent):
+			if event.override:
+				if event.property == "temperature":
+					self._tpr_surface_override = event.value
+				elif event.property == "pressure":
+					self._density_override = event.value
+			else:
+				if event.property == "temperature":
+					self._tpr_surface_override = None
+				elif event.property == "pressure":
+					self._density_override = None
 
 
 	def moles_total(self):
@@ -309,6 +325,8 @@ class Atmosphere(Listener, Tickable):
 		"""
 		Returns the density of the atmosphere as a multiple of Earth's.
 		"""
+		if self._density_override is not None:
+			return self._density_override
 		raw = self.total_molar_mass() / self.planet_area
 		return raw / EARTH_ATMOSPHERE_DENSITY
 
@@ -427,6 +445,8 @@ class Atmosphere(Listener, Tickable):
 		"""
 		Retruns the average surface temperature of the planet.
 		"""
+		if self._tpr_surface_override is not None:
+			return self._tpr_surface_override
 		tpr_eff = self.tpr_effective()
 		gh = greenhouse_factor(self.average)
 		return tpr_eff * gh
@@ -505,6 +525,23 @@ class Atmosphere(Listener, Tickable):
 
 
 
+class AtmosphereOverrideEvent(Event):
+	"""
+	An event that tells the atmosphere to override, or un-override, a certain
+	property.
+	"""
+
+	property: str
+	value: float
+	override: bool
+
+	def __init__(self, property: str = None, value=None, override=True):
+		self.property = property
+		self.value = value
+		self.override = override
+
+
+
 class AtmosphereChangeEvent(Event):
 	"""
 	An event that signals a change in the atmosphere of a planet.
@@ -515,8 +552,10 @@ class AtmosphereChangeEvent(Event):
 	def __init__(self, delta):
 		self.delta = delta
 
+
 	def __eq__(self, other):
 		return compare_atmosphere_dicts(self.delta, other.delta)
+
 
 	def __str__(self):
 		return f'AtmosphereChangeEvent({self.delta})'
@@ -534,8 +573,10 @@ class AtmosphereChangeDeltaEvent(Event):
 	def __init__(self, delta):
 		self.delta = delta
 
+
 	def __eq__(self, other):
 		return compare_atmosphere_dicts(self.delta, other.delta)
+
 
 	def __str__(self):
 		return f'AtmosphereChangeDeltaEvent({self.delta})'
@@ -558,8 +599,10 @@ class AtmosphereChangeTransformEvent(Event):
 	def __init__(self, transform):
 		self.transform = transform
 
+
 	def __eq__(self, other):
 		return compare_atmosphere_dicts(self.transform, other.transform)
+
 
 	def __str__(self):
 		return f'AtmosphereChangeTransformEvent({self.transform})'

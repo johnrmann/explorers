@@ -1,6 +1,11 @@
 import unittest
 
-from src.world.atmosphere import AtmosphereChangeEvent, AtmosphereElement
+from src.world.atmosphere import (
+	AtmosphereChangeEvent,
+	AtmosphereElement,
+	AtmosphereOverrideEvent,
+)
+
 
 from src.debug.world import interpret_atmosphere_command
 
@@ -58,6 +63,50 @@ class DebugWorldTest(unittest.TestCase):
 				AtmosphereElement.WATER: -500
 			})
 		)
+
+
+	def test__interpret_atmosphere_command__override_temperature(self):
+		"""Test that it interprets an override temperature command."""
+		result = interpret_atmosphere_command(
+			["atm.override", "temperature", "100"]
+		)
+		self.assertEqual(isinstance(result, AtmosphereOverrideEvent), True)
+		self.assertEqual(result.property, "temperature")
+		self.assertEqual(result.value, 100)
+		self.assertEqual(result.override, True)
+
+
+	def test__interpret_atmosphere_command__override_pressure(self):
+		"""Test that it interprets an override pressure command."""
+		result = interpret_atmosphere_command(
+			["atm.override", "pressure", "100"]
+		)
+		self.assertEqual(isinstance(result, AtmosphereOverrideEvent), True)
+		self.assertEqual(result.property, "pressure")
+		self.assertEqual(result.value, 100)
+		self.assertEqual(result.override, True)
+
+
+	def test__interpret_atmosphere_command__unoverride_temperature(self):
+		"""Test that it interprets an unoverride temperature command."""
+		result = interpret_atmosphere_command(
+			["atm.unoverride", "temperature"]
+		)
+		self.assertEqual(isinstance(result, AtmosphereOverrideEvent), True)
+		self.assertEqual(result.property, "temperature")
+		self.assertEqual(result.value, None)
+		self.assertEqual(result.override, False)
+
+
+	def test__interpret_atmosphere_command__unoverride_pressure(self):
+		"""Test that it interprets an unoverride pressure command."""
+		result = interpret_atmosphere_command(
+			["atm.unoverride", "pressure"]
+		)
+		self.assertEqual(isinstance(result, AtmosphereOverrideEvent), True)
+		self.assertEqual(result.property, "pressure")
+		self.assertEqual(result.value, None)
+		self.assertEqual(result.override, False)
 
 
 	def test__interpret_atmosphere_command__unknown_command(self):
