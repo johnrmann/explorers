@@ -69,10 +69,11 @@ class Control:
 			new_cell_under_mouse = self._screen_to_tile((mouse_x, mouse_y))
 			if new_cell_under_mouse is not None:
 				self.cell_under_mouse = new_cell_under_mouse
-			if self._can_move_game_objects and self.selected_game_object:
-				can_move = self.selected_game_object.is_movable(self._player_id)
+			selected_game_object = self.selected_game_object
+			if self._can_move_game_objects and selected_game_object:
+				can_move = selected_game_object.is_moveable(self._player_id)
 				if can_move:
-					self.selected_game_object.pos = self.cell_under_mouse
+					selected_game_object.pos = self.cell_under_mouse
 
 
 	@property
