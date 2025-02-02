@@ -1,5 +1,3 @@
-import math
-
 from collections import defaultdict
 from abc import abstractmethod
 
@@ -7,7 +5,7 @@ from src.player.resources import Resource
 
 
 
-class _BaseWallet: # pragma: no cover
+class BaseWallet: # pragma: no cover
 	"""
 	A Wallet is a collection of liquid resources that the player can spend.
 
@@ -80,7 +78,7 @@ class _BaseWallet: # pragma: no cover
 
 
 
-class Wallet(_BaseWallet):
+class Wallet(BaseWallet):
 	_values: dict[Resource, int]
 
 	_maximums: dict[Resource, int]
@@ -225,20 +223,24 @@ class Wallet(_BaseWallet):
 
 
 
-class SuperWallet(_BaseWallet):
-	_wallets: set[_BaseWallet]
+class SuperWallet(BaseWallet):
+	_wallets: set[BaseWallet]
 
-	def __init__(self, wallets: set[_BaseWallet] = None):
+	def __init__(self, wallets: set[BaseWallet] = None):
 		self._wallets = set()
 		if wallets:
 			self._wallets.update(wallets)
 
 
-	def add_wallet(self, wallet: _BaseWallet):
+	def is_empty(self):
+		return len(self._wallets) == 0
+
+
+	def add_wallet(self, wallet: BaseWallet):
 		self._wallets.add(wallet)
 
 
-	def remove_wallet(self, wallet: _BaseWallet):
+	def remove_wallet(self, wallet: BaseWallet):
 		self._wallets.remove(wallet)
 
 

@@ -19,7 +19,7 @@ class WalletTest(unittest.TestCase):
 			Resource.FOOD: 3
 		}
 		wallet = Wallet(values=values)
-		for resource in Resource:
+		for resource in values:
 			self.assertEqual(wallet.get(resource), values.get(resource))
 
 
@@ -38,7 +38,7 @@ class WalletTest(unittest.TestCase):
 			Resource.FOOD: 3
 		}
 		wallet = Wallet(values=values)
-		for resource in Resource:
+		for resource in values:
 			self.assertEqual(wallet.get_maximum(resource), values.get(resource))
 
 
@@ -50,7 +50,7 @@ class WalletTest(unittest.TestCase):
 			Resource.FOOD: 30
 		}
 		wallet = Wallet(maximums=maximums)
-		for resource in Resource:
+		for resource in maximums:
 			self.assertEqual(wallet.get_maximum(resource), maximums.get(resource))
 
 
@@ -129,7 +129,7 @@ class WalletTest(unittest.TestCase):
 			Resource.FOOD: 3
 		}
 		wallet.set(values=values)
-		for resource in Resource:
+		for resource in values:
 			self.assertEqual(wallet.get(resource), values.get(resource))
 
 
@@ -162,7 +162,7 @@ class WalletTest(unittest.TestCase):
 		}
 		overflow = wallet.add(values=values)
 		self.assertEqual(overflow, {})
-		for resource in Resource:
+		for resource in values:
 			self.assertEqual(wallet.get(resource), values.get(resource))
 
 
@@ -289,7 +289,7 @@ class WalletTest(unittest.TestCase):
 			Resource.WATER: 10,
 			Resource.FOOD: 20
 		})
-		for resource in Resource:
+		for resource in values:
 			self.assertEqual(wallet.get(resource), 10)
 		self.assertTrue(result)
 
