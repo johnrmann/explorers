@@ -119,7 +119,7 @@ def get_biome_wetness(
 	"""
 	wd_xy, wd_z = water_distance
 	wd_total = wd_xy + wd_z
-	if wd_total < 0:
+	if wd_total == math.inf:
 		return BiomeWetness.BARREN
 	elif wd_total < wet_cutoff:
 		return BiomeWetness.WET

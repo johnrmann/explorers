@@ -1,5 +1,7 @@
 import unittest
 
+import math
+
 from src.world.biome import (
 	# Enums
 	BiomeTemperature,
@@ -40,9 +42,11 @@ class BiomeTest(unittest.TestCase):
 
 
 	def test__get_biome_wetness(self):
+		self.assertEqual(
+			get_biome_wetness((math.inf, math.inf)), BiomeWetness.BARREN
+		)
 		self.assertEqual(get_biome_wetness((0, 0)), BiomeWetness.WET)
 		self.assertEqual(get_biome_wetness((32, 32)), BiomeWetness.DRY)
-		self.assertEqual(get_biome_wetness((-32, -32)), BiomeWetness.BARREN)
 
 
 	def test__get_is_beach__flat(self):
@@ -102,6 +106,27 @@ class BiomeTest(unittest.TestCase):
 			calculate_biomes(
 				water_distances=[[(1, 1)]],
 			)
+
+
+	def test__calculate_biomes__barren(self):
+		land_height = [
+			[1] * 24
+			for _ in range(24)
+		]
+		water_height = [
+			[0] * 24
+			for _ in range(24)
+		]
+		tprs = [95] * 24
+		wds = water_distances(land_height, water_height)
+		biomes = calculate_biomes(
+			water_distances=wds, tpr_deg_fs=tprs, wet_cutoff=8
+		)
+		self.assertEqual(biomes[0][0], Biome.BARREN)
+		self.assertEqual(biomes[1][0], Biome.BARREN)
+		self.assertEqual(biomes[6][0], Biome.BARREN)
+		self.assertEqual(biomes[7][0], Biome.BARREN)
+		self.assertEqual(biomes[17][0], Biome.BARREN)
 
 
 	def test__calculate_biomes(self):

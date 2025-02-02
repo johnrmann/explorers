@@ -273,7 +273,7 @@ class TestControl(unittest.TestCase):
 		once per tick.
 		"""
 		game_object = MagicMock()
-		game_object.is_movable.return_value = True
+		game_object.is_moveable.return_value = True
 		game_object.is_selectable.return_value = True
 
 		self.control.clickmap.is_terrain.return_value = False
@@ -297,7 +297,7 @@ class TestControl(unittest.TestCase):
 		"""
 		game_object = MagicMock()
 		game_object.pos = (0, 0)
-		game_object.is_movable.return_value = False
+		game_object.is_moveable.return_value = False
 		game_object.is_selectable.return_value = True
 
 		self.control.clickmap.is_terrain.return_value = False
