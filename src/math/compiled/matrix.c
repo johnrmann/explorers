@@ -15,6 +15,20 @@ void free_int_matrix(IntMatrix *m) {
 	free(m);
 }
 
+IntMatrix *int_matrix_add(IntMatrix *m1, IntMatrix *m2) {
+	int width = m1->width;
+	int height = m1->height;
+	IntMatrix *result = make_int_matrix(width, height);
+	for (int r = 0; r < height; r++) {
+		for (int c = 0; c < width; c++) {
+			int v1 = int_matrix_get_at(m1, r, c);
+			int v2 = int_matrix_get_at(m2, r, c);
+			int_matrix_set_at(result, r, c, v1 + v2);
+		}
+	}
+	return result;
+}
+
 int int_matrix_idx(IntMatrix *m, int r, int c) {
 	return r * m->width + c;
 }

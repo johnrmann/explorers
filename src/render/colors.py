@@ -47,7 +47,6 @@ class BiomeColorScheme:
 		self._color_map = {
 			Biome.BARREN: self._barren_color,
 			Biome.BEACH: self._barren_color,
-			Biome.OCEAN: self._barren_color,
 
 			Biome.TROPICAL: scale_color(self._lush_color, 0.75),
 			Biome.DESERT: self._barren_color,

@@ -18,6 +18,11 @@ IntMatrix* make_int_matrix(int w, int h);
 void free_int_matrix(IntMatrix *m);
 
 /**
+ * Add two int matrices together.
+ */
+IntMatrix* int_matrix_add(IntMatrix *m1, IntMatrix *m2);
+
+/**
  * Returns the index of the element at the given row and column.
  */
 int int_matrix_get_at(IntMatrix *m, int r, int c);

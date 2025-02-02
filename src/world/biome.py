@@ -29,9 +29,9 @@ class BiomeTemperature(Enum):
 
 	BARREN = 0
 
-	HOT = 1
-	TEMPERATE = 2
-	COLD = 3
+	HOT = 0x01
+	TEMPERATE = 0x02
+	COLD = 0x03
 
 
 
@@ -41,8 +41,8 @@ class BiomeWetness(Enum):
 
 	BARREN = 0
 
-	WET = 1
-	DRY = 2
+	WET = 0x01
+	DRY = 0x02
 
 
 
@@ -53,9 +53,6 @@ class Biome(Enum):
 
 	# Completely uninhabitable for humans. Used for pre-terraforming states.
 	BARREN = 0
-
-	# For the ocean.
-	OCEAN = 1
 
 	# Special biome type for "Tutorial: Walkabout."
 	OUTBACK = 2
@@ -140,7 +137,7 @@ def get_is_beach(water_distance: WaterDistance) -> bool:
 	wd_xy, wd_z = water_distance
 	wd_total = wd_xy + wd_z
 	if wd_xy == 0:
-		return False
+		return True
 	if wd_total < 0:
 		return False
 	elif wd_z > MAX_BEACH_Z_DISTANCE:
@@ -162,9 +159,6 @@ def get_biome(
 	tpr = get_biome_temperature(tpr_deg_f)
 	wet = get_biome_wetness(water_distance, wet_cutoff=wet_cutoff)
 
-	wd_xy, _ = water_distance
-	if wd_xy == 0:
-		return Biome.OCEAN
 	if tpr == BiomeTemperature.BARREN or wet == BiomeWetness.BARREN:
 		return Biome.BARREN
 
@@ -291,11 +285,23 @@ def _min_water_dist(pair1, pair2):
 		return pair2
 
 
+def _ensure_deg_f(
+		tpr_deg_fs: list[int, float] = None,
+		tpr_kelvins: list[int, float] = None,
+):
+	if tpr_deg_fs is None:
+		tpr_deg_fs = [
+			kelvin_to_fahrenheit(tpr)
+			for tpr in tpr_kelvins
+		]
+	return tpr_deg_fs
+
+
 @line_profiler.profile
 def calculate_biomes(
 		water_distances: WaterDistanceMatrix = None,
-		tpr_deg_fs: dict[int, float] = None,
-		tpr_kelvins: dict[int, float] = None,
+		tpr_deg_fs: list[int, float] = None,
+		tpr_kelvins: list[int, float] = None,
 		wet_cutoff: int = 64,
 ):
 	"""
@@ -315,18 +321,7 @@ def calculate_biomes(
 	if tpr_deg_fs is None and tpr_kelvins is None:
 		raise ValueError("Temperatures must be provided.")
 
-	# Convert tprs to fahrenheit
-	if tpr_deg_fs is None:
-		if isinstance(tpr_kelvins, dict):
-			tpr_deg_fs = {
-				idx: kelvin_to_fahrenheit(tpr)
-				for idx, tpr in tpr_kelvins.items()
-			}
-		else:
-			tpr_deg_fs = {
-				idx: kelvin_to_fahrenheit(tpr)
-				for idx, tpr in enumerate(tpr_kelvins)
-			}
+	tpr_deg_fs = _ensure_deg_f(tpr_deg_fs, tpr_kelvins)
 
 	height = len(water_distances)
 

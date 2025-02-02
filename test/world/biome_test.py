@@ -57,7 +57,7 @@ class BiomeTest(unittest.TestCase):
 
 
 	def test__get_is_beach__is_ocean(self):
-		self.assertFalse(get_is_beach((0, 0)))
+		self.assertTrue(get_is_beach((0, 0)))
 
 
 	def test__get_is_beach__no_water(self):
@@ -69,11 +69,8 @@ class BiomeTest(unittest.TestCase):
 		self.assertEqual(get_biome(1000, (1, 1)), Biome.BARREN)
 
 
-	def test__get_biome__ocean(self):
-		self.assertEqual(get_biome(50, (0, 0)), Biome.OCEAN)
-
-
 	def test__get_biome__beach(self):
+		self.assertEqual(get_biome(50, (0, 0)), Biome.BEACH)
 		self.assertEqual(get_biome(50, (1, 1)), Biome.BEACH)
 		self.assertEqual(get_biome(50, (6, 0)), Biome.BEACH)
 
@@ -123,7 +120,7 @@ class BiomeTest(unittest.TestCase):
 		biomes = calculate_biomes(
 			water_distances=wds, tpr_deg_fs=tprs, wet_cutoff=8
 		)
-		self.assertEqual(biomes[0][0], Biome.OCEAN)
+		self.assertEqual(biomes[0][0], Biome.BEACH)
 		self.assertEqual(biomes[1][0], Biome.BEACH)
 		self.assertEqual(biomes[6][0], Biome.BEACH)
 		self.assertEqual(biomes[7][0], Biome.TROPICAL)
@@ -141,25 +138,13 @@ class BiomeTest(unittest.TestCase):
 		]
 		land_height[0] = [0] * 24
 		water_height[0] = [1] * 24
-		tprs_dict = {
-			idx: 308 for idx in range(24)
-		}
 		wds = water_distances(land_height, water_height)
-		biomes_dict = calculate_biomes(
-			wds, tpr_kelvins=tprs_dict, wet_cutoff=8
-		)
 		tprs_list = [308] * 24
 		biomes_list = calculate_biomes(
 			wds, tpr_kelvins=tprs_list, wet_cutoff=8
 		)
 
-		self.assertEqual(biomes_dict[0][0], Biome.OCEAN)
-		self.assertEqual(biomes_dict[1][0], Biome.BEACH)
-		self.assertEqual(biomes_dict[6][0], Biome.BEACH)
-		self.assertEqual(biomes_dict[7][0], Biome.TROPICAL)
-		self.assertEqual(biomes_dict[17][0], Biome.DESERT)
-
-		self.assertEqual(biomes_list[0][0], Biome.OCEAN)
+		self.assertEqual(biomes_list[0][0], Biome.BEACH)
 		self.assertEqual(biomes_list[1][0], Biome.BEACH)
 		self.assertEqual(biomes_list[6][0], Biome.BEACH)
 		self.assertEqual(biomes_list[7][0], Biome.TROPICAL)
@@ -174,7 +159,7 @@ class BiomeTest(unittest.TestCase):
 			tpr_deg_fs=tprs,
 			wet_cutoff=8,
 		)
-		self.assertEqual(biomes[2][4], Biome.OCEAN)
+		self.assertEqual(biomes[2][4], Biome.BEACH)
 		self.assertEqual(biomes[2][3], Biome.BEACH)
 		self.assertEqual(biomes[2][0], Biome.BEACH)
 
@@ -187,7 +172,7 @@ class BiomeTest(unittest.TestCase):
 			tpr_deg_fs=tprs,
 			wet_cutoff=8
 		)
-		self.assertEqual(biomes[2][4], Biome.OCEAN)
+		self.assertEqual(biomes[2][4], Biome.BEACH)
 		self.assertEqual(biomes[2][3], Biome.BEACH)
 		self.assertEqual(biomes[2][0], Biome.DESERT)
 
